@@ -1,0 +1,118 @@
+---
+alwaysApply: true
+---
+# Flutter Clean Architecture
+
+
+## File Placement
+
+| Layer | Path |
+|---|---|
+| Entity | `features/{feature}/domain/entities/{name}_entity.dart` |
+| Model | `features/{feature}/data/models/{name}_model.dart` |
+| Params | `features/{feature}/domain/usecases/params/{Name}Params.dart` |
+| Datasource | `features/{feature}/data/datasources/{feature}_remote_datasource.dart` |
+| Repo interface | `features/{feature}/domain/repository/{feature}_repository.dart` |
+| Repo impl | `features/{feature}/data/repository/{feature}_repository_impl.dart` |
+| UseCase | `features/{feature}/domain/usecases/{action}_{feature}.dart` |
+| Cubit | `features/{feature}/presentation/cubit/{feature}_cubit.dart` |
+| State | `features/{feature}/presentation/cubit/{feature}_state.dart` |
+| UI screen | `features/{feature}/presentation/screens/{feature}_screen.dart` |
+| Feature widgets | `features/{feature}/presentation/widgets/{name}.dart` |
+| DI | `features/{feature}/{feature}_injection.dart` |
+
+## Code Style
+
+- Null-safety everywhere. No `dynamic` unless unavoidable.
+- `log` instead of `print`. Use `BlocObserver` for state debugging.
+- Prefer `const` widgets. Prefer stateless widgets.
+- Never `Widget _buildXxx()` methods. Split feature UI into **named widget
+  classes** in `presentation/widgets/` (one file per widget or small group),
+  not private classes in the screen file.
+- Meaningful names for classes, methods, and variables.
+
+## Core Priority
+
+- Always check `lib/core/` before creating any helper, extension, widget, or utility.
+- **Widgets:** Before adding inline UI or a new feature-local widget, scan
+  `lib/core/widgets/` (and subfolders such as `shimmer/`). If a suitable
+  widget exists there, import and use it first. Only build new UI when nothing
+  in core fits.
+- If it exists in core → use it. Never duplicate.
+- Always use shared colors/theme tokens and any reusable resources from `lib/core/` before introducing new values or duplicate components.
+
+## Constants
+
+- All endpoints, keys, and route strings live in `lib/core/utils/constants.dart`.
+- Never hardcode URLs or keys inside datasources, repositories, or UI.
+- Add a new constant if missing; follow the existing naming style (`ApiConstants.xxx`, `ApiKeys.xxx`).
+
+## Dependency Injection
+
+- Service locator: `ServiceLocator.instance` (GetIt).
+- Cubits → `registerFactory`. Services, use cases, repos → `registerLazySingleton`.
+- Inject abstractions (interfaces), not concrete implementations.
+
+## UI & Loading
+
+- Loading state → shimmer from `lib/core/widgets/shimmer/`. No `CircularProgressIndicator` unless explicitly requested (then use `showLoading` from constants).
+- Error state → `SelectableText.rich` in red. No SnackBars.
+- Empty state → handled within the same screen.
+- No business logic in UI. Cubit only.
+- For localized strings in UI, always use translation extension syntax (`'key'.tr`) instead of direct `appLocalizations.text('key')` calls.
+- **Typography:** Prefer `TextStyles` from `lib/core/utils/values/text_styles.dart`
+  (Cairo via Google Fonts, `.sp` via ScreenUtil): use the numeric helpers
+  (`bold32`, `medium16`, `semiBold18`, etc.). Prefer `.copyWith` for one-off
+  tweaks (color, height, letterSpacing). Use `Theme.of(context).textTheme`
+  only when no `TextStyles` helper fits (e.g. Material roles inside inputs).
+  Add a new `boldNN` / `mediumNN` / `semiBoldNN` / `regularNN` static before
+  inlining `TextStyle` in features.
+- `RefreshIndicator` for pull-to-refresh.
+- **Text fields:** Use `AppTextFormField` from
+  `lib/core/widgets/app_text_form_field.dart` for form inputs instead of raw
+  `TextFormField` / `TextField`. If a layout or behavior is missing, extend
+  `AppTextFormField` in core first; do not duplicate field styling in features.
+- `textCapitalization`, `keyboardType`, `textInputAction` on every text field
+  (including `AppTextFormField`).
+- `errorBuilder` on every `Image.network`.
+- **Images:** Use `AppImage` from `lib/core/widgets/app_image.dart` in
+  presentation UI — `AppImage.asset`, `AppImage.file`, or `AppImage.network`
+  (set `isCached: true` when the URL should use disk cache). For **cached**
+  remote images with shimmer + logo fallback, prefer
+  `CachedNetworkImageWithFallback` from
+  `lib/core/widgets/cached_network_image_with_fallback.dart`. Use paths/URLs
+  from `ImageAssets` / constants in `lib/core/utils/values/img_manager.dart`
+  (or existing asset URL constants). Do not use raw `Image.asset` /
+  `Image.network` or import `package:cached_network_image` in feature code;
+  keep those inside core only.
+- Figma assets: icons must be downloaded/used as SVG; non-icon images must
+  be downloaded/used as PNG or JPG.
+- **ScreenUtil:** Presentation UI must scale layout with `flutter_screenutil`
+  after `ScreenUtilInit` in `main.dart`. Import
+  `package:flutter_screenutil/flutter_screenutil.dart`. Use `.w` for widths
+  and horizontal insets, `.h` for heights and vertical insets, `.r` for
+  border radii, icon sizes, and small square controls (unless already using
+  `.sp` inside `TextStyles`). Avoid raw `double` literals for padding,
+  `SizedBox`, `Container` width/height, and `BorderRadius.circular` in screens
+  and feature widgets.
+
+## Response Models
+
+- List response → extend `BaseListResponse`.
+- Single response → extend `BaseOneResponse`.
+- List parse: `List<XModel>.from((json["data"]["key"] ?? []).map((x) => XModel.fromJson(x)))`
+- Single parse: `json["data"] == null ? null : XModel.fromJson(json["data"])`
+
+## Repository / UseCase Contracts
+
+- Repository abstract methods return `Future<Either<Failure, Entity>>`.
+- Repository impl converts model → entity and wraps exceptions as `Failure`.
+- UseCase takes a `Params` object; returns `Either<Failure, Entity>`.
+- Cubit has **one public method**. Emits: loading, success, failure. No model mapping.
+
+## Navigation & Performance
+
+- GoRouter for all navigation and deep linking.
+- `ListView.builder` for lists. Remote images → `AppImage` or
+  `CachedNetworkImageWithFallback` (see UI & Loading). Do not import
+  `cached_network_image` in features; it stays in core.

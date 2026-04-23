@@ -1,0 +1,23 @@
+{
+  "home_brand_name": "Khidma",
+  "home_greeting_sub": "Good morning 👋",
+  "home_greeting": "Marawan",
+  "home_location": "Nasr City, Cairo",
+  "home_category_cleaning": "Cleaning",
+  "home_category_plumbing": "Plumbing",
+  "home_category_electrical": "Electrical",
+  "home_category_hvac": "HVAC",
+  "home_popular_services": "Popular Services",
+  "home_see_all": "See All",
+  "home_service_deep_house_cleaning": "Deep House Cleaning",
+  "home_service_kitchen_sink_repair": "Kitchen Sink Repair",
+  "home_service_ac_maintenance": "AC Maintenance",
+  "home_service_sofa_steam_cleaning": "Sofa Steam Cleaning",
+  "home_service_category_home_cleaning": "HOME CLEANING",
+  "home_service_category_plumbing": "PLUMBING",
+  "home_service_category_hvac": "HVAC",
+  "home_tab_home": "Home",
+  "home_tab_bookings": "Bookings",
+  "home_tab_chats": "Chats",
+  "home_tab_profile": "Profile"
+}
