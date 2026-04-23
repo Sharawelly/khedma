@@ -1,94 +1,118 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '/core/utils/values/app_colors.dart';
 import '/core/utils/values/text_styles.dart';
+import '/core/widgets/gaps.dart';
 import '/injection_container.dart';
 
 class NotificationItemCard extends StatelessWidget {
   const NotificationItemCard({
     super.key,
-    required this.title,
-    required this.description,
-    required this.timeLabel,
+    required this.titleKey,
+    required this.descriptionKey,
+    required this.timeKey,
     required this.leadingIcon,
     required this.leadingIconColor,
     required this.cardBackgroundColor,
     required this.iconBackgroundColor,
+    this.showUnreadIndicator = false,
+    this.unreadIndicatorColor,
   });
 
-  final String title;
-  final String description;
-  final String timeLabel;
+  final String titleKey;
+  final String descriptionKey;
+  final String timeKey;
   final IconData leadingIcon;
   final Color leadingIconColor;
   final Color cardBackgroundColor;
   final Color iconBackgroundColor;
+  final bool showUnreadIndicator;
+  final Color? unreadIndicatorColor;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(minHeight: 96.h),
-      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 12.h),
-      decoration: BoxDecoration(
-        color: cardBackgroundColor,
-        borderRadius: BorderRadius.circular(14.r),
-      ),
+    return IntrinsicHeight(
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Container(
-            width: 40.r,
-            height: 40.r,
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            width: showUnreadIndicator ? 4.w : 0,
             decoration: BoxDecoration(
-              color: iconBackgroundColor,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Icon(
-              leadingIcon,
-              size: 20.r,
-              color: leadingIconColor,
+              color: unreadIndicatorColor ?? colors.errorColor,
+              borderRadius: BorderRadiusDirectional.only(
+                topEnd: Radius.circular(4.r),
+                bottomEnd: Radius.circular(4.r),
+              ),
             ),
           ),
-          SizedBox(width: 16.w),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: TextStyles.semiBold16(
-                          color: colors.onboardingHeadline,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+            child: Container(
+              constraints: BoxConstraints(minHeight: 94.h),
+              padding: EdgeInsetsDirectional.only(
+                start: 16.w,
+                end: 16.w,
+                top: 16.h,
+                bottom: 14.h,
+              ),
+              color: cardBackgroundColor,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    width: 46.r,
+                    height: 46.r,
+                    decoration: BoxDecoration(
+                      color: iconBackgroundColor,
+                      shape: BoxShape.circle,
                     ),
-                    SizedBox(width: 8.w),
-                    Text(
-                      timeLabel,
-                      style: TextStyles.regular12(
-                        color: MyColors.homeSlate,
-                      ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      leadingIcon,
+                      size: 23.r,
+                      color: leadingIconColor,
                     ),
-                  ],
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  description,
-                  style: TextStyles.regular14(
-                    color: colors.registerSubtitle,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                  Gaps.hGap12,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                titleKey,
+                                style: TextStyles.bold14(
+                                  color: colors.onboardingHeadline,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Gaps.hGap8,
+                            Text(
+                              timeKey,
+                              style: TextStyles.regular12(
+                                color: colors.homeCaption,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Gaps.vGap2,
+                        Text(
+                          descriptionKey,
+                          style: TextStyles.regular14(
+                            color: colors.lightTextColor,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

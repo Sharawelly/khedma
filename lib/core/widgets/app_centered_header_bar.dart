@@ -15,6 +15,7 @@ class AppCenteredHeaderBar extends StatelessWidget {
     required this.onBack,
     this.trailing,
     this.showBottomBorder = true,
+    this.showBackButton = true,
     this.backgroundColor,
     this.titleStyle,
     this.contentPadding,
@@ -27,6 +28,7 @@ class AppCenteredHeaderBar extends StatelessWidget {
   final bool showBottomBorder;
   final Color? backgroundColor;
   final TextStyle? titleStyle;
+  final bool showBackButton;
 
   /// Full padding; when null, uses leading/title/trailing insets plus
   /// status-bar top inset.
@@ -52,14 +54,15 @@ class AppCenteredHeaderBar extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          IconButton(
-            onPressed: onBack,
-            icon: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: iconSide.r,
-              color: colors.onboardingHeadline,
+          if (showBackButton)
+            IconButton(
+              onPressed: onBack,
+              icon: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: iconSide.r,
+                color: colors.onboardingHeadline,
+              ),
             ),
-          ),
           Expanded(
             child: Text(
               title,

@@ -15,7 +15,10 @@ import '/features/auth/presentation/cubit/create_account_form_cubit/create_accou
 import '/injection_container.dart';
 
 class CreateAccountScreen extends StatefulWidget {
-  const CreateAccountScreen({super.key});
+  const CreateAccountScreen({super.key, this.registrationRole});
+
+  /// Role chosen on [RoleSelectionScreen], if any.
+  final String? registrationRole;
 
   @override
   State<CreateAccountScreen> createState() => _CreateAccountScreenState();
@@ -52,12 +55,14 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   void _onContinue(CreateAccountFormState formState) {
     if (!_formKey.currentState!.validate()) return;
     if (formState.strength != PasswordStrength.strong) return;
-    context.push(
-      Routes.roleSelectionRoute,
-      extra: {
+    context.go(
+      Routes.appShellRoute,
+      extra: <String, Object?>{
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim(),
         'password': _passwordController.text,
+        if (widget.registrationRole != null)
+          'registration_role': widget.registrationRole!,
       },
     );
   }

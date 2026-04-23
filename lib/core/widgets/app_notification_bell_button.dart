@@ -50,7 +50,7 @@ class AppNotificationBellButton extends StatelessWidget {
             width: 8.r,
             height: 8.r,
             decoration: BoxDecoration(
-              color: colors.main,
+              color: colors.errorColor,
               shape: BoxShape.circle,
               border: Border.all(color: colors.whiteColor, width: 2.w),
             ),

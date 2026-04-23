@@ -84,6 +84,12 @@ class MyColors {
   /// Paths — case study / info chips (Figma blue-100 & blue-500)
   static const Color pathsInfoSurface = Color(0xFFDBEAFE);
   static const Color pathsInfoAccent = Color(0xFF3B82F6);
+
+  /// Auth / sign-up (Khidma red marketing)
+  static const Color authBrandRed = Color(0xFFD82232);
+  static const Color authSignUpSelectedSurface = Color(0xFFFFF2F3);
+  static const Color authSignUpUnselectedSurface = Color(0xFFFFFBF7);
+  static const Color authSignUpBackgroundWash = Color(0xFFFFF5F6);
 }
 
 @immutable
@@ -145,6 +151,10 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color blocksOnGreenMuted;
   final Color pathsInfoSurface;
   final Color pathsInfoAccent;
+  final Color authBrandRed;
+  final Color authSignUpSelectedSurface;
+  final Color authSignUpUnselectedSurface;
+  final Color authSignUpBackgroundWash;
 
   const AppColors({
     required this.backGround,
@@ -204,6 +214,10 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.blocksOnGreenMuted,
     required this.pathsInfoSurface,
     required this.pathsInfoAccent,
+    required this.authBrandRed,
+    required this.authSignUpSelectedSurface,
+    required this.authSignUpUnselectedSurface,
+    required this.authSignUpBackgroundWash,
   });
 
   @override
@@ -265,6 +279,10 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? blocksOnGreenMuted,
     Color? pathsInfoSurface,
     Color? pathsInfoAccent,
+    Color? authBrandRed,
+    Color? authSignUpSelectedSurface,
+    Color? authSignUpUnselectedSurface,
+    Color? authSignUpBackgroundWash,
   }) {
     return AppColors(
       backGround: backGround ?? this.backGround,
@@ -332,6 +350,13 @@ class AppColors extends ThemeExtension<AppColors> {
       blocksOnGreenMuted: blocksOnGreenMuted ?? this.blocksOnGreenMuted,
       pathsInfoSurface: pathsInfoSurface ?? this.pathsInfoSurface,
       pathsInfoAccent: pathsInfoAccent ?? this.pathsInfoAccent,
+      authBrandRed: authBrandRed ?? this.authBrandRed,
+      authSignUpSelectedSurface:
+          authSignUpSelectedSurface ?? this.authSignUpSelectedSurface,
+      authSignUpUnselectedSurface:
+          authSignUpUnselectedSurface ?? this.authSignUpUnselectedSurface,
+      authSignUpBackgroundWash:
+          authSignUpBackgroundWash ?? this.authSignUpBackgroundWash,
     );
   }
 
@@ -484,6 +509,28 @@ class AppColors extends ThemeExtension<AppColors> {
       pathsInfoAccent:
           Color.lerp(pathsInfoAccent, other.pathsInfoAccent, t) ??
           pathsInfoAccent,
+      authBrandRed: Color.lerp(authBrandRed, other.authBrandRed, t) ?? authBrandRed,
+      authSignUpSelectedSurface:
+          Color.lerp(
+            authSignUpSelectedSurface,
+            other.authSignUpSelectedSurface,
+            t,
+          ) ??
+          authSignUpSelectedSurface,
+      authSignUpUnselectedSurface:
+          Color.lerp(
+            authSignUpUnselectedSurface,
+            other.authSignUpUnselectedSurface,
+            t,
+          ) ??
+          authSignUpUnselectedSurface,
+      authSignUpBackgroundWash:
+          Color.lerp(
+            authSignUpBackgroundWash,
+            other.authSignUpBackgroundWash,
+            t,
+          ) ??
+          authSignUpBackgroundWash,
     );
     ServiceLocator.injectAppColors(appColors: appColors);
     return appColors;

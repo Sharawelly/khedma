@@ -65,6 +65,10 @@ final AppColors kDefaultAppColors = AppColors(
   blocksOnGreenMuted: MyColors.blocksOnGreenMuted,
   pathsInfoSurface: MyColors.pathsInfoSurface,
   pathsInfoAccent: MyColors.pathsInfoAccent,
+  authBrandRed: MyColors.authBrandRed,
+  authSignUpSelectedSurface: MyColors.authSignUpSelectedSurface,
+  authSignUpUnselectedSurface: MyColors.authSignUpUnselectedSurface,
+  authSignUpBackgroundWash: MyColors.authSignUpBackgroundWash,
 );
 
 ThemeData getAppTheme(BuildContext context) {

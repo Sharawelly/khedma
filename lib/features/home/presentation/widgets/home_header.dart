@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '/config/locale/app_localizations.dart';
 import '/core/utils/values/img_manager.dart';
 import '/core/utils/values/text_styles.dart';
+import '/core/widgets/app_notification_bell_button.dart';
 import '/core/widgets/gaps.dart';
 import '/injection_container.dart';
 
@@ -75,42 +76,10 @@ class _TopBar extends StatelessWidget {
           ),
         ),
 
-        _NotificationButton(),
+        const AppNotificationBellButton(),
         Gaps.hGap20,
         _AvatarCircle(),
       ],
-    );
-  }
-}
-
-class _NotificationButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {},
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: <Widget>[
-          Icon(
-            Icons.notifications_outlined,
-            color: colors.onboardingHeadline,
-            size: 22.r,
-          ),
-          PositionedDirectional(
-            top: -3.r,
-            end: -3.r,
-            child: Container(
-              width: 10.r,
-              height: 10.r,
-              decoration: BoxDecoration(
-                color: colors.errorColor,
-                shape: BoxShape.circle,
-                border: Border.all(color: colors.whiteColor, width: 2.r),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
