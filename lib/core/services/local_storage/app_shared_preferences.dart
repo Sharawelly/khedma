@@ -4,8 +4,8 @@ import 'dart:developer';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '/features/auth/data/models/auth_resp_model.dart';
-import '/features/auth/domain/entities/auth_entity.dart';
+import '../../../features/auth/data/models/auth_resp_model.dart';
+import '../../../features/auth/domain/entities/auth_entity.dart';
 import '../../utils/enums.dart';
 import '../../utils/extension.dart';
 

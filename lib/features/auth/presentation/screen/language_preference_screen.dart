@@ -9,9 +9,9 @@ import '/core/utils/enums.dart';
 import '/core/utils/values/text_styles.dart';
 import '/core/widgets/back_button.dart';
 import '/core/widgets/my_default_button.dart';
-import '/features/auth/presentation/cubit/language_preference_cubit/language_preference_cubit.dart';
-import '/features/auth/presentation/widgets/language_option_tile.dart';
-import '/features/auth/presentation/widgets/registration_progress_bar.dart';
+import '../cubit/language_preference_cubit/language_preference_cubit.dart';
+import '../widgets/language_option_tile.dart';
+import '../widgets/registration_progress_bar.dart';
 import '/injection_container.dart';
 
 class LanguagePreferenceScreen extends StatelessWidget {

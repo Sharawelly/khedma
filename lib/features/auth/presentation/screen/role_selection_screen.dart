@@ -51,13 +51,16 @@ class _RoleSelectionView extends StatelessWidget {
         child: SafeArea(
           child: BlocBuilder<RoleSelectionCubit, RoleSelectionState>(
             builder: (BuildContext context, RoleSelectionState state) {
-              final RoleSelectionCubit cubit = context.read<RoleSelectionCubit>();
+              final RoleSelectionCubit cubit = context
+                  .read<RoleSelectionCubit>();
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: EdgeInsetsDirectional.symmetric(horizontal: 20.w),
+                      padding: EdgeInsetsDirectional.symmetric(
+                        horizontal: 20.w,
+                      ),
                       child: Column(
                         children: <Widget>[
                           Gaps.vGap24,
@@ -80,11 +83,14 @@ class _RoleSelectionView extends StatelessWidget {
                               Gaps.hGap12,
                               AuthSignUpRoleCard(
                                 titleKey: 'auth_sign_up_role_provide_title',
-                                subtitleKey: 'auth_sign_up_role_provide_subtitle',
+                                subtitleKey:
+                                    'auth_sign_up_role_provide_subtitle',
                                 leadIcon: Icons.handyman_rounded,
                                 leadIconColor: colors.secondary,
-                                selected: state.selectedRole == 'provide_services',
-                                onTap: () => cubit.selectRole('provide_services'),
+                                selected:
+                                    state.selectedRole == 'provide_services',
+                                onTap: () =>
+                                    cubit.selectRole('provide_services'),
                               ),
                             ],
                           ),
@@ -114,6 +120,10 @@ class _RoleSelectionView extends StatelessWidget {
                           }
                           if (state.selectedRole == 'need_service') {
                             context.go(Routes.appShellRoute);
+                            return;
+                          }
+                          if (state.selectedRole == 'provide_services') {
+                            context.go(Routes.providerAppShellRoute);
                             return;
                           }
                           context.push(

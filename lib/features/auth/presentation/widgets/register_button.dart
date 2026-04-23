@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '/core/widgets/loading_view.dart';
 import '/core/widgets/my_default_button.dart';
-import '/features/auth/presentation/cubit/register_cubit/register_cubit.dart';
+import '../cubit/register_cubit/register_cubit.dart';
 import '/injection_container.dart';
 
 class RegisterButton extends StatelessWidget {

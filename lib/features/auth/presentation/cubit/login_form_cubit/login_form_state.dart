@@ -1,14 +1,11 @@
 import 'package:equatable/equatable.dart';
-import '/features/auth/domain/entities/cities_entity.dart';
+import '../../../domain/entities/cities_entity.dart';
 
 class LoginFormState extends Equatable {
   final CountryEntity? selectedCountry;
   final bool obscurePassword;
 
-  const LoginFormState({
-    this.selectedCountry,
-    this.obscurePassword = true,
-  });
+  const LoginFormState({this.selectedCountry, this.obscurePassword = true});
 
   LoginFormState copyWith({
     CountryEntity? selectedCountry,
@@ -23,4 +20,3 @@ class LoginFormState extends Equatable {
   @override
   List<Object?> get props => [selectedCountry, obscurePassword];
 }
-

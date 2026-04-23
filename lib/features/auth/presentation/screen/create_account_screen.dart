@@ -10,7 +10,7 @@ import '/core/utils/values/text_styles.dart';
 import '/core/widgets/app_text_form_field.dart';
 import '/core/widgets/back_button.dart';
 import '/core/widgets/my_default_button.dart';
-import '/features/auth/presentation/cubit/create_account_form_cubit/create_account_form_cubit.dart';
+import '../cubit/create_account_form_cubit/create_account_form_cubit.dart';
 
 import '/injection_container.dart';
 

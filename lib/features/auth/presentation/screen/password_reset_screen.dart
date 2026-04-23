@@ -11,9 +11,9 @@ import '/core/widgets/app_snack_bar.dart' show ToastType, showAppSnackBar;
 import '/core/widgets/gaps.dart';
 import '/core/widgets/loading_view.dart';
 import '/core/widgets/my_default_button.dart';
-import '/features/auth/domain/usecases/params/forgot_password_params.dart';
-import '/features/auth/presentation/cubit/forgot_password_cubit/forgot_password_cubit.dart';
-import '/features/auth/presentation/widgets/auth_app_bar.dart';
+import '../../domain/usecases/params/forgot_password_params.dart';
+import '../cubit/forgot_password_cubit/forgot_password_cubit.dart';
+import '../widgets/auth_app_bar.dart';
 
 class PasswordResetScreen extends StatefulWidget {
   const PasswordResetScreen({super.key, this.initialEmail});

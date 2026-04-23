@@ -13,24 +13,25 @@ import 'package:khedma/features/auth/presentation/screen/language_preference_scr
 import 'package:khedma/features/auth/presentation/screen/create_account_screen.dart';
 import 'package:khedma/features/auth/presentation/screen/role_selection_screen.dart';
 import 'package:khedma/core/navigation/main_navigation_screen.dart';
-import 'package:khedma/features/chats/presentation/screen/chat_details_screen.dart';
-import 'package:khedma/features/chats/presentation/widgets/chat_thread_card.dart';
-import 'package:khedma/features/bookings/presentation/screens/booking_details_screen.dart';
-import 'package:khedma/features/bookings/presentation/screens/provider_profile_screen.dart';
-import 'package:khedma/features/bookings/presentation/widgets/booking_service_card.dart';
-import 'package:khedma/features/home/presentation/screen/choose_date_time_screen.dart';
-import 'package:khedma/features/home/presentation/screen/almost_done_screen.dart';
-import 'package:khedma/features/home/presentation/screen/provider_found_screen.dart';
-import 'package:khedma/features/home/presentation/screen/provider_tracking_screen.dart';
-import 'package:khedma/features/home/presentation/screen/track_live_screen.dart';
-import 'package:khedma/features/home/presentation/screen/confirm_location_screen.dart';
-import 'package:khedma/features/home/presentation/screen/category_services_screen.dart';
-import 'package:khedma/features/home/presentation/screen/home_screen.dart';
-import 'package:khedma/features/home/presentation/screen/service_details_screen.dart';
-import 'package:khedma/features/home/presentation/widgets/category_service_card.dart';
+import 'package:khedma/features/provider/shell/provider_main_navigation_screen.dart';
+import 'package:khedma/features/client/chats/presentation/screen/chat_details_screen.dart';
+import 'package:khedma/features/client/chats/presentation/widgets/chat_thread_card.dart';
+import 'package:khedma/features/client/bookings/presentation/screens/booking_details_screen.dart';
+import 'package:khedma/features/client/bookings/presentation/screens/provider_profile_screen.dart';
+import 'package:khedma/features/client/bookings/presentation/widgets/booking_service_card.dart';
+import 'package:khedma/features/client/home/presentation/screen/choose_date_time_screen.dart';
+import 'package:khedma/features/client/home/presentation/screen/almost_done_screen.dart';
+import 'package:khedma/features/client/home/presentation/screen/provider_found_screen.dart';
+import 'package:khedma/features/client/home/presentation/screen/provider_tracking_screen.dart';
+import 'package:khedma/features/client/home/presentation/screen/track_live_screen.dart';
+import 'package:khedma/features/client/home/presentation/screen/confirm_location_screen.dart';
+import 'package:khedma/features/client/home/presentation/screen/category_services_screen.dart';
+import 'package:khedma/features/client/home/presentation/screen/home_screen.dart';
+import 'package:khedma/features/client/home/presentation/screen/service_details_screen.dart';
+import 'package:khedma/features/client/home/presentation/widgets/category_service_card.dart';
 import 'package:khedma/core/utils/values/img_manager.dart';
 
-import 'package:khedma/features/notifications/presentation/screens/notifications_screen.dart';
+import 'package:khedma/features/client/notifications/presentation/screens/notifications_screen.dart';
 
 import 'package:khedma/injection_container.dart';
 
@@ -51,6 +52,7 @@ abstract class Routes {
   static const String createAccountRoute = '/CreateAccountScreen';
   static const String roleSelectionRoute = '/RoleSelectionScreen';
   static const String appShellRoute = '/AppShell';
+  static const String providerAppShellRoute = '/ProviderAppShell';
   static const String blocksHistoryRoute = '/blocks/history';
   static const String blockDetailRoute = '/blocks/detail';
   static const String blockShowcaseRoute = '/blocks/showcase';
@@ -133,6 +135,13 @@ abstract class Routes {
         path: appShellRoute,
         builder: (BuildContext context, GoRouterState _) =>
             const MainNavigationScreen(),
+      ),
+
+      GoRoute(
+        name: providerAppShellRoute,
+        path: providerAppShellRoute,
+        builder: (BuildContext context, GoRouterState _) =>
+            const ProviderMainNavigationScreen(),
       ),
       GoRoute(
         name: homeRoute,

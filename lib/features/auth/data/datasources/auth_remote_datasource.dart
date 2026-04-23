@@ -5,11 +5,11 @@ import '/core/base_classes/base_one_response.dart';
 import '/core/error/exceptions.dart';
 import '/core/params/auth_params.dart';
 
-import '/features/auth/data/models/auth_resp_model.dart';
-import '/features/auth/data/models/forgot_password_resp_model.dart';
+import '../models/auth_resp_model.dart';
+import '../models/forgot_password_resp_model.dart';
 
-import '/features/auth/domain/usecases/params/forgot_password_params.dart';
-import '/features/auth/domain/usecases/params/reset_password_params.dart';
+import '../../domain/usecases/params/forgot_password_params.dart';
+import '../../domain/usecases/params/reset_password_params.dart';
 import '../../../../injection_container.dart';
 import '../models/countries_resp_model.dart';
 

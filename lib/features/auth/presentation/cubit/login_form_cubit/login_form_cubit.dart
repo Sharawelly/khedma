@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '/features/auth/domain/entities/cities_entity.dart';
+import '../../../domain/entities/cities_entity.dart';
 import 'login_form_state.dart';
 
 class LoginFormCubit extends Cubit<LoginFormState> {
@@ -13,4 +13,3 @@ class LoginFormCubit extends Cubit<LoginFormState> {
     emit(state.copyWith(obscurePassword: !state.obscurePassword));
   }
 }
-

@@ -10,12 +10,12 @@ import '/core/utils/values/text_styles.dart';
 import '/core/widgets/app_shimmer.dart';
 import '/core/widgets/gaps.dart';
 import '/core/widgets/my_default_button.dart';
-import '/features/auth/domain/entities/governments_entity.dart';
-import '/features/auth/presentation/cubit/country_selection_cubit/country_selection_cubit.dart';
-import '/features/auth/presentation/cubit/country_selection_cubit/country_selection_state.dart';
+import '../../domain/entities/governments_entity.dart';
+import '../cubit/country_selection_cubit/country_selection_cubit.dart';
+import '../cubit/country_selection_cubit/country_selection_state.dart';
 
-import '/features/auth/presentation/cubit/register_form_cubit/register_form_cubit.dart';
-import '/features/auth/presentation/widgets/auth_app_bar.dart';
+import '../cubit/register_form_cubit/register_form_cubit.dart';
+import '../widgets/auth_app_bar.dart';
 
 import '/injection_container.dart';
 

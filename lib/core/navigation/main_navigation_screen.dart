@@ -3,10 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '/core/navigation/cubit/navigation_cubit.dart';
 import '/core/widgets/app_bottom_nav_bar.dart';
-import '/features/bookings/presentation/screens/bookings_screen.dart';
-import '/features/chats/presentation/screen/chats_screen.dart';
-import '/features/home/presentation/screen/home_screen.dart';
-import '/features/profile/presentation/screen/profile_screen.dart';
+import '/features/client/bookings/presentation/screens/bookings_screen.dart';
+import '/features/client/chats/presentation/screen/chats_screen.dart';
+import '/features/client/home/presentation/screen/home_screen.dart';
+import '/features/client/profile/presentation/screen/profile_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -19,7 +19,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   static const List<Widget> _screens = <Widget>[
     HomeScreen(),
     BookingsScreen(),
-    const ChatsScreen(),
+    ChatsScreen(),
     ProfileScreen(),
   ];
 

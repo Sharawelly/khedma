@@ -5,11 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '/core/base_classes/base_one_response.dart';
 import '/core/usecases/usecase.dart';
-import '/features/auth/data/models/auth_resp_model.dart';
-import '/features/auth/domain/entities/auth_entity.dart';
-import '/features/auth/domain/usecases/get_profile_use_case.dart';
+import '../../../data/models/auth_resp_model.dart';
+import '../../../domain/entities/auth_entity.dart';
+import '../../../domain/usecases/get_profile_use_case.dart';
 import '/injection_container.dart';
-import '../../../../../core/error/failures.dart';
+import '/core/error/failures.dart';
 
 part 'profile_state.dart';
 

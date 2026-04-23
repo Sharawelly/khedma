@@ -1,6 +1,6 @@
 import '/core/base_classes/base_one_response.dart';
-import '/features/auth/domain/entities/activity_type_entity.dart';
-import '/features/auth/domain/entities/auth_entity.dart' as auth_entity;
+import '../../domain/entities/activity_type_entity.dart';
+import '../../domain/entities/auth_entity.dart' as auth_entity;
 
 class AuthRespModel extends BaseOneResponse {
   const AuthRespModel({super.status, super.data, super.success, super.message});

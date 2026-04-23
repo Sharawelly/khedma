@@ -10,13 +10,13 @@
 // import '/core/widgets/gaps.dart';
 // import '/core/widgets/loading_view.dart';
 // import '/core/widgets/my_default_button.dart';
-// import '/features/auth/presentation/cubit/auto_login/auto_login_cubit.dart';
-// import '/features/auth/presentation/cubit/verfiy_register_otp_cubit/verfiy_register_otp_cubit.dart';
-// import '/features/auth/presentation/cubit/verify_login_otp_cubit/verify_login_otp_cubit.dart';
-// import '/features/auth/presentation/widgets/auth_app_bar.dart';
-// import '/features/auth/presentation/widgets/pin_widget.dart';
+// import '/features/client/auth/presentation/cubit/auto_login/auto_login_cubit.dart';
+// import '/features/client/auth/presentation/cubit/verfiy_register_otp_cubit/verfiy_register_otp_cubit.dart';
+// import '/features/client/auth/presentation/cubit/verify_login_otp_cubit/verify_login_otp_cubit.dart';
+// import '/features/client/auth/presentation/widgets/auth_app_bar.dart';
+// import '/features/client/auth/presentation/widgets/pin_widget.dart';
 // import '/injection_container.dart';
-// import '../../../../core/utils/enums.dart';
+// import '/core/utils/enums.dart';
 
 // class OtpAuthScreen extends StatefulWidget {
 //   final AuthParams authParams;

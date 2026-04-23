@@ -12,10 +12,10 @@ import '/core/widgets/app_snack_bar.dart' show ToastType, showAppSnackBar;
 import '/core/widgets/gaps.dart';
 import '/core/widgets/loading_view.dart';
 import '/core/widgets/my_default_button.dart';
-import '/features/auth/domain/usecases/params/reset_password_params.dart';
-import '/features/auth/presentation/cubit/reset_password_cubit/reset_password_cubit.dart';
-import '/features/auth/presentation/widgets/auth_app_bar.dart';
-import '/features/auth/presentation/widgets/labeled_text_field.dart';
+import '../../domain/usecases/params/reset_password_params.dart';
+import '../cubit/reset_password_cubit/reset_password_cubit.dart';
+import '../widgets/auth_app_bar.dart';
+import '../widgets/labeled_text_field.dart';
 import '/injection_container.dart';
 
 class ResetPasswordScreen extends StatefulWidget {

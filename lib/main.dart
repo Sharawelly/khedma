@@ -7,6 +7,7 @@ import 'package:khedma/config/routes/app_routes.dart';
 import 'package:khedma/config/themes/app_theme.dart';
 import 'package:khedma/core/navigation/navigation_injection.dart';
 import 'package:khedma/features/auth/auth_injection.dart';
+import 'package:khedma/features/provider/provider_injection.dart';
 import 'package:khedma/injection_container.dart';
 
 Future<void> main() async {
@@ -27,6 +28,7 @@ class MainApp extends StatelessWidget {
         ),
         ...authBlocs,
         ...navigationBlocs,
+        ...providerBlocs,
       ],
       child: ScreenUtilInit(
         // designSize: const Size(390, 844),

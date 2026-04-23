@@ -1,5 +1,5 @@
 import '/core/base_classes/base_one_response.dart';
-import '/features/auth/domain/entities/otp_entity.dart';
+import '../../domain/entities/otp_entity.dart';
 
 class RegisterOtpRespModel extends BaseOneResponse {
   const RegisterOtpRespModel({

@@ -1,5 +1,5 @@
 import '/core/base_classes/base_list_response.dart';
-import '/features/auth/domain/entities/cities_entity.dart';
+import '../../domain/entities/cities_entity.dart';
 
 class CountriesRespModel extends BaseListResponse {
   const CountriesRespModel({super.data, super.message, super.success});

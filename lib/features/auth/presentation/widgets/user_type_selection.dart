@@ -4,8 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '/config/locale/app_localizations.dart';
 import '/core/utils/values/text_styles.dart';
 import '/core/widgets/gaps.dart';
-import '/features/auth/presentation/cubit/register_form_cubit/register_form_cubit.dart';
-import '/features/auth/presentation/cubit/register_form_cubit/register_form_state.dart';
+import '../cubit/register_form_cubit/register_form_cubit.dart';
+import '../cubit/register_form_cubit/register_form_state.dart';
 import '/injection_container.dart';
 
 class UserTypeSelection extends StatelessWidget {

@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '/core/base_classes/base_one_response.dart';
 import '/core/usecases/usecase.dart';
-import '/features/auth/domain/usecases/logout_use_case.dart';
-import '../../../../../core/error/failures.dart';
+import '../../../domain/usecases/logout_use_case.dart';
+import '/core/error/failures.dart';
 
 part 'logout_state.dart';
 

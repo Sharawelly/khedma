@@ -2,8 +2,8 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 
 import '/core/utils/enums.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecases/usecase.dart';
+import '/core/error/failures.dart';
+import '/core/usecases/usecase.dart';
 import '../repositories/auth_repo.dart';
 
 class SaveUserCycleUseCase extends UseCase<bool, SaveUserCycleParams> {

@@ -1,17 +1,11 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:khedma/config/locale/app_localizations.dart';
 import 'package:khedma/config/routes/app_routes.dart';
-import 'package:khedma/core/params/auth_params.dart';
-import 'package:khedma/core/utils/constants.dart';
 import 'package:khedma/core/utils/enums.dart';
-import 'package:khedma/core/utils/log_utils.dart' as log;
 import 'package:khedma/core/utils/values/text_styles.dart';
-import 'package:khedma/core/widgets/app_shimmer.dart';
 import 'package:khedma/core/widgets/gaps.dart';
 import 'package:khedma/core/widgets/my_default_button.dart';
 import 'package:khedma/features/auth/presentation/cubit/auto_login/auto_login_cubit.dart';

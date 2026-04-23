@@ -1,13 +1,12 @@
 import 'package:dartz/dartz.dart';
 
-import '/core/base_classes/base_list_response.dart';
 import '/core/base_classes/base_one_response.dart';
 import '/core/params/auth_params.dart';
-import '../../../../../core/error/exceptions.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecases/usecase.dart';
-import '../../../../core/utils/enums.dart';
-import '../../../../core/utils/log_utils.dart' as log;
+import '/core/error/exceptions.dart';
+import '/core/error/failures.dart';
+import '/core/usecases/usecase.dart';
+import '/core/utils/enums.dart';
+import '/core/utils/log_utils.dart' as log;
 import '../../../../injection_container.dart';
 import '../../domain/repositories/auth_repo.dart';
 import '../../domain/usecases/params/forgot_password_params.dart';

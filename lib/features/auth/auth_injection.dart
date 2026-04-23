@@ -2,23 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '/config/locale/app_locale_cubit.dart';
-import '/features/auth/domain/usecases/delete_account_use_case.dart';
-import '/features/auth/domain/usecases/forgot_password_use_case.dart';
+import 'domain/usecases/delete_account_use_case.dart';
+import 'domain/usecases/forgot_password_use_case.dart';
 
-import '/features/auth/domain/usecases/get_profile_use_case.dart';
-import '/features/auth/domain/usecases/login_with_password_use_case.dart';
-import '/features/auth/domain/usecases/logout_use_case.dart';
-import '/features/auth/domain/usecases/register_with_password_use_case.dart';
-import '/features/auth/domain/usecases/reset_password_use_case.dart';
-import '/features/auth/presentation/cubit/accept_terms_cubit/accept_terms_cubit.dart';
-import '/features/auth/presentation/cubit/create_account_form_cubit/create_account_form_cubit.dart';
-import '/features/auth/presentation/cubit/language_preference_cubit/language_preference_cubit.dart';
-import '/features/auth/presentation/cubit/role_selection_cubit/role_selection_cubit.dart';
-import '/features/auth/presentation/cubit/country_selection_cubit/country_selection_cubit.dart';
-import '/features/auth/presentation/cubit/delete_account_cubit/delete_account_cubit.dart';
+import 'domain/usecases/get_profile_use_case.dart';
+import 'domain/usecases/login_with_password_use_case.dart';
+import 'domain/usecases/logout_use_case.dart';
+import 'domain/usecases/register_with_password_use_case.dart';
+import 'domain/usecases/reset_password_use_case.dart';
+import 'presentation/cubit/accept_terms_cubit/accept_terms_cubit.dart';
+import 'presentation/cubit/create_account_form_cubit/create_account_form_cubit.dart';
+import 'presentation/cubit/language_preference_cubit/language_preference_cubit.dart';
+import 'presentation/cubit/role_selection_cubit/role_selection_cubit.dart';
+import 'presentation/cubit/country_selection_cubit/country_selection_cubit.dart';
+import 'presentation/cubit/delete_account_cubit/delete_account_cubit.dart';
 
-import '/features/auth/presentation/cubit/logout_cubit/logout_cubit.dart';
-import '/features/auth/presentation/cubit/register_cubit/register_cubit.dart';
+import 'presentation/cubit/logout_cubit/logout_cubit.dart';
+import 'presentation/cubit/register_cubit/register_cubit.dart';
 import '../../injection_container.dart';
 import 'data/datasources/auth_remote_datasource.dart';
 import 'data/repositories/auth_repo_impl.dart';
