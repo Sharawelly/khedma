@@ -16,7 +16,7 @@ class ProfileHeaderSection extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: colors.errorColor,
+        color: colors.authBrandRed,
         borderRadius: BorderRadiusDirectional.only(
           bottomStart: Radius.circular(20.r),
           bottomEnd: Radius.circular(20.r),

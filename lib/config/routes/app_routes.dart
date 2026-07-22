@@ -14,8 +14,13 @@ import 'package:khedma/features/auth/presentation/screen/create_account_screen.d
 import 'package:khedma/features/auth/presentation/screen/role_selection_screen.dart';
 import 'package:khedma/core/navigation/main_navigation_screen.dart';
 import 'package:khedma/features/provider/shell/provider_main_navigation_screen.dart';
-import 'package:khedma/features/client/chats/presentation/screen/chat_details_screen.dart';
+import 'package:khedma/features/provider/home/presentation/screen/provider_incoming_request_screen.dart';
+import 'package:khedma/features/provider/home/presentation/screen/provider_job_details_screen.dart';
+import 'package:khedma/features/provider/home/presentation/screen/provider_track_live_screen.dart';
+import 'package:khedma/features/provider/profile/presentation/screen/provider_earnings_screen.dart';
+import 'package:khedma/features/provider/profile/presentation/screen/provider_reviews_screen.dart';
 import 'package:khedma/features/client/chats/presentation/widgets/chat_thread_card.dart';
+import 'package:khedma/features/provider/chats/presentation/screen/provider_chat_details_screen.dart';
 import 'package:khedma/features/client/bookings/presentation/screens/booking_details_screen.dart';
 import 'package:khedma/features/client/bookings/presentation/screens/provider_profile_screen.dart';
 import 'package:khedma/features/client/bookings/presentation/widgets/booking_service_card.dart';
@@ -76,6 +81,11 @@ abstract class Routes {
   static const String chatDetailsRoute = '/chat-details';
   static const String bookingDetailsRoute = '/booking-details';
   static const String providerProfileRoute = '/provider-profile';
+  static const String providerReviewsRoute = '/provider-reviews';
+  static const String providerEarningsRoute = '/provider-earnings';
+  static const String providerIncomingRequestRoute = '/provider-incoming-request';
+  static const String providerJobDetailsRoute = '/provider-job-details';
+  static const String providerTrackLiveRoute = '/provider-track-live';
 
   static final _sl = ServiceLocator.instance;
 
@@ -254,7 +264,7 @@ abstract class Routes {
                       'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=300&q=80',
                   categoryKey: 'plumbing',
                 );
-          return ChatDetailsScreen(thread: thread);
+          return ProviderChatDetailsScreen(thread: thread);
         },
       ),
       GoRoute(
@@ -285,6 +295,36 @@ abstract class Routes {
                 );
           return ProviderProfileScreen(booking: booking);
         },
+      ),
+      GoRoute(
+        name: providerReviewsRoute,
+        path: providerReviewsRoute,
+        builder: (BuildContext context, GoRouterState state) =>
+            const ProviderReviewsScreen(),
+      ),
+      GoRoute(
+        name: providerEarningsRoute,
+        path: providerEarningsRoute,
+        builder: (BuildContext context, GoRouterState state) =>
+            const ProviderEarningsScreen(),
+      ),
+      GoRoute(
+        name: providerIncomingRequestRoute,
+        path: providerIncomingRequestRoute,
+        builder: (BuildContext context, GoRouterState state) =>
+            const ProviderIncomingRequestScreen(),
+      ),
+      GoRoute(
+        name: providerJobDetailsRoute,
+        path: providerJobDetailsRoute,
+        builder: (BuildContext context, GoRouterState state) =>
+            const ProviderJobDetailsScreen(),
+      ),
+      GoRoute(
+        name: providerTrackLiveRoute,
+        path: providerTrackLiveRoute,
+        builder: (BuildContext context, GoRouterState state) =>
+            const ProviderTrackLiveScreen(),
       ),
     ],
   );

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:khedma/features/provider/presentation/cubit/provider_navigation_cubit/provider_navigation_cubit.dart';
-import 'package:khedma/features/provider/presentation/screen/provider_home_screen.dart';
-import 'package:khedma/features/provider/presentation/screen/provider_stub_tab_screen.dart';
-import 'package:khedma/features/provider/presentation/widgets/provider_bottom_nav_bar.dart';
+import 'package:khedma/features/provider/chats/presentation/screen/provider_chats_screen.dart';
+import 'package:khedma/features/provider/home/presentation/cubit/provider_navigation_cubit/provider_navigation_cubit.dart';
+import 'package:khedma/features/provider/home/presentation/screen/provider_home_screen.dart';
+import 'package:khedma/features/provider/jobs/presentation/screen/provider_jobs_screen.dart';
+import 'package:khedma/features/provider/home/presentation/widgets/provider_bottom_nav_bar.dart';
+import 'package:khedma/features/provider/profile/presentation/screen/provider_profile_screen.dart';
 import 'package:khedma/injection_container.dart';
 
 class ProviderMainNavigationScreen extends StatelessWidget {
@@ -11,9 +13,9 @@ class ProviderMainNavigationScreen extends StatelessWidget {
 
   static const List<Widget> _bodies = <Widget>[
     ProviderHomeScreen(),
-    ProviderStubTabScreen(messageKey: 'provider_stub_schedule'),
-    ProviderStubTabScreen(messageKey: 'provider_stub_wallet'),
-    ProviderStubTabScreen(messageKey: 'provider_stub_profile'),
+    ProviderJobsScreen(),
+    ProviderChatsScreen(),
+    ProviderProfileScreen(),
   ];
 
   @override
@@ -22,12 +24,7 @@ class ProviderMainNavigationScreen extends StatelessWidget {
       builder: (BuildContext context, ProviderNavigationState state) {
         return Scaffold(
           backgroundColor: colors.backGround,
-          body: SafeArea(
-            child: IndexedStack(
-              index: state.current.index,
-              children: _bodies,
-            ),
-          ),
+          body: IndexedStack(index: state.current.index, children: _bodies),
           bottomNavigationBar: ProviderBottomNavBar(
             current: state.current,
             onTap: (ProviderNavItem i) {

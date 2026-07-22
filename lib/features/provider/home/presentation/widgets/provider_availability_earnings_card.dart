@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Icons;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:khedma/config/locale/app_localizations.dart';
 import 'package:khedma/core/utils/values/text_styles.dart';
@@ -75,21 +76,47 @@ class ProviderAvailabilityEarningsCard extends StatelessWidget {
               Expanded(
                 child: _StatBlock(
                   labelKey: 'provider_stat_jobs',
-                  valueKey: 'provider_jobs_count_value',
+                  value: Text(
+                    'provider_jobs_count_value'.tr,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    style: TextStyles.bold16(color: colors.whiteColor),
+                  ),
                 ),
               ),
               _VerticalLine(),
               Expanded(
                 child: _StatBlock(
                   labelKey: 'provider_stat_earnings',
-                  valueKey: 'provider_earnings_value',
+                  value: Text(
+                    'provider_earnings_value'.tr,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    style: TextStyles.bold16(color: colors.whiteColor),
+                  ),
                 ),
               ),
               _VerticalLine(),
               Expanded(
                 child: _StatBlock(
                   labelKey: 'provider_stat_rating',
-                  valueKey: 'provider_rating_value',
+                  value: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        'provider_rating_value'.tr,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        style: TextStyles.bold16(color: colors.whiteColor),
+                      ),
+                      Gaps.hGap4,
+                      Icon(
+                        Icons.star_rounded,
+                        size: 15.r,
+                        color: colors.review,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -112,10 +139,10 @@ class _VerticalLine extends StatelessWidget {
 }
 
 class _StatBlock extends StatelessWidget {
-  const _StatBlock({required this.labelKey, required this.valueKey});
+  const _StatBlock({required this.labelKey, required this.value});
 
   final String labelKey;
-  final String valueKey;
+  final Widget value;
 
   @override
   Widget build(BuildContext context) {
@@ -128,12 +155,7 @@ class _StatBlock extends StatelessWidget {
         Gaps.vGap4,
         FittedBox(
           fit: BoxFit.scaleDown,
-          child: Text(
-            valueKey.tr,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            style: TextStyles.bold16(color: colors.whiteColor),
-          ),
+          child: value,
         ),
       ],
     );

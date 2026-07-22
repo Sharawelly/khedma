@@ -39,7 +39,7 @@ class AppNotificationBellButton extends StatelessWidget {
           onPressed: () => context.push(Routes.notificationsRoute),
           icon: Icon(
             Icons.notifications_none_rounded,
-            size: 20.r,
+            size: 22.r,
             color: colors.onboardingHeadline,
           ),
         ),

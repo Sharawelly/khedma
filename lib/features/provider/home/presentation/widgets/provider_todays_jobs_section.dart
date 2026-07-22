@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:khedma/config/locale/app_localizations.dart';
 import 'package:khedma/core/utils/values/text_styles.dart';
 import 'package:khedma/core/widgets/gaps.dart';
-import 'package:khedma/features/provider/presentation/widgets/provider_today_job_row.dart';
+import 'package:khedma/features/provider/home/presentation/widgets/provider_today_job_row.dart';
 import 'package:khedma/injection_container.dart';
 
 class ProviderTodaysJobsSection extends StatelessWidget {

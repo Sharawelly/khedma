@@ -5,7 +5,7 @@ import 'package:khedma/core/utils/values/text_styles.dart';
 import 'package:khedma/core/widgets/gaps.dart';
 import 'package:khedma/injection_container.dart';
 
-enum ProviderNavItem { home, schedule, wallet, profile }
+enum ProviderNavItem { home, jobs, chats, profile }
 
 class ProviderBottomNavBar extends StatelessWidget {
   const ProviderBottomNavBar({
@@ -46,18 +46,18 @@ class ProviderBottomNavBar extends StatelessWidget {
           ),
           Expanded(
             child: _Item(
-              icon: Icons.calendar_month_rounded,
-              labelKey: 'provider_tab_schedule',
-              item: ProviderNavItem.schedule,
+              icon: Icons.work_rounded,
+              labelKey: 'provider_tab_jobs',
+              item: ProviderNavItem.jobs,
               current: current,
               onTap: onTap,
             ),
           ),
           Expanded(
             child: _Item(
-              icon: Icons.account_balance_wallet_outlined,
-              labelKey: 'provider_tab_wallet',
-              item: ProviderNavItem.wallet,
+              icon: Icons.chat_bubble_outline_rounded,
+              labelKey: 'provider_tab_chats',
+              item: ProviderNavItem.chats,
               current: current,
               onTap: onTap,
             ),
@@ -118,3 +118,4 @@ class _Item extends StatelessWidget {
     );
   }
 }
+

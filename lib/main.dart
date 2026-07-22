@@ -22,7 +22,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: <BlocProvider<dynamic>>[
+      providers: <BlocProvider>[
         BlocProvider<AppLocaleCubit>(
           create: (_) => ServiceLocator.instance<AppLocaleCubit>(),
         ),

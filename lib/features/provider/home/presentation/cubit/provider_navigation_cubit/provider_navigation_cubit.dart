@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:khedma/features/provider/presentation/widgets/provider_bottom_nav_bar.dart';
+import 'package:khedma/features/provider/home/presentation/widgets/provider_bottom_nav_bar.dart';
 
 part 'provider_navigation_state.dart';
 

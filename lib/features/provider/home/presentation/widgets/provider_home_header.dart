@@ -15,28 +15,19 @@ class ProviderHomeHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: <Widget>[
-        AppImage.asset(
-          imageAsset: ImageAssets.profileMainAvatar,
+        AppImage.network(
+          imageUrl: ImageAssets.profileMainAvatar,
           width: 48.r,
           height: 48.r,
           isCircle: true,
           fit: BoxFit.cover,
+          isCached: true,
         ),
         Gaps.hGap12,
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                'provider_header_subtitle'.tr,
-                style: TextStyles.regular12(color: colors.homeCaption),
-              ),
-              Gaps.vGap2,
-              Text(
-                'provider_greeting_line'.tr,
-                style: TextStyles.bold18(color: colors.onboardingTextStrong),
-              ),
-            ],
+          child: Text(
+            'provider_greeting_line'.tr,
+            style: TextStyles.bold18(color: colors.onboardingTextStrong),
           ),
         ),
         const AppNotificationBellButton(),
