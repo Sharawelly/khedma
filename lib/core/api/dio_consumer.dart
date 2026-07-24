@@ -33,6 +33,9 @@ abstract class ApiConstants {
   static const String profileAddresses = '/profile/addresses';
   static const String profileCertificates = '/profile/certificates';
   static const String profilePortfolio = '/profile/portfolio';
+  static String profileAddress(String id) => '/profile/addresses/$id';
+  static String profileCertificate(String id) => '/profile/certificates/$id';
+  static String profilePortfolioImage(String id) => '/profile/portfolio/$id';
 
   // Catalog
   static const String publicCategories = '/categories/public';

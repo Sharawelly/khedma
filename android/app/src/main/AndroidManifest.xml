@@ -1,4 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Only the debug and profile manifests declared INTERNET, so release
+         builds had no network access at all. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Picking a service address and, for providers, publishing position
+         while en route. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
     <application
         android:label="khedma"
         android:name="${applicationName}"

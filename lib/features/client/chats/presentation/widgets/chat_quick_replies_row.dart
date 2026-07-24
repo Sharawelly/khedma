@@ -2,39 +2,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '/config/locale/app_localizations.dart';
-import '/core/utils/values/text_styles.dart';
-import '/core/widgets/gaps.dart';
-import '/injection_container.dart';
+import '/features/shared/chat/domain/entities/chat_entities.dart';
 
 class ChatQuickRepliesRow extends StatelessWidget {
-  const ChatQuickRepliesRow({super.key, required this.replyKeys});
+  const ChatQuickRepliesRow({
+    super.key,
+    required this.thread,
+    required this.onSelected,
+  });
 
-  final List<String> replyKeys;
+  final ChatThreadEntity thread;
+  final ValueChanged<String> onSelected;
+
+  static const List<String> _replyKeys = <String>[
+    'chat_quick_reply_home',
+    'chat_quick_reply_call_first',
+    'chat_quick_reply_on_my_way',
+  ];
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 38.h,
-      child: ListView.separated(
+      height: 40.h,
+      child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsetsDirectional.zero,
-        itemCount: replyKeys.length,
-        separatorBuilder: (_, _) => Gaps.hGap10,
-        itemBuilder: (BuildContext context, int index) {
-          return Container(
-            alignment: AlignmentDirectional.center,
-            padding: EdgeInsetsDirectional.symmetric(horizontal: 16.w),
-            decoration: BoxDecoration(
-              color: colors.whiteColor,
-              borderRadius: BorderRadius.circular(19.r),
-              border: Border.all(color: colors.onboardingBorderNeutral),
-            ),
-            child: Text(
-              replyKeys[index].tr,
-              style: TextStyles.medium14(color: colors.lightTextColor),
-            ),
-          );
-        },
+        children: _replyKeys
+            .map(
+              (key) => Padding(
+                padding: EdgeInsetsDirectional.only(end: 8.w),
+                child: ActionChip(
+                  onPressed: thread.isLocked ? null : () => onSelected(key),
+                  label: Text(key.tr),
+                ),
+              ),
+            )
+            .toList(),
       ),
     );
   }

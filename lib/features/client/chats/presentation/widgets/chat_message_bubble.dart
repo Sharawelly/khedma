@@ -3,73 +3,64 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '/config/locale/app_localizations.dart';
 import '/core/utils/values/text_styles.dart';
+import '/core/widgets/cached_network_image_with_fallback.dart';
+import '/features/shared/chat/domain/entities/chat_entities.dart';
 import '/injection_container.dart';
 
 class ChatMessageBubble extends StatelessWidget {
-  const ChatMessageBubble({
-    super.key,
-    required this.messageKey,
-    required this.timeKey,
-    required this.isOutgoing,
-  });
-
-  final String messageKey;
-  final String timeKey;
-  final bool isOutgoing;
+  const ChatMessageBubble({super.key, required this.message});
+  final ChatMessageEntity message;
 
   @override
   Widget build(BuildContext context) {
-    final BorderRadiusDirectional radius = isOutgoing
-        ? BorderRadiusDirectional.only(
-            topStart: Radius.circular(22.r),
-            topEnd: Radius.circular(22.r),
-            bottomStart: Radius.circular(22.r),
-            bottomEnd: Radius.circular(7.r),
-          )
-        : BorderRadiusDirectional.only(
-            topStart: Radius.circular(22.r),
-            topEnd: Radius.circular(22.r),
-            bottomStart: Radius.circular(7.r),
-            bottomEnd: Radius.circular(22.r),
-          );
-
+    final content = message.messageType == 'QuickReply'
+        ? (message.messageText ?? '').tr
+        : message.messageText ?? '';
     return Align(
-      alignment: isOutgoing
+      alignment: message.isMine
           ? AlignmentDirectional.centerEnd
           : AlignmentDirectional.centerStart,
       child: Column(
-        crossAxisAlignment: isOutgoing
+        crossAxisAlignment: message.isMine
             ? CrossAxisAlignment.end
             : CrossAxisAlignment.start,
         children: <Widget>[
           Container(
             constraints: BoxConstraints(maxWidth: 300.w),
-            padding: EdgeInsetsDirectional.symmetric(
-              horizontal: 16.w,
-              vertical: 14.h,
-            ),
+            padding: EdgeInsetsDirectional.all(12.r),
             decoration: BoxDecoration(
-              color: isOutgoing
+              color: message.isMine
                   ? colors.errorColor
                   : colors.onboardingSurfaceMuted,
-              borderRadius: radius,
+              borderRadius: BorderRadius.circular(18.r),
             ),
-            child: Text(
-              messageKey.tr,
-              style: TextStyles.medium16(
-                color: isOutgoing ? colors.whiteColor : colors.homeHeadline,
-              ).copyWith(height: 1.4),
-            ),
+            child: message.messageType == 'Image'
+                ? CachedNetworkImageWithFallback(
+                    imageUrl: message.attachmentUrl,
+                    width: 220.w,
+                    height: 180.h,
+                  )
+                : Text(
+                    content,
+                    style: TextStyles.medium16(
+                      color: message.isMine
+                          ? colors.whiteColor
+                          : colors.homeHeadline,
+                    ),
+                  ),
           ),
-          Padding(
-            padding: EdgeInsetsDirectional.only(top: 6.h, start: 4.w, end: 4.w),
-            child: Text(
-              timeKey.tr,
-              style: TextStyles.regular12(color: colors.homeCaption),
-            ),
+          Text(
+            _time(message.sentAt),
+            style: TextStyles.regular12(color: colors.homeCaption),
           ),
         ],
       ),
     );
+  }
+
+  String _time(DateTime dateTime) {
+    final local = dateTime.toLocal();
+    return '${local.hour.toString().padLeft(2, '0')}:'
+        '${local.minute.toString().padLeft(2, '0')}';
   }
 }

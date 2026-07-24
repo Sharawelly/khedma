@@ -19,7 +19,7 @@ import 'package:khedma/features/provider/home/presentation/screen/provider_job_d
 import 'package:khedma/features/provider/home/presentation/screen/provider_track_live_screen.dart';
 import 'package:khedma/features/provider/profile/presentation/screen/provider_earnings_screen.dart';
 import 'package:khedma/features/provider/profile/presentation/screen/provider_reviews_screen.dart';
-import 'package:khedma/features/client/chats/presentation/widgets/chat_thread_card.dart';
+import 'package:khedma/features/shared/chat/domain/entities/chat_entities.dart';
 import 'package:khedma/features/provider/chats/presentation/screen/provider_chat_details_screen.dart';
 import 'package:khedma/features/client/bookings/presentation/screens/booking_details_screen.dart';
 import 'package:khedma/features/client/bookings/presentation/screens/provider_profile_screen.dart';
@@ -252,17 +252,7 @@ abstract class Routes {
         name: chatDetailsRoute,
         path: chatDetailsRoute,
         builder: (BuildContext context, GoRouterState state) {
-          final ChatThreadData thread = state.extra is ChatThreadData
-              ? state.extra! as ChatThreadData
-              : const ChatThreadData(
-                  nameKey: 'chat_thread_ahmed_plumber',
-                  lastMessageKey: 'chat_thread_ahmed_last_message',
-                  timeKey: 'chat_thread_time_2m',
-                  roleKey: 'chat_thread_role_plumbing',
-                  imageUrl:
-                      'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=300&q=80',
-                  categoryKey: 'plumbing',
-                );
+          final ChatThreadEntity thread = state.extra as ChatThreadEntity;
           return ProviderChatDetailsScreen(thread: thread);
         },
       ),

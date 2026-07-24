@@ -4,9 +4,9 @@ class ProfileEntity extends Equatable {
   final String id;
   final String fullName;
   final String email;
-  final String phoneNumber;
+  final String? phoneNumber;
   final DateTime? dateOfBirth;
-  final String? profilePicture;
+  final String? profilePictureUrl;
   final String? role;
   final double? rating;
   final int? reviewCount;
@@ -16,8 +16,9 @@ class ProfileEntity extends Equatable {
   final int? experienceYears;
   final String? description;
   final int? numberOfJobsDone;
-  final int? state;
-  final int? availabilityStatus;
+  final String? state;
+  final String? availabilityStatus;
+  final bool emailConfirmed;
   final double? currentLatitude;
   final double? currentLongitude;
 
@@ -27,7 +28,7 @@ class ProfileEntity extends Equatable {
     required this.email,
     required this.phoneNumber,
     this.dateOfBirth,
-    this.profilePicture,
+    this.profilePictureUrl,
     this.role,
     this.rating,
     this.reviewCount,
@@ -41,6 +42,7 @@ class ProfileEntity extends Equatable {
     this.availabilityStatus,
     this.currentLatitude,
     this.currentLongitude,
+    this.emailConfirmed = false,
   });
 
   String get name => fullName;
@@ -52,7 +54,7 @@ class ProfileEntity extends Equatable {
     email,
     phoneNumber,
     dateOfBirth,
-    profilePicture,
+    profilePictureUrl,
     role,
     rating,
     reviewCount,
@@ -66,5 +68,6 @@ class ProfileEntity extends Equatable {
     availabilityStatus,
     currentLatitude,
     currentLongitude,
+    emailConfirmed,
   ];
 }
