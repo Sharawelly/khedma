@@ -5,21 +5,25 @@ import 'package:khedma/core/utils/values/text_styles.dart';
 import 'package:khedma/core/widgets/gaps.dart';
 import 'package:khedma/core/widgets/my_default_button.dart';
 import 'package:khedma/injection_container.dart';
+import 'package:khedma/features/provider/domain/entities/provider_entities.dart';
 
 class ProviderIncomingRequestCard extends StatelessWidget {
   const ProviderIncomingRequestCard({
     super.key,
+    required this.job,
     this.onTap,
     this.onDecline,
     this.onAccept,
   });
 
+  final PendingJobEntity job;
   final VoidCallback? onTap;
   final VoidCallback? onDecline;
   final VoidCallback? onAccept;
 
   @override
   Widget build(BuildContext context) {
+    final isArabic = appLocalizations.isArLocale;
     return Material(
       color: colors.whiteColor,
       borderRadius: BorderRadius.circular(16.r),
@@ -65,7 +69,7 @@ class ProviderIncomingRequestCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          'provider_incoming_job_title'.tr,
+                          job.localizedService(isArabic),
                           style: TextStyles.semiBold16(
                             color: colors.onboardingTextStrong,
                           ),
@@ -81,7 +85,7 @@ class ProviderIncomingRequestCard extends StatelessWidget {
                             Gaps.hGap4,
                             Expanded(
                               child: Text(
-                                'provider_incoming_distance'.tr,
+                                '${job.distanceKm.toStringAsFixed(1)} ${'provider_km'.tr}',
                                 style: TextStyles.regular12(
                                   color: colors.homeCaption,
                                 ),
@@ -96,12 +100,12 @@ class ProviderIncomingRequestCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: <Widget>[
                       Text(
-                        'provider_incoming_price'.tr,
+                        '${job.providerEarning.toStringAsFixed(2)} ${job.currency}',
                         style: TextStyles.bold16(color: colors.authBrandRed),
                       ),
                       Gaps.vGap2,
                       Text(
-                        'provider_incoming_estimated'.tr,
+                        'provider_earnings_net_label'.tr,
                         style: TextStyles.regular10(color: colors.homeCaption),
                       ),
                     ],

@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:khedma/config/locale/app_localizations.dart';
-import 'package:khedma/core/utils/values/img_manager.dart';
-import 'package:khedma/core/utils/values/text_styles.dart';
-import 'package:khedma/core/widgets/gaps.dart';
-import 'package:khedma/features/provider/jobs/presentation/widgets/provider_jobs_active_banner.dart';
-import 'package:khedma/features/provider/jobs/presentation/widgets/provider_jobs_job_card.dart';
-import 'package:khedma/injection_container.dart';
+import 'package:go_router/go_router.dart';
+
+import '/config/locale/app_localizations.dart';
+import '/config/routes/app_routes.dart';
+import '/core/utils/values/text_styles.dart';
+import '/core/widgets/gaps.dart';
+import '/injection_container.dart';
+import '/features/client/customer/domain/entities/customer_entities.dart';
+import '../../../domain/entities/provider_entities.dart';
+import '../../../presentation/cubit/provider_jobs_cubit.dart';
+import '../../../presentation/widgets/provider_state_widgets.dart';
 
 class ProviderJobsScreen extends StatefulWidget {
   const ProviderJobsScreen({super.key});
@@ -23,61 +28,163 @@ class _ProviderJobsScreenState extends State<ProviderJobsScreen> {
     return Scaffold(
       backgroundColor: colors.backGround,
       body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(20.w, 12.h, 20.w, 8.h),
-              child: Text(
-                'provider_jobs_title'.tr,
-                style: TextStyles.bold22(color: colors.onboardingHeadline),
-              ),
-            ),
-            _JobsTabs(
-              selectedTab: _selectedTab,
-              onSelect: (int index) {
-                setState(() {
-                  _selectedTab = index;
-                });
-              },
-            ),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsetsDirectional.fromSTEB(20.w, 16.h, 20.w, 20.h),
-                children: <Widget>[
-                  if (_selectedTab == 0) ...<Widget>[
-                    const ProviderJobsActiveBanner(),
-                    Gaps.vGap16,
-                  ],
-                  ProviderJobsJobCard(
-                    titleKey: 'provider_jobs_card_1_title',
-                    customerNameKey: 'provider_jobs_card_1_customer',
-                    locationKey: 'provider_jobs_card_1_location',
-                    dateTimeKey: 'provider_jobs_card_1_time',
-                    durationKey: 'provider_jobs_card_1_duration',
-                    priceKey: 'provider_jobs_card_1_price',
-                    statusKey: 'provider_jobs_card_1_status',
-                    statusBg: colors.pathsInfoSurface,
-                    statusColor: colors.pathsInfoAccent,
-                    avatarUrl: ImageAssets.bookingsProviderAvatar,
+        child: BlocBuilder<ProviderJobsCubit, ProviderJobsState>(
+          builder: (context, state) {
+            final jobs = _filtered(state.snapshot.history);
+            return Column(
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(
+                    20.w,
+                    12.h,
+                    20.w,
+                    8.h,
                   ),
-                  Gaps.vGap16,
-                  ProviderJobsJobCard(
-                    titleKey: 'provider_jobs_card_2_title',
-                    customerNameKey: 'provider_jobs_card_2_customer',
-                    locationKey: 'provider_jobs_card_2_location',
-                    dateTimeKey: 'provider_jobs_card_2_time',
-                    durationKey: 'provider_jobs_card_2_duration',
-                    priceKey: 'provider_jobs_card_2_price',
-                    statusKey: 'provider_jobs_card_2_status',
-                    statusBg: colors.blocksHeroChipBg,
-                    statusColor: colors.strengthFair,
-                    avatarUrl: ImageAssets.profileProviderAvatar2,
+                  child: Text(
+                    'provider_jobs_title'.tr,
+                    style: TextStyles.bold22(color: colors.onboardingHeadline),
                   ),
-                ],
-              ),
-            ),
-          ],
+                ),
+                _JobsTabs(
+                  selectedTab: _selectedTab,
+                  onSelect: (index) => setState(() => _selectedTab = index),
+                ),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () => context.read<ProviderJobsCubit>().execute(
+                      const ProviderJobsCommand.recover(),
+                    ),
+                    child: switch (state) {
+                      ProviderJobsFailure()
+                          when state.snapshot.history.isEmpty =>
+                        ProviderErrorView(state.messageKey),
+                      ProviderJobsLoading()
+                          when state.snapshot.history.isEmpty =>
+                        const ProviderLoadingView(),
+                      _ => ListView(
+                        padding: EdgeInsetsDirectional.fromSTEB(
+                          20.w,
+                          16.h,
+                          20.w,
+                          20.h,
+                        ),
+                        children: <Widget>[
+                          if (state.snapshot.currentJob != null &&
+                              state.snapshot.currentJob!.stage !=
+                                  ProviderJobStage.completed &&
+                              state.snapshot.currentJob!.stage !=
+                                  ProviderJobStage.cancelled) ...<Widget>[
+                            Card(
+                              color: colors.authBrandRed,
+                              child: ListTile(
+                                title: Text(
+                                  state.snapshot.currentJob!.localizedService(
+                                    appLocalizations.isArLocale,
+                                  ),
+                                  style: TextStyles.bold18(
+                                    color: colors.whiteColor,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  'provider_jobs_active_title'.tr,
+                                  style: TextStyles.medium14(
+                                    color: colors.whiteColor,
+                                  ),
+                                ),
+                                trailing: Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: colors.whiteColor,
+                                ),
+                                onTap: () => context.pushNamed(
+                                  Routes.providerJobDetailsRoute,
+                                ),
+                              ),
+                            ),
+                            Gaps.vGap16,
+                          ],
+                          if (jobs.isEmpty)
+                            Padding(
+                              padding: EdgeInsetsDirectional.symmetric(
+                                vertical: 40.h,
+                              ),
+                              child: Text(
+                                'provider_no_job_history'.tr,
+                                textAlign: TextAlign.center,
+                                style: TextStyles.medium16(
+                                  color: colors.homeCaption,
+                                ),
+                              ),
+                            )
+                          else
+                            ...jobs.map(
+                              (job) => Padding(
+                                padding: EdgeInsetsDirectional.only(
+                                  bottom: 12.h,
+                                ),
+                                child: _HistoryCard(job: job),
+                              ),
+                            ),
+                        ],
+                      ),
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
         ),
+      ),
+    );
+  }
+
+  List<BookingHistoryEntity> _filtered(List<BookingHistoryEntity> history) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return history.where((job) {
+      final value = job.scheduledTime ?? job.createAt;
+      final date = DateTime(value.year, value.month, value.day);
+      return switch (_selectedTab) {
+        0 => date == today,
+        1 => date.isAfter(today),
+        _ => date.isBefore(today),
+      };
+    }).toList();
+  }
+}
+
+class _HistoryCard extends StatelessWidget {
+  const _HistoryCard({required this.job});
+
+  final BookingHistoryEntity job;
+
+  @override
+  Widget build(BuildContext context) {
+    final time = job.scheduledTime ?? job.createAt;
+    return Container(
+      padding: EdgeInsetsDirectional.all(16.r),
+      decoration: BoxDecoration(
+        color: colors.whiteColor,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: colors.onboardingBorderNeutral),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            job.serviceName,
+            style: TextStyles.bold18(color: colors.onboardingHeadline),
+          ),
+          Gaps.vGap4,
+          Text(
+            job.customerName,
+            style: TextStyles.medium14(color: colors.homeCaption),
+          ),
+          Gaps.vGap8,
+          Text(
+            time.toLocal().toString(),
+            style: TextStyles.regular13(color: colors.homeCaption),
+          ),
+        ],
       ),
     );
   }
@@ -91,17 +198,16 @@ class _JobsTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> labels = <String>[
+    final labels = <String>[
       'provider_jobs_tab_today',
       'provider_jobs_tab_upcoming',
       'provider_jobs_tab_past',
     ];
-
     return Row(
-      children: List<Widget>.generate(labels.length, (int index) {
-        final bool selected = selectedTab == index;
+      children: List<Widget>.generate(labels.length, (index) {
+        final selected = selectedTab == index;
         return Expanded(
-          child: GestureDetector(
+          child: InkWell(
             onTap: () => onSelect(index),
             child: Container(
               padding: EdgeInsetsDirectional.only(bottom: 10.h),

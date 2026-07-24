@@ -99,7 +99,7 @@ abstract class DioConsumer {
   Future<dynamic> post(
     String path, {
     FormData? formData,
-    Map<String, dynamic>? body,
+    Object? body,
     Map<String, dynamic>? queryParameters,
   });
 
@@ -228,7 +228,7 @@ class DioConsumerImpl implements DioConsumer {
   Future post(
     String path, {
     FormData? formData,
-    Map<String, dynamic>? body,
+    Object? body,
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
@@ -321,6 +321,12 @@ class DioConsumerImpl implements DioConsumer {
         message: sharedPreferences.getLanguageCode().name == 'ar'
             ? responseMessage ?? error.response?.data.toString()
             : responseMessage ?? error.response?.data.toString(),
+      );
+    }
+    if (error.response?.statusCode == StatusCode.conflict) {
+      throw ConflictException(
+        message:
+            error.response?.data['message'] ?? error.response?.data.toString(),
       );
     }
     if (error.response?.statusCode == StatusCode.unProcessableContent) {

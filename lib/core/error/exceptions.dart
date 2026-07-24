@@ -30,6 +30,18 @@ class ServerException extends AppException {
   }
 }
 
+class ConflictException extends AppException {
+  @override
+  final String? message;
+
+  const ConflictException({this.message});
+
+  @override
+  Failure toFailure() {
+    return ConflictFailure(message: message);
+  }
+}
+
 class FetchDataException extends AppException {
   @override
   final String? message;

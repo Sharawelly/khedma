@@ -16,6 +16,13 @@ class ServerFailure extends Failure {
   const ServerFailure({this.message});
 }
 
+class ConflictFailure extends Failure {
+  @override
+  final String? message;
+
+  const ConflictFailure({this.message});
+}
+
 class UnauthorizedFailure extends Failure {
   @override
   final String? message;

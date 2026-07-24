@@ -1,187 +1,320 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:khedma/config/locale/app_localizations.dart';
-import 'package:khedma/core/utils/values/text_styles.dart';
-import 'package:khedma/core/widgets/gaps.dart';
-import 'package:khedma/injection_container.dart';
 
-class ProviderEarningsScreen extends StatelessWidget {
+import '/config/locale/app_localizations.dart';
+import '/core/utils/values/text_styles.dart';
+import '/core/widgets/gaps.dart';
+import '/injection_container.dart';
+import '../../../domain/entities/provider_entities.dart';
+import '../../../presentation/cubit/provider_finance_cubit.dart';
+import '../../../presentation/widgets/provider_state_widgets.dart';
+
+class ProviderEarningsScreen extends StatefulWidget {
   const ProviderEarningsScreen({super.key});
 
   @override
+  State<ProviderEarningsScreen> createState() => _ProviderEarningsScreenState();
+}
+
+class _ProviderEarningsScreenState extends State<ProviderEarningsScreen> {
+  String _period = 'monthly';
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: colors.backGround,
-      body: Column(
+    return BlocProvider<ProviderFinanceCubit>(
+      create: (_) =>
+          ServiceLocator.instance<ProviderFinanceCubit>()
+            ..execute(ProviderFinanceCommand.load(_period)),
+      child: Builder(
+        builder: (context) =>
+            BlocConsumer<ProviderFinanceCubit, ProviderFinanceState>(
+              listener: (context, state) {
+                if (state is ProviderFinanceSuccess && state.payout != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('provider_payout_requested'.tr)),
+                  );
+                }
+              },
+              builder: (context, state) => Scaffold(
+                appBar: AppBar(
+                  title: Text('provider_my_earnings'.tr),
+                  leading: BackButton(onPressed: context.pop),
+                ),
+                body: _body(context, state),
+              ),
+            ),
+      ),
+    );
+  }
+
+  Widget _body(BuildContext context, ProviderFinanceState state) {
+    if (state is ProviderFinanceFailure) {
+      return ProviderErrorView(state.message);
+    }
+    if (state is! ProviderFinanceSuccess) {
+      return const ProviderLoadingView();
+    }
+    final earnings = state.earnings;
+    final wallet = state.wallet;
+    return RefreshIndicator(
+      onRefresh: () => context.read<ProviderFinanceCubit>().execute(
+        ProviderFinanceCommand.load(_period),
+      ),
+      child: ListView(
+        padding: EdgeInsetsDirectional.all(16.r),
         children: <Widget>[
-          Container(
-            width: double.infinity,
-            padding: EdgeInsetsDirectional.fromSTEB(16.w, 48.h, 16.w, 20.h),
-            decoration: BoxDecoration(color: colors.authBrandRed),
-            child: Column(
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    IconButton(
-                      onPressed: () => context.pop(),
-                      icon: Icon(
-                        Icons.arrow_back_ios_new_rounded,
-                        color: colors.whiteColor,
-                        size: 20.r,
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        'provider_my_earnings'.tr,
-                        textAlign: TextAlign.center,
-                        style: TextStyles.bold24(color: colors.whiteColor),
-                      ),
-                    ),
-                    SizedBox(width: 36.w),
-                  ],
-                ),
-                Gaps.vGap8,
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    _SegmentTab(
-                      titleKey: 'provider_earnings_daily',
-                      isActive: false,
-                    ),
-                    _SegmentTab(
-                      titleKey: 'provider_earnings_weekly',
-                      isActive: false,
-                    ),
-                    _SegmentTab(
-                      titleKey: 'provider_earnings_monthly',
-                      isActive: true,
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          _periodSelector(context),
+          Gaps.vGap16,
+          _MoneySummary(earnings: earnings),
+          Gaps.vGap16,
+          _WalletSummary(wallet: wallet),
+          Gaps.vGap20,
+          Text(
+            'provider_earnings_breakdown'.tr,
+            style: TextStyles.bold20(color: colors.onboardingHeadline),
           ),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsetsDirectional.fromSTEB(16.w, 16.h, 16.w, 20.h),
-              children: <Widget>[
-                Text(
-                  'provider_earnings_this_month'.tr,
-                  textAlign: TextAlign.center,
-                  style: TextStyles.medium20(color: colors.lightTextColor),
-                ),
-                Gaps.vGap8,
-                Text(
-                  'EGP 5,100',
-                  textAlign: TextAlign.center,
-                  style: TextStyles.bold32(color: colors.onboardingHeadline),
-                ),
-                Gaps.vGap4,
-                Text(
-                  '+12.5% ${'provider_earnings_from_last_month'.tr}',
-                  textAlign: TextAlign.center,
-                  style: TextStyles.semiBold14(color: colors.main),
-                ),
-                Gaps.vGap16,
-                Container(
-                  height: 180.h,
-                  decoration: BoxDecoration(
-                    color: colors.whiteColor,
-                    borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(color: colors.onboardingBorderNeutral),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'provider_earnings_chart_placeholder'.tr,
-                    style: TextStyles.regular13(color: colors.homeCaption),
-                  ),
-                ),
-                Gaps.vGap20,
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Text(
-                        'provider_earnings_payout_history'.tr,
-                        style: TextStyles.bold20(
-                          color: colors.onboardingHeadline,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      'profile_view_all'.tr,
-                      style: TextStyles.semiBold14(color: colors.authBrandRed),
-                    ),
-                  ],
-                ),
-                Gaps.vGap12,
-                const _PayoutCard(
-                  amount: 'EGP 1,250.00',
-                  date: 'April 24, 2024',
-                  paid: true,
-                ),
-                Gaps.vGap10,
-                const _PayoutCard(
-                  amount: 'EGP 850.00',
-                  date: 'April 18, 2024',
-                  paid: false,
-                ),
-                Gaps.vGap10,
-                const _PayoutCard(
-                  amount: 'EGP 2,100.00',
-                  date: 'April 10, 2024',
-                  paid: true,
-                ),
-                Gaps.vGap20,
-                OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: colors.authBrandRed,
-                    side: BorderSide(color: colors.authBrandRed),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24.r),
-                    ),
-                    padding: EdgeInsetsDirectional.symmetric(vertical: 14.h),
-                  ),
-                  child: Text(
-                    'provider_earnings_request_early_payout'.tr,
-                    style: TextStyles.bold18(color: colors.authBrandRed),
-                  ),
-                ),
-              ],
+          Gaps.vGap10,
+          if (earnings.breakdown.isEmpty)
+            Text(
+              'provider_no_earnings_breakdown'.tr,
+              textAlign: TextAlign.center,
+              style: TextStyles.medium16(color: colors.homeCaption),
+            )
+          else
+            ...earnings.breakdown.map(
+              (item) => _BreakdownCard(item: item, currency: earnings.currency),
             ),
+          Gaps.vGap20,
+          Text(
+            'provider_earnings_payout_history'.tr,
+            style: TextStyles.bold20(color: colors.onboardingHeadline),
           ),
+          Gaps.vGap10,
+          if (wallet.recentPayouts.isEmpty)
+            Text(
+              'provider_no_payouts'.tr,
+              textAlign: TextAlign.center,
+              style: TextStyles.medium16(color: colors.homeCaption),
+            )
+          else
+            ...wallet.recentPayouts.map(
+              (payout) =>
+                  _PayoutCard(payout: payout, currency: wallet.currency),
+            ),
+          Gaps.vGap16,
+          FilledButton(
+            onPressed: wallet.availableBalance > 0
+                ? () => _requestPayout(context, wallet.availableBalance)
+                : null,
+            child: Text('provider_earnings_request_early_payout'.tr),
+          ),
+          Gaps.vGap20,
         ],
       ),
     );
   }
+
+  Widget _periodSelector(BuildContext context) {
+    const periods = <String>['daily', 'weekly', 'monthly', 'all'];
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8.w,
+      children: periods.map((period) {
+        return ChoiceChip(
+          label: Text('provider_earnings_$period'.tr),
+          selected: _period == period,
+          onSelected: (_) {
+            setState(() => _period = period);
+            context.read<ProviderFinanceCubit>().execute(
+              ProviderFinanceCommand.load(period),
+            );
+          },
+        );
+      }).toList(),
+    );
+  }
+
+  Future<void> _requestPayout(
+    BuildContext context,
+    double availableBalance,
+  ) async {
+    final controller = TextEditingController();
+    final amount = await showDialog<double>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('provider_request_payout_title'.tr),
+        content: TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            labelText: 'provider_payout_amount'.tr,
+            helperText:
+                '${'provider_available_balance'.tr}: '
+                '${availableBalance.toStringAsFixed(2)}',
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(onPressed: dialogContext.pop, child: Text('cancel'.tr)),
+          FilledButton(
+            onPressed: () {
+              final value = double.tryParse(controller.text.trim());
+              if (value != null && value > 0 && value <= availableBalance) {
+                dialogContext.pop(value);
+              }
+            },
+            child: Text('provider_request_payout_action'.tr),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (amount != null && context.mounted) {
+      await context.read<ProviderFinanceCubit>().execute(
+        ProviderFinanceCommand.payout(amount, _period),
+      );
+    }
+  }
 }
 
-class _SegmentTab extends StatelessWidget {
-  const _SegmentTab({required this.titleKey, required this.isActive});
+class _MoneySummary extends StatelessWidget {
+  const _MoneySummary({required this.earnings});
 
-  final String titleKey;
-  final bool isActive;
+  final ProviderEarningsEntity earnings;
+
+  @override
+  Widget build(BuildContext context) {
+    return _Panel(
+      children: <Widget>[
+        _money(
+          'provider_gross_earnings'.tr,
+          earnings.totalGross,
+          earnings.currency,
+        ),
+        _money(
+          'provider_commission_deducted'.tr,
+          earnings.totalCommissionDeducted,
+          earnings.currency,
+        ),
+        _money(
+          'provider_net_earnings'.tr,
+          earnings.totalEarned,
+          earnings.currency,
+        ),
+        _text(
+          'provider_commission_rate'.tr,
+          earnings.commissionRate.toString(),
+        ),
+        _text('provider_bookings_count'.tr, earnings.bookingsCount.toString()),
+      ],
+    );
+  }
+}
+
+class _WalletSummary extends StatelessWidget {
+  const _WalletSummary({required this.wallet});
+
+  final ProviderWalletEntity wallet;
+
+  @override
+  Widget build(BuildContext context) {
+    return _Panel(
+      children: <Widget>[
+        _money(
+          'provider_available_balance'.tr,
+          wallet.availableBalance,
+          wallet.currency,
+        ),
+        _money(
+          'provider_pending_balance'.tr,
+          wallet.pendingBalance,
+          wallet.currency,
+        ),
+        _money(
+          'provider_total_withdrawn'.tr,
+          wallet.totalWithdrawn,
+          wallet.currency,
+        ),
+        if (wallet.nextPayoutDate != null)
+          _text(
+            'provider_next_payout_date'.tr,
+            wallet.nextPayoutDate!.toLocal().toString(),
+          ),
+      ],
+    );
+  }
+}
+
+class _Panel extends StatelessWidget {
+  const _Panel({required this.children});
+
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsetsDirectional.symmetric(horizontal: 4.w),
-      padding: EdgeInsetsDirectional.fromSTEB(14.w, 8.h, 14.w, 8.h),
+      padding: EdgeInsetsDirectional.all(16.r),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: isActive ? colors.whiteColor : Colors.transparent,
-            width: 2.w,
-          ),
+        color: colors.whiteColor,
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: colors.onboardingBorderNeutral),
+      ),
+      child: Column(children: children),
+    );
+  }
+}
+
+Widget _money(String label, double amount, String currency) =>
+    _text(label, '${amount.toStringAsFixed(2)} $currency');
+
+Widget _text(String label, String value) => Padding(
+  padding: EdgeInsetsDirectional.only(bottom: 8.h),
+  child: Row(
+    children: <Widget>[
+      Expanded(
+        child: Text(
+          label,
+          style: TextStyles.medium16(color: colors.onboardingBody),
         ),
       ),
-      child: Text(
-        titleKey.tr,
-        style: TextStyles.semiBold14(
-          color: isActive
-              ? colors.whiteColor
-              : colors.whiteColor.withValues(alpha: 0.85),
+      Text(value, style: TextStyles.bold16(color: colors.onboardingHeadline)),
+    ],
+  ),
+);
+
+class _BreakdownCard extends StatelessWidget {
+  const _BreakdownCard({required this.item, required this.currency});
+
+  final EarningsBreakdownEntity item;
+  final String currency;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: colors.whiteColor,
+      child: Padding(
+        padding: EdgeInsetsDirectional.all(12.r),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              item.serviceName,
+              style: TextStyles.bold16(color: colors.onboardingHeadline),
+            ),
+            Text(
+              item.date.toLocal().toString(),
+              style: TextStyles.regular12(color: colors.homeCaption),
+            ),
+            Gaps.vGap8,
+            _money('provider_gross_earnings'.tr, item.gross, currency),
+            _money(
+              'provider_commission_deducted'.tr,
+              item.commission,
+              currency,
+            ),
+            _money('provider_net_earnings'.tr, item.net, currency),
+          ],
         ),
       ),
     );
@@ -189,74 +322,19 @@ class _SegmentTab extends StatelessWidget {
 }
 
 class _PayoutCard extends StatelessWidget {
-  const _PayoutCard({
-    required this.amount,
-    required this.date,
-    required this.paid,
-  });
+  const _PayoutCard({required this.payout, required this.currency});
 
-  final String amount;
-  final String date;
-  final bool paid;
+  final PayoutEntity payout;
+  final String currency;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsetsDirectional.all(12.w),
-      decoration: BoxDecoration(
-        color: colors.whiteColor,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: colors.onboardingBorderNeutral),
-      ),
-      child: Row(
-        children: <Widget>[
-          Container(
-            width: 30.r,
-            height: 30.r,
-            decoration: BoxDecoration(
-              color: colors.onboardingSurfaceMuted,
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: Icon(Icons.account_balance_wallet_rounded, size: 18.r),
-          ),
-          Gaps.hGap10,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  amount,
-                  style: TextStyles.bold20(color: colors.onboardingHeadline),
-                ),
-                Text(
-                  date,
-                  style: TextStyles.regular13(color: colors.homeCaption),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: EdgeInsetsDirectional.symmetric(
-              horizontal: 10.w,
-              vertical: 5.h,
-            ),
-            decoration: BoxDecoration(
-              color: paid
-                  ? colors.main.withValues(alpha: 0.14)
-                  : colors.review.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Text(
-              paid
-                  ? 'provider_earnings_paid'.tr
-                  : 'provider_earnings_pending'.tr,
-              style: TextStyles.semiBold12(
-                color: paid ? colors.main : colors.secondary,
-              ),
-            ),
-          ),
-        ],
+    return Card(
+      color: colors.whiteColor,
+      child: ListTile(
+        title: Text('${payout.amount.toStringAsFixed(2)} $currency'),
+        subtitle: Text(payout.requestedAt.toLocal().toString()),
+        trailing: Text(payout.status),
       ),
     );
   }

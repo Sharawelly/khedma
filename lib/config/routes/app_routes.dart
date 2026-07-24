@@ -250,7 +250,7 @@ abstract class Routes {
         name: providerIncomingRequestRoute,
         path: providerIncomingRequestRoute,
         builder: (BuildContext context, GoRouterState state) =>
-            const ProviderIncomingRequestScreen(),
+            ProviderIncomingRequestScreen(bookingId: state.extra as String),
       ),
       GoRoute(
         name: providerJobDetailsRoute,

@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Icons;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:khedma/config/locale/app_localizations.dart';
 import 'package:khedma/core/utils/values/text_styles.dart';
@@ -65,93 +64,8 @@ class ProviderAvailabilityEarningsCard extends StatelessWidget {
               ),
             ],
           ),
-          Gaps.vGap12,
-          Container(height: 1, color: colors.whiteColor.withValues(alpha: 0.3)),
-          Gaps.vGap12,
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: _StatBlock(
-                  labelKey: 'provider_stat_jobs',
-                  value: Text(
-                    'provider_jobs_count_value'.tr,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    style: TextStyles.bold16(color: colors.whiteColor),
-                  ),
-                ),
-              ),
-              _VerticalLine(),
-              Expanded(
-                child: _StatBlock(
-                  labelKey: 'provider_stat_earnings',
-                  value: Text(
-                    'provider_earnings_value'.tr,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    style: TextStyles.bold16(color: colors.whiteColor),
-                  ),
-                ),
-              ),
-              _VerticalLine(),
-              Expanded(
-                child: _StatBlock(
-                  labelKey: 'provider_stat_rating',
-                  value: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Text(
-                        'provider_rating_value'.tr,
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        style: TextStyles.bold16(color: colors.whiteColor),
-                      ),
-                      Gaps.hGap4,
-                      Icon(
-                        Icons.star_rounded,
-                        size: 15.r,
-                        color: colors.review,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
-    );
-  }
-}
-
-class _VerticalLine extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      height: 40.h,
-      color: colors.whiteColor.withValues(alpha: 0.35),
-    );
-  }
-}
-
-class _StatBlock extends StatelessWidget {
-  const _StatBlock({required this.labelKey, required this.value});
-
-  final String labelKey;
-  final Widget value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Text(
-          labelKey.tr,
-          style: TextStyles.regular10(color: colors.whiteColor),
-        ),
-        Gaps.vGap4,
-        FittedBox(fit: BoxFit.scaleDown, child: value),
-      ],
     );
   }
 }
