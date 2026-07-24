@@ -1,31 +1,10 @@
-import 'dart:math';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../injection_container.dart';
 import 'enums.dart';
 import 'values/strings.dart';
-
-extension ImageExtension on num {
-  int cacheSize(BuildContext context) {
-    return (this * MediaQuery.of(context).devicePixelRatio).round();
-  }
-}
-
-extension StatusLevelExtension on StatusLevel {
-  static StatusLevel fromString(String value) {
-    for (StatusLevel type in StatusLevel.values) {
-      if (type.name.toLowerCase() == value.toLowerCase()) {
-        return type;
-      }
-    }
-    throw Exception('$value is not a valid TripType');
-  }
-}
 
 extension LanguageCodeExtension on LanguageCode {
   static LanguageCode fromString(String value) =>
@@ -65,39 +44,6 @@ extension UserCycleExtension on UserCycle {
   );
 }
 
-extension StringExtension on String {
-  Future<void> get launcherUrl async {
-    Uri? uri = Uri.tryParse(this);
-    if (uri == null) {
-      throw 'Could not launch $this';
-    }
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      throw 'Could not launch $this';
-    }
-  }
-}
-
-extension DateTimeExtension on DateTime {
-  String get displayDate {
-    String day = this.day.toString();
-    String month = this.month.toString();
-    String year = this.year.toString();
-    if (day.length == 1) {
-      day = '0$day';
-    }
-    if (month.length == 1) {
-      month = '0$month';
-    }
-    return '$year-$month-$day';
-  }
-
-  String get displayDateNamed => DateFormat.yMMMMd(
-    appLocalizations.isArLocale ? 'ar_SA' : 'en_US',
-  ).format(this);
-}
-
 extension FormDataExtension on FormData {
   String get toPrint {
     List<String> list = [];
@@ -111,41 +57,6 @@ extension FormDataExtension on FormData {
       list.add('${item.key}:${item.value.filename}');
     }
     return list.toString();
-  }
-}
-
-extension UserStatusExtension on UserStatus {
-  static UserStatus fromString(String value) {
-    for (UserStatus type in UserStatus.values) {
-      if (type.name.toLowerCase() == value.toLowerCase()) {
-        return type;
-      }
-    }
-    throw Exception('$value is not a valid UserStatus');
-  }
-}
-
-extension ColorFilterExtension on ColorFilter {
-  static ColorFilter getFocustextColor(FocusNode focusNode) {
-    return ColorFilter.mode(
-      focusNode.hasFocus ? colors.main : colors.textColor,
-      BlendMode.srcIn,
-    );
-  }
-
-  static ColorFilter setColor(Color color) {
-    return ColorFilter.mode(color, BlendMode.srcIn);
-  }
-}
-
-extension AppUpdateTypeExtension on AppUpdateType {
-  static AppUpdateType fromString(String value) {
-    for (AppUpdateType type in AppUpdateType.values) {
-      if (type.name.toLowerCase() == value.toLowerCase()) {
-        return type;
-      }
-    }
-    throw Exception('$value is not a valid AppUpdateType');
   }
 }
 
@@ -176,12 +87,5 @@ extension CircularProgressIndicatorExtension on CircularProgressIndicator {
       strokeAlign: strokeAlign,
       strokeCap: strokeCap,
     );
-  }
-}
-
-extension RoundOnlyDouble on double {
-  double mRoundDouble(int places) {
-    num mod = pow(10.0, places);
-    return ((this * mod).round().toDouble() / mod);
   }
 }

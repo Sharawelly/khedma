@@ -29,10 +29,11 @@ class CategoriesSuccess extends CatalogState {
 }
 
 class ServicesSuccess extends CatalogState {
-  const ServicesSuccess(this.items);
+  const ServicesSuccess(this.items, this.hasNextPage);
   final List<ServiceEntity> items;
+  final bool hasNextPage;
   @override
-  List<Object?> get props => <Object?>[items];
+  List<Object?> get props => <Object?>[items, hasNextPage];
 }
 
 class ServiceSuccess extends CatalogState {
@@ -43,9 +44,14 @@ class ServiceSuccess extends CatalogState {
 }
 
 class ProvidersSuccess extends CatalogState {
-  const ProvidersSuccess(this.items, {required this.nearby});
+  const ProvidersSuccess(
+    this.items, {
+    required this.nearby,
+    required this.hasNextPage,
+  });
   final List<ProviderSummaryEntity> items;
   final bool nearby;
+  final bool hasNextPage;
   @override
-  List<Object?> get props => <Object?>[items, nearby];
+  List<Object?> get props => <Object?>[items, nearby, hasNextPage];
 }

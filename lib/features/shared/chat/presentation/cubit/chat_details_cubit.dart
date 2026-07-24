@@ -21,6 +21,10 @@ class LoadChatHistory extends ChatCommand {
   final ChatThreadEntity thread;
 }
 
+class LoadEarlierChatMessages extends ChatCommand {
+  const LoadEarlierChatMessages();
+}
+
 class SendTextMessage extends ChatCommand {
   const SendTextMessage(this.bookingId, this.text);
   final String bookingId;
@@ -66,10 +70,16 @@ class ChatDetailsCubit extends Cubit<ChatDetailsState> {
   String? _peerId;
   bool _isLocked = false;
   bool _isPeerOnline = false;
+  ChatThreadEntity? _thread;
+  int _historyPage = 1;
+  bool _historyHasNextPage = false;
+  bool _isLoadingHistory = false;
 
   Future<void> execute(ChatCommand command) async {
     if (command is LoadChatHistory) {
       await _load(command.thread);
+    } else if (command is LoadEarlierChatMessages) {
+      await _loadEarlier();
     } else if (command is SendTextMessage) {
       await _send(
         SendMessageParams(
@@ -92,6 +102,11 @@ class ChatDetailsCubit extends Cubit<ChatDetailsState> {
   }
 
   Future<void> _load(ChatThreadEntity thread) async {
+    if (_isLoadingHistory) {
+      return;
+    }
+    _isLoadingHistory = true;
+    _thread = thread;
     _bookingId = thread.bookingId;
     _peerId = thread.peerId;
     _isLocked = thread.isLocked;
@@ -102,7 +117,10 @@ class ChatDetailsCubit extends Cubit<ChatDetailsState> {
       ChatHistoryParams(bookingId: thread.bookingId),
     );
     response.fold(
-      (failure) => emit(ChatDetailsFailure(failure.message ?? '')),
+      (failure) {
+        _isLoadingHistory = false;
+        emit(ChatDetailsFailure(failure.message ?? ''));
+      },
       (history) {
         final merged = <String, ChatMessageEntity>{
           for (final message in history.messages) message.id: message,
@@ -112,6 +130,9 @@ class ChatDetailsCubit extends Cubit<ChatDetailsState> {
           ..clear()
           ..addAll(merged.values)
           ..sort((left, right) => left.sentAt.compareTo(right.sentAt));
+        _historyPage = history.pagination.page ?? 1;
+        _historyHasNextPage = history.pagination.hasNextPage ?? false;
+        _isLoadingHistory = false;
         _emitMessages();
       },
     );
@@ -120,6 +141,38 @@ class ChatDetailsCubit extends Cubit<ChatDetailsState> {
     } else {
       await markChatRead(thread.bookingId);
     }
+  }
+
+  Future<void> _loadEarlier() async {
+    final thread = _thread;
+    if (thread == null || _isLoadingHistory || !_historyHasNextPage) {
+      return;
+    }
+    _isLoadingHistory = true;
+    final requestedPage = _historyPage + 1;
+    final response = await getChatHistory(
+      ChatHistoryParams(bookingId: thread.bookingId, page: requestedPage),
+    );
+    response.fold(
+      (failure) {
+        _isLoadingHistory = false;
+        emit(ChatDetailsFailure(failure.message ?? ''));
+      },
+      (history) {
+        final merged = <String, ChatMessageEntity>{
+          for (final message in history.messages) message.id: message,
+          for (final message in _messages) message.id: message,
+        };
+        _messages
+          ..clear()
+          ..addAll(merged.values)
+          ..sort((left, right) => left.sentAt.compareTo(right.sentAt));
+        _historyPage = history.pagination.page ?? requestedPage;
+        _historyHasNextPage = history.pagination.hasNextPage ?? false;
+        _isLoadingHistory = false;
+        _emitMessages();
+      },
+    );
   }
 
   Future<void> _send(SendMessageParams params) async {
@@ -208,6 +261,7 @@ class ChatDetailsCubit extends Cubit<ChatDetailsState> {
         List<ChatMessageEntity>.unmodifiable(_messages),
         isLocked: _isLocked,
         isPeerOnline: _isPeerOnline,
+        hasNextPage: _historyHasNextPage,
       ),
     );
   }

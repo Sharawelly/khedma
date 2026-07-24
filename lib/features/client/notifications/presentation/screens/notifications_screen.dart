@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '/config/locale/app_localizations.dart';
@@ -35,6 +36,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     _scrollController
       ..removeListener(_loadNextPage)
       ..dispose();
+    _cubit.close();
     super.dispose();
   }
 
@@ -67,18 +69,42 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   }
                   if (state is NotificationFailure) {
                     return Center(
-                      child: SelectableText.rich(
-                        TextSpan(
-                          text: state.message,
-                          style: TextStyle(color: colors.errorColor),
-                        ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          SelectableText.rich(
+                            TextSpan(
+                              text: state.message,
+                              style: TextStyle(color: colors.errorColor),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => _cubit.execute(
+                              const NotificationCommand(
+                                NotificationAction.refresh,
+                              ),
+                            ),
+                            child: Text('retry'.tr),
+                          ),
+                        ],
                       ),
                     );
                   }
                   final notifications =
                       (state as NotificationSuccess).notifications;
                   if (notifications.isEmpty) {
-                    return const NoDataFound();
+                    return RefreshIndicator(
+                      onRefresh: () => _cubit.execute(
+                        const NotificationCommand(NotificationAction.refresh),
+                      ),
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: 400.h,
+                          child: const NoDataFound(),
+                        ),
+                      ),
+                    );
                   }
                   return RefreshIndicator(
                     onRefresh: () => _cubit.execute(

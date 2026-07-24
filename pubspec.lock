@@ -973,14 +973,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.0"
-  restart_app:
-    dependency: "direct main"
-    description:
-      name: restart_app
-      sha256: "5bbeb34f7af32d1b87fbb8bc56a6501ca779596cfbb84af6ba4e3ebf57af4a23"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.7.3"
   rxdart:
     dependency: transitive
     description:
@@ -1099,7 +1091,7 @@ packages:
     source: hosted
     version: "1.10.2"
   sqflite:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: sqflite
       sha256: "564cfed0746fe53140c23b70b308e045c3b31f17778f2f326ccb7d804ea0250a"

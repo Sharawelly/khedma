@@ -19,36 +19,36 @@ class AppInterceptors extends Interceptor {
   }
 
   @override
-  void onError(DioException error, ErrorInterceptorHandler handler) async {
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
     debugPrint(
-      'ERROR[${error.response?.statusCode}] => PATH: '
-      '${error.requestOptions.path} => RESPONSE: ${error.response}',
+      'ERROR[${err.response?.statusCode}] => PATH: '
+      '${err.requestOptions.path} => RESPONSE: ${err.response}',
     );
-    if (_isRefreshFailure(error)) {
+    if (_isRefreshFailure(err)) {
       await _expireSession();
-      handler.resolve(error.response!);
+      handler.resolve(err.response!);
       return;
     }
-    if (_shouldExposeAuthFailure(error)) {
-      handler.resolve(error.response!);
+    if (_shouldExposeAuthFailure(err)) {
+      handler.resolve(err.response!);
       return;
     }
-    if (error.response?.statusCode != 401) {
-      handler.next(error);
+    if (err.response?.statusCode != 401) {
+      handler.next(err);
       return;
     }
-    if (!_canRefresh(error.requestOptions)) {
+    if (!_canRefresh(err.requestOptions)) {
       await _expireSession();
-      handler.next(error);
+      handler.next(err);
       return;
     }
     final refreshedSession = await _refreshSession();
     if (refreshedSession == null) {
       await _expireSession();
-      handler.next(error);
+      handler.next(err);
       return;
     }
-    await _retry(error, refreshedSession, handler);
+    await _retry(err, refreshedSession, handler);
   }
 
   bool _shouldExposeAuthFailure(DioException error) {

@@ -80,9 +80,15 @@ class _BookingTrackingViewState extends State<BookingTrackingView> {
         ],
         child: BlocBuilder<BookingCubit, BookingState>(
           bloc: bookingCubit,
-          builder: (_, state) {
+          builder: (context, state) {
             if (state is BookingFailure) {
-              return CustomerErrorView(state.message);
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  CustomerErrorView(state.message),
+                  TextButton(onPressed: _refresh, child: Text('retry'.tr)),
+                ],
+              );
             }
             if (state is! BookingDetailSuccess) {
               return const CustomerLoadingView();

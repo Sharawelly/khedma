@@ -112,9 +112,7 @@ abstract class ServiceLocator {
   }
 
   static void _injectSecureStorage() {
-    AndroidOptions androidOptions = const AndroidOptions(
-      encryptedSharedPreferences: true,
-    );
+    const AndroidOptions androidOptions = AndroidOptions();
     final FlutterSecureStorage secureStorage = FlutterSecureStorage(
       aOptions: androidOptions,
     );

@@ -32,25 +32,30 @@ class BookingCreated extends BookingState {
 
 class BookingDetailSuccess extends BookingState {
   const BookingDetailSuccess(
-    this.booking, [
+    this.booking, {
     this.realtime = const BookingRealtimeSnapshot(),
-  ]);
+    this.reviewId,
+    this.review,
+  });
   final BookingEntity booking;
   @override
   final BookingRealtimeSnapshot realtime;
+  final String? reviewId;
+  final ReviewParams? review;
 
   String? get providerId =>
       realtime.providerAssigned?.providerId ?? booking.providerId;
 
   @override
-  List<Object?> get props => <Object?>[booking, realtime];
+  List<Object?> get props => <Object?>[booking, realtime, reviewId, review];
 }
 
 class BookingHistorySuccess extends BookingState {
-  const BookingHistorySuccess(this.bookings);
+  const BookingHistorySuccess(this.bookings, this.hasNextPage);
   final List<BookingHistoryEntity> bookings;
+  final bool hasNextPage;
   @override
-  List<Object?> get props => <Object?>[bookings];
+  List<Object?> get props => <Object?>[bookings, hasNextPage];
 }
 
 class BookingEtaSuccess extends BookingState {
@@ -62,13 +67,6 @@ class BookingEtaSuccess extends BookingState {
 
 class BookingCommandSuccess extends BookingState {
   const BookingCommandSuccess();
-}
-
-class ReviewCreated extends BookingState {
-  const ReviewCreated(this.id);
-  final String id;
-  @override
-  List<Object?> get props => <Object?>[id];
 }
 
 class BookingRealtimeSnapshot {

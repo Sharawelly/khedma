@@ -44,11 +44,20 @@ class ProfileScreen extends StatelessWidget {
             }
             if (state is ProfileError) {
               return Center(
-                child: SelectableText.rich(
-                  TextSpan(
-                    text: state.message,
-                    style: TextStyle(color: colors.errorColor),
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    SelectableText.rich(
+                      TextSpan(
+                        text: state.message,
+                        style: TextStyle(color: colors.errorColor),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: context.read<ProfileCubit>().getProfile,
+                      child: Text('retry'.tr),
+                    ),
+                  ],
                 ),
               );
             }

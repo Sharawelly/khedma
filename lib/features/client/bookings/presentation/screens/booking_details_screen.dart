@@ -29,7 +29,20 @@ class BookingDetailsScreen extends StatelessWidget {
         body: BlocBuilder<BookingCubit, BookingState>(
           builder: (_, state) {
             if (state is BookingFailure) {
-              return CustomerErrorView(state.message);
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  CustomerErrorView(state.message),
+                  Builder(
+                    builder: (context) => TextButton(
+                      onPressed: () => context.read<BookingCubit>().execute(
+                        BookingCommand.detail(bookingId),
+                      ),
+                      child: Text('retry'.tr),
+                    ),
+                  ),
+                ],
+              );
             }
             if (state is! BookingDetailSuccess) {
               return const CustomerLoadingView();
@@ -37,6 +50,8 @@ class BookingDetailsScreen extends StatelessWidget {
             return _BookingBody(
               booking: state.booking,
               realtimeSnapshot: state.realtime,
+              reviewId: state.reviewId,
+              review: state.review,
             );
           },
         ),
@@ -46,9 +61,16 @@ class BookingDetailsScreen extends StatelessWidget {
 }
 
 class _BookingBody extends StatelessWidget {
-  const _BookingBody({required this.booking, required this.realtimeSnapshot});
+  const _BookingBody({
+    required this.booking,
+    required this.realtimeSnapshot,
+    required this.reviewId,
+    required this.review,
+  });
   final BookingEntity booking;
   final BookingRealtimeSnapshot realtimeSnapshot;
+  final String? reviewId;
+  final ReviewParams? review;
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +127,11 @@ class _BookingBody extends StatelessWidget {
         if (booking.status == 6)
           FilledButton(
             onPressed: () => _review(context),
-            child: Text('customer_leave_review'.tr),
+            child: Text(
+              reviewId == null
+                  ? 'customer_leave_review'.tr
+                  : 'customer_edit_review'.tr,
+            ),
           ),
       ],
     );
@@ -164,13 +190,17 @@ class _BookingBody extends StatelessWidget {
   }
 
   Future<void> _review(BuildContext context) async {
-    var rating = 5;
-    final comment = TextEditingController();
+    var rating = review?.rating ?? 5;
+    final comment = TextEditingController(text: review?.comment);
     final submit = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (_, setState) => AlertDialog(
-          title: Text('customer_leave_review'.tr),
+          title: Text(
+            reviewId == null
+                ? 'customer_leave_review'.tr
+                : 'customer_edit_review'.tr,
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
@@ -205,14 +235,15 @@ class _BookingBody extends StatelessWidget {
     final value = comment.text.trim();
     comment.dispose();
     if (submit == true && context.mounted) {
+      final params = ReviewParams(
+        bookingId: reviewId == null ? booking.id : null,
+        rating: rating,
+        comment: value.isEmpty ? null : value,
+      );
       await context.read<BookingCubit>().execute(
-        BookingCommand.review(
-          ReviewParams(
-            bookingId: booking.id,
-            rating: rating,
-            comment: value.isEmpty ? null : value,
-          ),
-        ),
+        reviewId == null
+            ? BookingCommand.review(params)
+            : BookingCommand.updateReview(reviewId!, params),
       );
     }
   }

@@ -19,6 +19,7 @@ part 'provider_jobs_state.dart';
 
 enum ProviderJobsAction {
   recover,
+  loadMoreHistory,
   accept,
   reject,
   availability,
@@ -38,6 +39,8 @@ class ProviderJobsCommand {
   });
 
   const ProviderJobsCommand.recover() : this._(ProviderJobsAction.recover);
+  const ProviderJobsCommand.loadMoreHistory()
+    : this._(ProviderJobsAction.loadMoreHistory);
   const ProviderJobsCommand.accept(String bookingId)
     : this._(ProviderJobsAction.accept, bookingId: bookingId);
   const ProviderJobsCommand.reject(String bookingId)
@@ -100,17 +103,22 @@ class ProviderJobsCubit extends Cubit<ProviderJobsState>
 
   Timer? _countdown;
   Timer? _jobStatusPoll;
-  Map<String, DateTime> _offerDeadlines = <String, DateTime>{};
+  final Map<String, DateTime> _offerDeadlines = <String, DateTime>{};
   StreamSubscription<Either<Failure, ProviderCoordinatesEntity>>?
   _positionSubscription;
   final List<StreamSubscription<Object?>> _realtimeSubscriptions =
       <StreamSubscription<Object?>>[];
   final Set<String> _dismissedOfferIds = <String>{};
+  int _historyPage = 1;
+  bool _loadingMoreHistory = false;
 
   Future<void> execute(ProviderJobsCommand command) async {
     switch (command.action) {
       case ProviderJobsAction.recover:
         await _recover();
+        break;
+      case ProviderJobsAction.loadMoreHistory:
+        await _loadMoreHistory();
         break;
       case ProviderJobsAction.accept:
         await _accept(command.bookingId!);
@@ -171,13 +179,22 @@ class ProviderJobsCubit extends Cubit<ProviderJobsState>
       failure = error;
       return snapshot.pendingJobs;
     }, (value) => value);
-    final history = historyResult.fold((error) {
-      failure ??= error;
-      return snapshot.history;
-    }, (page) => page.items);
+    var historyHasNextPage = snapshot.historyHasNextPage;
+    final history = historyResult.fold(
+      (error) {
+        failure ??= error;
+        return snapshot.history;
+      },
+      (page) {
+        _historyPage = page.pagination.page ?? 1;
+        historyHasNextPage = page.pagination.hasNextPage ?? false;
+        return page.items;
+      },
+    );
     final next = snapshot.copyWith(
       pendingJobs: _mergeOffers(state.snapshot.pendingJobs, pending),
       history: history,
+      historyHasNextPage: historyHasNextPage,
     );
     if (failure != null) {
       emit(ProviderJobsFailure(next, _message(failure!)));
@@ -186,6 +203,35 @@ class ProviderJobsCubit extends Cubit<ProviderJobsState>
     emit(ProviderJobsSuccess(next));
     _synchronizeDeadlines(next.pendingJobs);
     _startCountdown();
+  }
+
+  Future<void> _loadMoreHistory() async {
+    if (_loadingMoreHistory || !state.snapshot.historyHasNextPage) {
+      return;
+    }
+    _loadingMoreHistory = true;
+    final requestedPage = _historyPage + 1;
+    final response = await getBookingHistory(
+      BookingHistoryQuery(page: requestedPage),
+    );
+    response.fold(
+      (failure) => emit(ProviderJobsFailure(state.snapshot, _message(failure))),
+      (page) {
+        _historyPage = page.pagination.page ?? requestedPage;
+        emit(
+          ProviderJobsSuccess(
+            state.snapshot.copyWith(
+              history: <BookingHistoryEntity>[
+                ...state.snapshot.history,
+                ...page.items,
+              ],
+              historyHasNextPage: page.pagination.hasNextPage ?? false,
+            ),
+          ),
+        );
+      },
+    );
+    _loadingMoreHistory = false;
   }
 
   void _subscribeToRealtime() {
@@ -525,10 +571,11 @@ class ProviderJobsCubit extends Cubit<ProviderJobsState>
       : 'provider_request_failed';
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState appState) {
-    if (appState != AppLifecycleState.resumed) {
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) {
       unawaited(_stopPublishing());
-    } else if (state.snapshot.currentJob?.stage == ProviderJobStage.enRoute) {
+    } else if (this.state.snapshot.currentJob?.stage ==
+        ProviderJobStage.enRoute) {
       unawaited(_startPublishing());
     }
   }

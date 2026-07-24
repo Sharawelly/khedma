@@ -41,7 +41,7 @@ class PendingJobModel extends PendingJobEntity {
         currency: json['currency'] as String? ?? '',
         estimatedDurationMin: (json['estimatedDurationMin'] as num?)?.toInt(),
         estimatedDurationMax: (json['estimatedDurationMax'] as num?)?.toInt(),
-        bookingType: json['bookingType']?.toString() ?? '',
+        bookingType: json['bookingType'] as String,
         scheduledTime: _date(json['scheduledTime']),
         expiresAt:
             _date(json['expiresAt']) ??
@@ -134,7 +134,7 @@ class ProviderAvailabilityModel extends ProviderAvailabilityEntity {
 
   factory ProviderAvailabilityModel.fromJson(Map<String, dynamic> json) =>
       ProviderAvailabilityModel(
-        status: _int(json['status']),
+        status: json['status'] as int,
         latitude: _nullableDouble(json['latitude']),
         longitude: _nullableDouble(json['longitude']),
       );

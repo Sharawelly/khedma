@@ -953,9 +953,6 @@ abstract class Strings {
   static const String _statusLevel = 'status_level';
   static String get statusLevel => _statusLevel.tr;
 
-  static const String _pleaseSelectStatusLevel = 'please_select_status_level';
-  static String get pleaseSelectStatusLevel => _pleaseSelectStatusLevel.tr;
-
   static const String _casePictures = 'case_pictures';
   static String get casePictures => _casePictures.tr;
 

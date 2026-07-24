@@ -30,7 +30,18 @@ class ServiceDetailsScreen extends StatelessWidget {
         body: BlocBuilder<CatalogCubit, CatalogState>(
           builder: (context, state) {
             if (state is CatalogFailure) {
-              return CustomerErrorView(state.message);
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  CustomerErrorView(state.message),
+                  TextButton(
+                    onPressed: () => context.read<CatalogCubit>().execute(
+                      CatalogCommand.service(serviceId),
+                    ),
+                    child: Text('retry'.tr),
+                  ),
+                ],
+              );
             }
             if (state is! ServiceSuccess) {
               return const CustomerLoadingView();
@@ -138,9 +149,22 @@ class _ServiceProviders extends StatelessWidget {
           ),
         ),
       child: BlocBuilder<CatalogCubit, CatalogState>(
-        builder: (_, state) {
+        builder: (context, state) {
           if (state is CatalogFailure) {
-            return CustomerErrorView(state.message);
+            return Column(
+              children: <Widget>[
+                CustomerErrorView(state.message),
+                TextButton(
+                  onPressed: () => context.read<CatalogCubit>().execute(
+                    CatalogCommand.providers(
+                      categoryId: service.categoryId,
+                      nearby: false,
+                    ),
+                  ),
+                  child: Text('retry'.tr),
+                ),
+              ],
+            );
           }
           if (state is! ProvidersSuccess) {
             return SizedBox(height: 100.h, child: const CustomerLoadingView());
@@ -152,23 +176,36 @@ class _ServiceProviders extends StatelessWidget {
                 'customer_choose_provider'.tr,
                 style: TextStyles.bold22(color: colors.onboardingHeadline),
               ),
-              ...state.items.map(
-                (provider) => ListTile(
-                  contentPadding: EdgeInsetsDirectional.zero,
-                  onTap: () => context.pushNamed(
-                    Routes.providerProfileRoute,
-                    extra: <String, String>{
-                      'providerId': provider.id,
-                      'serviceId': service.id,
-                    },
+              if (state.items.isEmpty)
+                Text(
+                  'noDataFound'.tr,
+                  style: TextStyles.medium16(color: colors.lightTextColor),
+                )
+              else
+                ...state.items.map(
+                  (provider) => ListTile(
+                    contentPadding: EdgeInsetsDirectional.zero,
+                    onTap: () => context.pushNamed(
+                      Routes.providerProfileRoute,
+                      extra: <String, String>{
+                        'providerId': provider.id,
+                        'serviceId': service.id,
+                      },
+                    ),
+                    leading: const CircleAvatar(
+                      child: Icon(Icons.person_rounded),
+                    ),
+                    title: Text(provider.name),
+                    subtitle: Text(provider.jobTitle ?? ''),
                   ),
-                  leading: const CircleAvatar(
-                    child: Icon(Icons.person_rounded),
-                  ),
-                  title: Text(provider.name),
-                  subtitle: Text(provider.jobTitle ?? ''),
                 ),
-              ),
+              if (state.hasNextPage)
+                TextButton(
+                  onPressed: () => context.read<CatalogCubit>().execute(
+                    const CatalogCommand.moreProviders(),
+                  ),
+                  child: Text('load_more'.tr),
+                ),
             ],
           );
         },

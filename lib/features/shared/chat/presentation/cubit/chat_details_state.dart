@@ -26,10 +26,17 @@ class ChatDetailsSuccess extends ChatDetailsState {
     this.messages, {
     required this.isLocked,
     required this.isPeerOnline,
+    required this.hasNextPage,
   });
   final List<ChatMessageEntity> messages;
   final bool isLocked;
   final bool isPeerOnline;
+  final bool hasNextPage;
   @override
-  List<Object?> get props => <Object?>[messages, isLocked, isPeerOnline];
+  List<Object?> get props => <Object?>[
+    messages,
+    isLocked,
+    isPeerOnline,
+    hasNextPage,
+  ];
 }

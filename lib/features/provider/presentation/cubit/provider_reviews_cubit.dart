@@ -8,7 +8,7 @@ import '../../domain/usecases/provider_use_cases.dart';
 
 part 'provider_reviews_state.dart';
 
-enum ProviderReviewsAction { load, reply }
+enum ProviderReviewsAction { load, loadMore, reply }
 
 class ProviderReviewsCommand {
   const ProviderReviewsCommand._(
@@ -20,6 +20,8 @@ class ProviderReviewsCommand {
 
   const ProviderReviewsCommand.load(String providerId)
     : this._(ProviderReviewsAction.load, providerId: providerId);
+  const ProviderReviewsCommand.loadMore(String providerId)
+    : this._(ProviderReviewsAction.loadMore, providerId: providerId);
   const ProviderReviewsCommand.reply({
     required String providerId,
     required String reviewId,
@@ -44,8 +46,15 @@ class ProviderReviewsCubit extends Cubit<ProviderReviewsState> {
   final GetProviderReviews getReviews;
   final ReplyToProviderReview replyToReview;
   List<ProviderReviewEntity> _reviews = const <ProviderReviewEntity>[];
+  int _page = 1;
+  bool _hasNextPage = false;
+  bool _isLoading = false;
 
   Future<void> execute(ProviderReviewsCommand command) async {
+    if (_isLoading) {
+      return;
+    }
+    _isLoading = true;
     emit(const ProviderReviewsLoading());
     if (command.action == ProviderReviewsAction.reply) {
       final result = await replyToReview(
@@ -59,20 +68,39 @@ class ProviderReviewsCubit extends Cubit<ProviderReviewsState> {
         (_) => null,
       );
       if (failureMessage != null) {
+        _isLoading = false;
         emit(ProviderReviewsFailure(failureMessage));
         return;
       }
-      emit(ProviderReviewsSuccess(_reviews, repliedReviewId: command.reviewId));
+      _isLoading = false;
+      emit(
+        ProviderReviewsSuccess(
+          _reviews,
+          hasNextPage: _hasNextPage,
+          repliedReviewId: command.reviewId,
+        ),
+      );
       return;
     }
-    final result = await getReviews(command.providerId, 1);
+    final requestedPage = command.action == ProviderReviewsAction.loadMore
+        ? _page + 1
+        : 1;
+    final result = await getReviews(command.providerId, requestedPage);
     result.fold(
-      (failure) => emit(
-        ProviderReviewsFailure(failure.message ?? 'provider_request_failed'),
-      ),
+      (failure) {
+        _isLoading = false;
+        emit(
+          ProviderReviewsFailure(failure.message ?? 'provider_request_failed'),
+        );
+      },
       (page) {
-        _reviews = page.items;
-        emit(ProviderReviewsSuccess(_reviews));
+        _reviews = command.action == ProviderReviewsAction.loadMore
+            ? <ProviderReviewEntity>[..._reviews, ...page.items]
+            : page.items;
+        _page = page.pagination.page ?? requestedPage;
+        _hasNextPage = page.pagination.hasNextPage ?? false;
+        _isLoading = false;
+        emit(ProviderReviewsSuccess(_reviews, hasNextPage: _hasNextPage));
       },
     );
   }

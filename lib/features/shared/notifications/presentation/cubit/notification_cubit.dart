@@ -69,7 +69,10 @@ class NotificationCubit extends Cubit<NotificationState> {
       emit(const NotificationLoading());
       _page = 1;
     }
-    final response = await getNotifications(NotificationQuery(page: _page));
+    final requestedPage = refresh ? 1 : _page + 1;
+    final response = await getNotifications(
+      NotificationQuery(page: requestedPage),
+    );
     response.fold(
       (failure) {
         _isLoading = false;
@@ -80,10 +83,8 @@ class NotificationCubit extends Cubit<NotificationState> {
           _notifications.clear();
         }
         _notifications.addAll(page.notifications);
+        _page = page.pagination.page ?? requestedPage;
         _hasNextPage = page.pagination.hasNextPage ?? false;
-        if (_hasNextPage) {
-          _page++;
-        }
         _isLoading = false;
         emit(
           NotificationSuccess(List.unmodifiable(_notifications), _hasNextPage),

@@ -15,6 +15,7 @@ enum BookingAction {
   create,
   detail,
   history,
+  moreHistory,
   cancel,
   eta,
   review,
@@ -37,6 +38,7 @@ class BookingCommand {
   const BookingCommand.detail(String id) : this._(BookingAction.detail, id: id);
   const BookingCommand.history([BookingHistoryQuery? query])
     : this._(BookingAction.history, historyQuery: query);
+  const BookingCommand.moreHistory() : this._(BookingAction.moreHistory);
   const BookingCommand.cancel(String id, String reason)
     : this._(BookingAction.cancel, id: id, reason: reason);
   const BookingCommand.eta(String id) : this._(BookingAction.eta, id: id);
@@ -77,7 +79,15 @@ class BookingCubit extends Cubit<BookingState> {
   final List<StreamSubscription<Object?>> _subscriptions =
       <StreamSubscription<Object?>>[];
   String? _activeBookingId;
+  BookingEntity? _activeBooking;
+  String? _activeReviewId;
+  ReviewParams? _activeReview;
   BookingRealtimeSnapshot _realtimeSnapshot = const BookingRealtimeSnapshot();
+  final List<BookingHistoryEntity> _history = <BookingHistoryEntity>[];
+  BookingHistoryQuery _historyQuery = const BookingHistoryQuery();
+  int _historyPage = 1;
+  bool _historyHasNextPage = false;
+  bool _isLoadingMoreHistory = false;
 
   Future<void> execute(BookingCommand command) async {
     if (_subscriptions.isEmpty) {
@@ -85,6 +95,10 @@ class BookingCubit extends Cubit<BookingState> {
     }
     if (command.action == BookingAction.detail) {
       await _openBooking(command.id!);
+    }
+    if (command.action == BookingAction.moreHistory) {
+      await _loadMoreHistory();
+      return;
     }
     emit(const BookingLoading());
     switch (command.action) {
@@ -97,19 +111,40 @@ class BookingCubit extends Cubit<BookingState> {
         break;
       case BookingAction.detail:
         final result = await getBooking(command.id!);
-        result.fold(
-          (failure) => emit(BookingFailure(failure.message ?? '')),
-          (booking) => emit(BookingDetailSuccess(booking, _realtimeSnapshot)),
-        );
+        result.fold((failure) => emit(BookingFailure(failure.message ?? '')), (
+          booking,
+        ) {
+          _activeBooking = booking;
+          emit(
+            BookingDetailSuccess(
+              booking,
+              realtime: _realtimeSnapshot,
+              reviewId: _activeReviewId,
+              review: _activeReview,
+            ),
+          );
+        });
         break;
       case BookingAction.history:
-        final result = await getBookingHistory(
-          command.historyQuery ?? const BookingHistoryQuery(),
-        );
-        result.fold(
-          (failure) => emit(BookingFailure(failure.message ?? '')),
-          (page) => emit(BookingHistorySuccess(page.items)),
-        );
+        _historyQuery = command.historyQuery ?? const BookingHistoryQuery();
+        final result = await getBookingHistory(_historyQuery);
+        result.fold((failure) => emit(BookingFailure(failure.message ?? '')), (
+          page,
+        ) {
+          _history
+            ..clear()
+            ..addAll(page.items);
+          _historyPage = page.pagination.page ?? 1;
+          _historyHasNextPage = page.pagination.hasNextPage ?? false;
+          emit(
+            BookingHistorySuccess(
+              List<BookingHistoryEntity>.unmodifiable(_history),
+              _historyHasNextPage,
+            ),
+          );
+        });
+        break;
+      case BookingAction.moreHistory:
         break;
       case BookingAction.cancel:
         final result = await cancelBooking(command.id!, command.reason!);
@@ -129,17 +164,46 @@ class BookingCubit extends Cubit<BookingState> {
         final result = await createReview(command.review!);
         result.fold(
           (failure) => emit(BookingFailure(failure.message ?? '')),
-          (id) => emit(ReviewCreated(id)),
+          (id) => _showSavedReview(id, command.review!),
         );
         break;
       case BookingAction.updateReview:
         final result = await updateReview(command.reviewId!, command.review!);
         result.fold(
           (failure) => emit(BookingFailure(failure.message ?? '')),
-          (id) => emit(ReviewCreated(id)),
+          (id) => _showSavedReview(id, command.review!),
         );
         break;
     }
+  }
+
+  Future<void> _loadMoreHistory() async {
+    if (_isLoadingMoreHistory || !_historyHasNextPage) {
+      return;
+    }
+    _isLoadingMoreHistory = true;
+    final query = BookingHistoryQuery(
+      status: _historyQuery.status,
+      from: _historyQuery.from,
+      to: _historyQuery.to,
+      page: _historyPage + 1,
+    );
+    final response = await getBookingHistory(query);
+    response.fold((failure) => emit(BookingFailure(failure.message ?? '')), (
+      page,
+    ) {
+      _historyQuery = query;
+      _history.addAll(page.items);
+      _historyPage = page.pagination.page ?? query.page;
+      _historyHasNextPage = page.pagination.hasNextPage ?? false;
+      emit(
+        BookingHistorySuccess(
+          List<BookingHistoryEntity>.unmodifiable(_history),
+          _historyHasNextPage,
+        ),
+      );
+    });
+    _isLoadingMoreHistory = false;
   }
 
   void _subscribeToRealtime() {
@@ -165,6 +229,9 @@ class BookingCubit extends Cubit<BookingState> {
       await realtimeService.leaveBookingGroup(previous);
     }
     _activeBookingId = bookingId;
+    _activeBooking = null;
+    _activeReviewId = null;
+    _activeReview = null;
     _realtimeSnapshot = const BookingRealtimeSnapshot();
     await realtimeService.joinBookingGroup(bookingId);
   }
@@ -225,7 +292,30 @@ class BookingCubit extends Cubit<BookingState> {
     _realtimeSnapshot = realtimeSnapshot;
     final current = state;
     if (current is BookingDetailSuccess) {
-      emit(BookingDetailSuccess(current.booking, realtimeSnapshot));
+      emit(
+        BookingDetailSuccess(
+          current.booking,
+          realtime: realtimeSnapshot,
+          reviewId: current.reviewId,
+          review: current.review,
+        ),
+      );
+    }
+  }
+
+  void _showSavedReview(String reviewId, ReviewParams review) {
+    _activeReviewId = reviewId;
+    _activeReview = review;
+    final booking = _activeBooking;
+    if (booking != null) {
+      emit(
+        BookingDetailSuccess(
+          booking,
+          realtime: _realtimeSnapshot,
+          reviewId: reviewId,
+          review: review,
+        ),
+      );
     }
   }
 
@@ -237,7 +327,15 @@ class BookingCubit extends Cubit<BookingState> {
     final response = await getBooking(bookingId);
     response.fold((_) {}, (booking) {
       if (!isClosed && _activeBookingId == bookingId) {
-        emit(BookingDetailSuccess(booking, _realtimeSnapshot));
+        _activeBooking = booking;
+        emit(
+          BookingDetailSuccess(
+            booking,
+            realtime: _realtimeSnapshot,
+            reviewId: _activeReviewId,
+            review: _activeReview,
+          ),
+        );
       }
     });
   }

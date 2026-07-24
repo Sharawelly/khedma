@@ -57,7 +57,18 @@ class _ProviderJobsScreenState extends State<ProviderJobsScreen> {
                     child: switch (state) {
                       ProviderJobsFailure()
                           when state.snapshot.history.isEmpty =>
-                        ProviderErrorView(state.messageKey),
+                        ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: <Widget>[
+                            ProviderErrorView(state.messageKey),
+                            TextButton(
+                              onPressed: () => context
+                                  .read<ProviderJobsCubit>()
+                                  .execute(const ProviderJobsCommand.recover()),
+                              child: Text('retry'.tr),
+                            ),
+                          ],
+                        ),
                       ProviderJobsLoading()
                           when state.snapshot.history.isEmpty =>
                         const ProviderLoadingView(),
@@ -123,6 +134,14 @@ class _ProviderJobsScreenState extends State<ProviderJobsScreen> {
                                 ),
                                 child: _HistoryCard(job: job),
                               ),
+                            ),
+                          if (state.snapshot.historyHasNextPage)
+                            TextButton(
+                              onPressed: () =>
+                                  context.read<ProviderJobsCubit>().execute(
+                                    const ProviderJobsCommand.loadMoreHistory(),
+                                  ),
+                              child: Text('load_more'.tr),
                             ),
                         ],
                       ),

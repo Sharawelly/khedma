@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '/config/locale/app_localizations.dart';
 import '/config/routes/app_routes.dart';
 import '/core/utils/values/text_styles.dart';
+import '/core/widgets/no_data_found.dart';
 import '/features/client/bookings/presentation/widgets/bookings_tab_selector.dart';
 import '/features/client/customer/domain/entities/customer_entities.dart';
 import '/features/client/customer/domain/usecases/params/customer_params.dart';
@@ -43,8 +44,8 @@ class _BookingsScreenState extends State<BookingsScreen> {
     }
   }
 
-  void _load() {
-    bookingCubit.execute(
+  Future<void> _load() {
+    return bookingCubit.execute(
       BookingCommand.history(BookingHistoryQuery(status: status)),
     );
   }
@@ -69,7 +70,13 @@ class _BookingsScreenState extends State<BookingsScreen> {
                 child: BlocBuilder<BookingCubit, BookingState>(
                   builder: (_, state) {
                     if (state is BookingFailure) {
-                      return CustomerErrorView(state.message);
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          CustomerErrorView(state.message),
+                          TextButton(onPressed: _load, child: Text('retry'.tr)),
+                        ],
+                      );
                     }
                     if (state is! BookingHistorySuccess) {
                       return const CustomerLoadingView();
@@ -80,14 +87,52 @@ class _BookingsScreenState extends State<BookingsScreen> {
                               .toList()
                         : state.bookings;
                     if (items.isEmpty) {
-                      return Center(child: Text('customer_no_bookings'.tr));
+                      return RefreshIndicator(
+                        onRefresh: _load,
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: SizedBox(
+                            height: 400.h,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Expanded(
+                                  child: NoDataFound(
+                                    text: 'customer_no_bookings'.tr,
+                                  ),
+                                ),
+                                if (state.hasNextPage)
+                                  TextButton(
+                                    onPressed: () => bookingCubit.execute(
+                                      const BookingCommand.moreHistory(),
+                                    ),
+                                    child: Text('load_more'.tr),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
                     }
-                    return ListView.separated(
-                      padding: EdgeInsetsDirectional.only(top: 12.h),
-                      itemCount: items.length,
-                      separatorBuilder: (_, _) => SizedBox(height: 10.h),
-                      itemBuilder: (_, index) =>
-                          _BookingTile(booking: items[index]),
+                    return RefreshIndicator(
+                      onRefresh: _load,
+                      child: ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: EdgeInsetsDirectional.only(top: 12.h),
+                        itemCount: items.length + (state.hasNextPage ? 1 : 0),
+                        separatorBuilder: (_, _) => SizedBox(height: 10.h),
+                        itemBuilder: (_, index) {
+                          if (index == items.length) {
+                            return TextButton(
+                              onPressed: () => bookingCubit.execute(
+                                const BookingCommand.moreHistory(),
+                              ),
+                              child: Text('load_more'.tr),
+                            );
+                          }
+                          return _BookingTile(booking: items[index]);
+                        },
+                      ),
                     );
                   },
                 ),

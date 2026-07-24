@@ -16,13 +16,18 @@ class ProviderReviewsLoading extends ProviderReviewsState {
 }
 
 class ProviderReviewsSuccess extends ProviderReviewsState {
-  const ProviderReviewsSuccess(this.reviews, {this.repliedReviewId});
+  const ProviderReviewsSuccess(
+    this.reviews, {
+    required this.hasNextPage,
+    this.repliedReviewId,
+  });
 
   final List<ProviderReviewEntity> reviews;
+  final bool hasNextPage;
   final String? repliedReviewId;
 
   @override
-  List<Object?> get props => <Object?>[reviews, repliedReviewId];
+  List<Object?> get props => <Object?>[reviews, hasNextPage, repliedReviewId];
 }
 
 class ProviderReviewsFailure extends ProviderReviewsState {

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '/config/locale/app_localizations.dart';
 import '/config/routes/app_routes.dart';
 import '/core/widgets/no_data_found.dart';
 import '/core/widgets/app_shimmer.dart';
@@ -27,17 +28,32 @@ class ChatsScreen extends StatelessWidget {
           }
           if (state is ChatThreadsFailure) {
             return Center(
-              child: SelectableText.rich(
-                TextSpan(
-                  text: state.message,
-                  style: TextStyle(color: colors.errorColor),
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  SelectableText.rich(
+                    TextSpan(
+                      text: state.message,
+                      style: TextStyle(color: colors.errorColor),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: context.read<ChatThreadsCubit>().load,
+                    child: Text('retry'.tr),
+                  ),
+                ],
               ),
             );
           }
           final threads = (state as ChatThreadsSuccess).threads;
           if (threads.isEmpty) {
-            return const NoDataFound();
+            return RefreshIndicator(
+              onRefresh: context.read<ChatThreadsCubit>().load,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(height: 400.h, child: const NoDataFound()),
+              ),
+            );
           }
           return RefreshIndicator(
             onRefresh: context.read<ChatThreadsCubit>().load,

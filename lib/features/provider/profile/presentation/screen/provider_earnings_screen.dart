@@ -51,7 +51,18 @@ class _ProviderEarningsScreenState extends State<ProviderEarningsScreen> {
 
   Widget _body(BuildContext context, ProviderFinanceState state) {
     if (state is ProviderFinanceFailure) {
-      return ProviderErrorView(state.message);
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          ProviderErrorView(state.message),
+          TextButton(
+            onPressed: () => context.read<ProviderFinanceCubit>().execute(
+              ProviderFinanceCommand.load(_period),
+            ),
+            child: Text('retry'.tr),
+          ),
+        ],
+      );
     }
     if (state is! ProviderFinanceSuccess) {
       return const ProviderLoadingView();

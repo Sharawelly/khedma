@@ -58,7 +58,24 @@ class ProviderProfileScreen extends StatelessWidget {
         body: BlocBuilder<ProviderProfileCubit, ProviderProfileState>(
           builder: (_, state) {
             if (state is ProviderProfileFailure) {
-              return CustomerErrorView(state.message);
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  CustomerErrorView(state.message),
+                  Builder(
+                    builder: (context) => TextButton(
+                      onPressed: () =>
+                          context.read<ProviderProfileCubit>().execute(
+                            ProviderProfileCommand(
+                              ProviderProfileAction.load,
+                              providerId,
+                            ),
+                          ),
+                      child: Text('retry'.tr),
+                    ),
+                  ),
+                ],
+              );
             }
             if (state is! ProviderProfileSuccess) {
               return const CustomerLoadingView();
@@ -66,6 +83,7 @@ class ProviderProfileScreen extends StatelessWidget {
             return _ProfileBody(
               profile: state.profile,
               reviews: state.reviews,
+              reviewsHaveNextPage: state.reviewsHaveNextPage,
               serviceId: serviceId,
             );
           },
@@ -79,127 +97,154 @@ class _ProfileBody extends StatelessWidget {
   const _ProfileBody({
     required this.profile,
     required this.reviews,
+    required this.reviewsHaveNextPage,
     this.serviceId,
   });
   final ProviderProfileEntity profile;
   final List<ProviderReviewEntity> reviews;
+  final bool reviewsHaveNextPage;
   final String? serviceId;
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsetsDirectional.all(20.r),
-      children: <Widget>[
-        CircleAvatar(
-          radius: 48.r,
-          backgroundImage: profile.avatarUrl == null
-              ? null
-              : NetworkImage(profile.avatarUrl!),
-          child: profile.avatarUrl == null
-              ? const Icon(Icons.person_rounded)
-              : null,
-        ),
-        SizedBox(height: 12.h),
-        Text(
-          profile.fullName,
-          textAlign: TextAlign.center,
-          style: TextStyles.bold24(color: colors.onboardingHeadline),
-        ),
-        if (profile.jobTitle != null)
-          Text(profile.jobTitle!, textAlign: TextAlign.center),
-        Text(
-          profile.isOnline
-              ? 'provider_profile_online_now'.tr
-              : 'chat_status_offline'.tr,
-          textAlign: TextAlign.center,
-        ),
-        SizedBox(height: 8.h),
-        Text(
-          profile.rating == null
-              ? 'customer_not_enough_ratings'.tr
-              : '${profile.rating!.toStringAsFixed(1)} ★ (${profile.reviewCount})',
-          textAlign: TextAlign.center,
-          style: TextStyles.bold18(color: colors.review),
-        ),
-        SizedBox(height: 16.h),
-        Text(
-          profile.localizedDescription(isArabic),
-          style: TextStyles.regular16(color: colors.lightTextColor),
-        ),
-        SizedBox(height: 16.h),
-        Text('${'provider_profile_jobs_done'.tr}: ${profile.numberOfJobsDone}'),
-        if (profile.experienceYears != null)
-          Text(
-            '${'provider_profile_experience'.tr}: ${profile.experienceYears}',
+    return RefreshIndicator(
+      onRefresh: () => context.read<ProviderProfileCubit>().execute(
+        ProviderProfileCommand(ProviderProfileAction.load, profile.id),
+      ),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsetsDirectional.all(20.r),
+        children: <Widget>[
+          CircleAvatar(
+            radius: 48.r,
+            backgroundImage: profile.avatarUrl == null
+                ? null
+                : NetworkImage(profile.avatarUrl!),
+            child: profile.avatarUrl == null
+                ? const Icon(Icons.person_rounded)
+                : null,
           ),
-        SizedBox(height: 20.h),
-        if (profile.portfolioImages.isNotEmpty) ...<Widget>[
+          SizedBox(height: 12.h),
           Text(
-            'provider_profile_portfolio_title'.tr,
+            profile.fullName,
+            textAlign: TextAlign.center,
+            style: TextStyles.bold24(color: colors.onboardingHeadline),
+          ),
+          if (profile.jobTitle != null)
+            Text(profile.jobTitle!, textAlign: TextAlign.center),
+          Text(
+            profile.isOnline
+                ? 'provider_profile_online_now'.tr
+                : 'chat_status_offline'.tr,
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            profile.rating == null
+                ? 'customer_not_enough_ratings'.tr
+                : '${profile.rating!.toStringAsFixed(1)} ★ (${profile.reviewCount})',
+            textAlign: TextAlign.center,
+            style: TextStyles.bold18(color: colors.review),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            profile.localizedDescription(isArabic),
+            style: TextStyles.regular16(color: colors.lightTextColor),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            '${'provider_profile_jobs_done'.tr}: ${profile.numberOfJobsDone}',
+          ),
+          if (profile.experienceYears != null)
+            Text(
+              '${'provider_profile_experience'.tr}: ${profile.experienceYears}',
+            ),
+          SizedBox(height: 20.h),
+          if (profile.portfolioImages.isNotEmpty) ...<Widget>[
+            Text(
+              'provider_profile_portfolio_title'.tr,
+              style: TextStyles.bold22(color: colors.onboardingHeadline),
+            ),
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.h,
+              children: profile.portfolioImages
+                  .map(
+                    (imageUrl) => Image.network(
+                      imageUrl,
+                      width: 92.r,
+                      height: 92.r,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                  .toList(),
+            ),
+            SizedBox(height: 20.h),
+          ],
+          if (profile.certificates.isNotEmpty) ...<Widget>[
+            Text(
+              'provider_profile_certificates_title'.tr,
+              style: TextStyles.bold22(color: colors.onboardingHeadline),
+            ),
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.h,
+              children: profile.certificates
+                  .map(
+                    (certificate) => Image.network(
+                      certificate.imageUrl,
+                      width: 92.r,
+                      height: 92.r,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                  .toList(),
+            ),
+            SizedBox(height: 20.h),
+          ],
+          Text(
+            'provider_profile_reviews_title'.tr,
             style: TextStyles.bold22(color: colors.onboardingHeadline),
           ),
-          Wrap(
-            spacing: 8.w,
-            runSpacing: 8.h,
-            children: profile.portfolioImages
-                .map(
-                  (imageUrl) => Image.network(
-                    imageUrl,
-                    width: 92.r,
-                    height: 92.r,
-                    fit: BoxFit.cover,
-                  ),
-                )
-                .toList(),
-          ),
-          SizedBox(height: 20.h),
-        ],
-        if (profile.certificates.isNotEmpty) ...<Widget>[
-          Text(
-            'provider_profile_certificates_title'.tr,
-            style: TextStyles.bold22(color: colors.onboardingHeadline),
-          ),
-          Wrap(
-            spacing: 8.w,
-            runSpacing: 8.h,
-            children: profile.certificates
-                .map(
-                  (certificate) => Image.network(
-                    certificate.imageUrl,
-                    width: 92.r,
-                    height: 92.r,
-                    fit: BoxFit.cover,
-                  ),
-                )
-                .toList(),
-          ),
-          SizedBox(height: 20.h),
-        ],
-        Text(
-          'provider_profile_reviews_title'.tr,
-          style: TextStyles.bold22(color: colors.onboardingHeadline),
-        ),
-        ...reviews.map(
-          (review) => ListTile(
-            contentPadding: EdgeInsetsDirectional.zero,
-            title: Text(review.customerName),
-            subtitle: Text(review.comment ?? ''),
-            trailing: Text('${review.rating.toStringAsFixed(1)} ★'),
-          ),
-        ),
-        if (serviceId != null)
-          FilledButton(
-            onPressed: () => context.pushNamed(
-              Routes.confirmLocationRoute,
-              extra: BookingDraft(
-                serviceId: serviceId!,
-                providerId: profile.id,
-                bookingType: 0,
+          if (reviews.isEmpty)
+            Text(
+              'noDataFound'.tr,
+              textAlign: TextAlign.center,
+              style: TextStyles.medium16(color: colors.lightTextColor),
+            )
+          else
+            ...reviews.map(
+              (review) => ListTile(
+                contentPadding: EdgeInsetsDirectional.zero,
+                title: Text(review.customerName),
+                subtitle: Text(review.comment ?? ''),
+                trailing: Text('${review.rating.toStringAsFixed(1)} ★'),
               ),
             ),
-            child: Text('provider_profile_book_now'.tr),
-          ),
-      ],
+          if (reviewsHaveNextPage)
+            TextButton(
+              onPressed: () => context.read<ProviderProfileCubit>().execute(
+                ProviderProfileCommand(
+                  ProviderProfileAction.loadMoreReviews,
+                  profile.id,
+                ),
+              ),
+              child: Text('load_more'.tr),
+            ),
+          if (serviceId != null)
+            FilledButton(
+              onPressed: () => context.pushNamed(
+                Routes.confirmLocationRoute,
+                extra: BookingDraft(
+                  serviceId: serviceId!,
+                  providerId: profile.id,
+                  bookingType: 0,
+                ),
+              ),
+              child: Text('provider_profile_book_now'.tr),
+            ),
+        ],
+      ),
     );
   }
 }

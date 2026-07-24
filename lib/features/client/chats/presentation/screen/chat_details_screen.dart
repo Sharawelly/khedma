@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import '/config/locale/app_localizations.dart';
 import '/core/widgets/gaps.dart';
 import '/core/widgets/app_shimmer.dart';
+import '/core/widgets/no_data_found.dart';
 import '/features/shared/chat/domain/entities/chat_entities.dart';
 import '/features/shared/chat/presentation/cubit/chat_details_cubit.dart';
 import '/injection_container.dart';
@@ -54,28 +55,74 @@ class ChatDetailsScreen extends StatelessWidget {
                   }
                   if (state is ChatDetailsFailure) {
                     return Center(
-                      child: SelectableText.rich(
-                        TextSpan(
-                          text: state.message.startsWith('chat_')
-                              ? state.message.tr
-                              : state.message,
-                          style: TextStyle(color: colors.errorColor),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          SelectableText.rich(
+                            TextSpan(
+                              text: state.message.startsWith('chat_')
+                                  ? state.message.tr
+                                  : state.message,
+                              style: TextStyle(color: colors.errorColor),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => context
+                                .read<ChatDetailsCubit>()
+                                .execute(LoadChatHistory(thread)),
+                            child: Text('retry'.tr),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  final success = state as ChatDetailsSuccess;
+                  final messages = success.messages;
+                  if (messages.isEmpty) {
+                    return RefreshIndicator(
+                      onRefresh: () => context.read<ChatDetailsCubit>().execute(
+                        LoadChatHistory(thread),
+                      ),
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: 400.h,
+                          child: const NoDataFound(),
                         ),
                       ),
                     );
                   }
-                  final messages = (state as ChatDetailsSuccess).messages;
-                  return ListView.separated(
-                    padding: EdgeInsetsDirectional.fromSTEB(
-                      22.w,
-                      14.h,
-                      22.w,
-                      18.h,
+                  return RefreshIndicator(
+                    onRefresh: () => context.read<ChatDetailsCubit>().execute(
+                      LoadChatHistory(thread),
                     ),
-                    itemCount: messages.length,
-                    separatorBuilder: (_, _) => Gaps.vGap12,
-                    itemBuilder: (_, index) =>
-                        ChatMessageBubble(message: messages[index]),
+                    child: ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsetsDirectional.fromSTEB(
+                        22.w,
+                        14.h,
+                        22.w,
+                        18.h,
+                      ),
+                      itemCount:
+                          messages.length + (success.hasNextPage ? 1 : 0),
+                      separatorBuilder: (_, _) => Gaps.vGap12,
+                      itemBuilder: (_, index) {
+                        if (success.hasNextPage && index == 0) {
+                          return TextButton(
+                            onPressed: () => context
+                                .read<ChatDetailsCubit>()
+                                .execute(const LoadEarlierChatMessages()),
+                            child: Text('load_more'.tr),
+                          );
+                        }
+                        final messageIndex =
+                            index - (success.hasNextPage ? 1 : 0);
+                        return ChatMessageBubble(
+                          message: messages[messageIndex],
+                        );
+                      },
+                    ),
                   );
                 },
               ),

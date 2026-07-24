@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../features/auth/data/models/auth_resp_model.dart';
@@ -10,8 +9,6 @@ import '../../utils/enums.dart';
 import '../../utils/extension.dart';
 
 abstract class _AppSharedPreferencesKeys {
-  static const countryId = 'countryId';
-  static const userId = 'userId';
   static const authUserId = 'authUserId';
   static const userRole = 'userRole';
   static const user = 'user';
@@ -19,36 +16,12 @@ abstract class _AppSharedPreferencesKeys {
   static const languageCode = 'languageCode';
   static const userType = 'userType';
   static const userCycle = 'userCycle';
-  static const cartProviderId = 'cartProviderId';
-  static const serviceTypeId = 'service_type_Id';
-  static const salesselectedBooksKey = 'salesSelectedBooksKey';
-  static const returnsSelectedBooksKey = 'returnsSelectedBooksKey';
 }
 
 abstract class AppSharedPreferences {
   final SharedPreferences instance;
 
   const AppSharedPreferences(Object object, {required this.instance});
-
-  //region:: Country Id
-  int? getCountryId();
-  Future<bool> saveCountryId(int countryId);
-  Future<bool> removeCountryId();
-
-  //region:: Provider Id
-  String? getCartProviderId();
-  Future<bool> saveCartProviderId(String providerId);
-  Future<bool> removeCartProviderId();
-
-  //region:: getServiceType Id
-  String? getServiceTypeId();
-  Future<bool> saveServiceTypeId(String typeId);
-  Future<bool> removeServiceTypeId();
-
-  //region:: user Id
-  int? getUserId();
-  Future<bool> saveUserId(int id);
-  Future<bool> removeUserId();
 
   //region:: auth user Id
   /// The KHDMA identity id, which is a string rather than the legacy int id.
@@ -96,71 +69,12 @@ abstract class AppSharedPreferences {
   UserCycle getUserCycle();
   Future<bool> removeUserCycle();
 
-  //cart
-  Future<void> saveSalesSelectedBooks(Map<int, int> selectedBooks);
-  Future<Map<int, int>> loadSalesSelectedBooks();
-  Future<void> saveReturnsSelectedBooks(Map<int, int> selectedBooks);
-  Future<Map<int, int>> loadReturnsSelectedBooks();
-  //endregion
-
   Future<bool> clearAll();
 }
 
 class AppSharedPreferencesImpl extends AppSharedPreferences {
   AppSharedPreferencesImpl({required SharedPreferences instance})
     : super(Object(), instance: instance);
-
-  //region:: Country Id
-  @override
-  int? getCountryId() => instance.getInt(_AppSharedPreferencesKeys.countryId);
-
-  @override
-  Future<bool> saveCountryId(int countryId) =>
-      instance.setInt(_AppSharedPreferencesKeys.countryId, countryId);
-
-  @override
-  Future<bool> removeCountryId() =>
-      instance.remove(_AppSharedPreferencesKeys.countryId);
-
-  //region:: CartProvider Id
-  @override
-  String? getCartProviderId() =>
-      instance.getString(_AppSharedPreferencesKeys.cartProviderId);
-
-  @override
-  Future<bool> saveCartProviderId(String providerId) =>
-      instance.setString(_AppSharedPreferencesKeys.cartProviderId, providerId);
-
-  @override
-  Future<bool> removeCartProviderId() =>
-      instance.remove(_AppSharedPreferencesKeys.cartProviderId);
-
-  //region:: Service Type Id
-  @override
-  String? getServiceTypeId() =>
-      instance.getString(_AppSharedPreferencesKeys.serviceTypeId);
-
-  @override
-  Future<bool> saveServiceTypeId(String typeId) =>
-      instance.setString(_AppSharedPreferencesKeys.serviceTypeId, typeId);
-
-  @override
-  Future<bool> removeServiceTypeId() =>
-      instance.remove(_AppSharedPreferencesKeys.serviceTypeId);
-
-  //region:: User Id
-  @override
-  int? getUserId() => instance.getInt(_AppSharedPreferencesKeys.userId);
-
-  @override
-  Future<bool> saveUserId(int id) =>
-      instance.setInt(_AppSharedPreferencesKeys.userId, id);
-
-  @override
-  Future<bool> removeUserId() =>
-      instance.remove(_AppSharedPreferencesKeys.userId);
-
-  //endregion
 
   //region:: auth user Id
   @override
@@ -196,10 +110,8 @@ class AppSharedPreferencesImpl extends AppSharedPreferences {
   @override
   LanguageCode getLanguageCode() {
     String value =
-        instance.getString(_AppSharedPreferencesKeys.languageCode) ?? "en";
-    // Intl.systemLocale.split('_').first;
+        instance.getString(_AppSharedPreferencesKeys.languageCode) ?? "ar";
     final lang = LanguageCodeExtension.fromString(value);
-    log('getLanguageCode Intl.systemLocale: ${Intl.systemLocale}');
     log('getLanguageCode lang: $lang');
     return lang;
   }
@@ -292,64 +204,4 @@ class AppSharedPreferencesImpl extends AppSharedPreferences {
 
   @override
   Future<bool> clearAll() => instance.clear();
-
-  @override
-  Future<void> saveSalesSelectedBooks(Map<int, int> selectedBooks) async {
-    final stringMap = selectedBooks.map(
-      (key, value) => MapEntry(key.toString(), value),
-    );
-    final jsonString = jsonEncode(stringMap);
-    await instance.setString(
-      _AppSharedPreferencesKeys.salesselectedBooksKey,
-      jsonString,
-    );
-    log('from cache data stores succefully');
-  }
-
-  @override
-  Future<Map<int, int>> loadSalesSelectedBooks() async {
-    final jsonString = instance.getString(
-      _AppSharedPreferencesKeys.salesselectedBooksKey,
-    );
-
-    if (jsonString == null) return {};
-
-    final Map<String, dynamic> stringMap = jsonDecode(jsonString);
-    log(
-      'from cache load data${stringMap.map((key, value) => MapEntry(int.parse(key), value as int))}',
-    );
-    return stringMap.map(
-      (key, value) => MapEntry(int.parse(key), value as int),
-    );
-  }
-
-  @override
-  Future<void> saveReturnsSelectedBooks(Map<int, int> selectedBooks) async {
-    final stringMap = selectedBooks.map(
-      (key, value) => MapEntry(key.toString(), value),
-    );
-    final jsonString = jsonEncode(stringMap);
-    await instance.setString(
-      _AppSharedPreferencesKeys.returnsSelectedBooksKey,
-      jsonString,
-    );
-    log('from cache data stores succefully');
-  }
-
-  @override
-  Future<Map<int, int>> loadReturnsSelectedBooks() async {
-    final jsonString = instance.getString(
-      _AppSharedPreferencesKeys.returnsSelectedBooksKey,
-    );
-
-    if (jsonString == null) return {};
-
-    final Map<String, dynamic> stringMap = jsonDecode(jsonString);
-    log(
-      'from cache load data${stringMap.map((key, value) => MapEntry(int.parse(key), value as int))}',
-    );
-    return stringMap.map(
-      (key, value) => MapEntry(int.parse(key), value as int),
-    );
-  }
 }

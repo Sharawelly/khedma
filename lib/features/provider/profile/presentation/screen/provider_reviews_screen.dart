@@ -46,12 +46,27 @@ class ProviderReviewsScreen extends StatelessWidget {
           },
           builder: (context, state) {
             if (state is ProviderReviewsFailure) {
-              return ProviderErrorView(state.message);
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  ProviderErrorView(state.message),
+                  TextButton(
+                    onPressed: () => context
+                        .read<ProviderReviewsCubit>()
+                        .execute(ProviderReviewsCommand.load(providerId)),
+                    child: Text('retry'.tr),
+                  ),
+                ],
+              );
             }
             if (state is! ProviderReviewsSuccess) {
               return const ProviderLoadingView();
             }
-            return _ReviewsBody(providerId: providerId, reviews: state.reviews);
+            return _ReviewsBody(
+              providerId: providerId,
+              reviews: state.reviews,
+              hasNextPage: state.hasNextPage,
+            );
           },
         ),
       ),
@@ -60,10 +75,15 @@ class ProviderReviewsScreen extends StatelessWidget {
 }
 
 class _ReviewsBody extends StatelessWidget {
-  const _ReviewsBody({required this.providerId, required this.reviews});
+  const _ReviewsBody({
+    required this.providerId,
+    required this.reviews,
+    required this.hasNextPage,
+  });
 
   final String providerId;
   final List<ProviderReviewEntity> reviews;
+  final bool hasNextPage;
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +96,7 @@ class _ReviewsBody extends StatelessWidget {
         ProviderReviewsCommand.load(providerId),
       ),
       child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsetsDirectional.all(16.r),
         children: <Widget>[
           Container(
@@ -128,6 +149,13 @@ class _ReviewsBody extends StatelessWidget {
                   onReply: () => _reply(context, review.id),
                 ),
               ),
+            ),
+          if (hasNextPage)
+            TextButton(
+              onPressed: () => context.read<ProviderReviewsCubit>().execute(
+                ProviderReviewsCommand.loadMore(providerId),
+              ),
+              child: Text('load_more'.tr),
             ),
         ],
       ),

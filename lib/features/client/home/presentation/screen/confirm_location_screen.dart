@@ -34,31 +34,52 @@ class _ConfirmLocationScreenState extends State<ConfirmLocationScreen> {
         body: BlocBuilder<ProfileManagementCubit, ProfileManagementState>(
           builder: (context, state) {
             if (state is ProfileManagementFailure) {
-              return CustomerErrorView(state.message.tr);
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  CustomerErrorView(state.message.tr),
+                  TextButton(
+                    onPressed: () => context
+                        .read<ProfileManagementCubit>()
+                        .execute(const LoadAddresses()),
+                    child: Text('retry'.tr),
+                  ),
+                ],
+              );
             }
             if (state is! ProfileAddressesSuccess) {
               return const CustomerLoadingView();
             }
-            return ListView(
-              padding: EdgeInsetsDirectional.all(16.r),
-              children: <Widget>[
-                ...state.addresses.map(
-                  (address) => RadioListTile<String>(
-                    value: address.id,
-                    groupValue: selected?.id,
-                    title: Text(address.label),
-                    subtitle: Text(address.addressLine),
-                    onChanged: (_) => setState(() => selected = address),
+            return RadioGroup<String>(
+              groupValue: selected?.id,
+              onChanged: (id) {
+                if (id != null) {
+                  setState(
+                    () => selected = state.addresses.firstWhere(
+                      (address) => address.id == id,
+                    ),
+                  );
+                }
+              },
+              child: ListView(
+                padding: EdgeInsetsDirectional.all(16.r),
+                children: <Widget>[
+                  ...state.addresses.map(
+                    (address) => RadioListTile<String>(
+                      value: address.id,
+                      title: Text(address.label),
+                      subtitle: Text(address.addressLine),
+                    ),
                   ),
-                ),
-                OutlinedButton.icon(
-                  onPressed: () => context
-                      .read<ProfileManagementCubit>()
-                      .execute(CaptureCurrentAddress('current_location'.tr)),
-                  icon: const Icon(Icons.my_location_rounded),
-                  label: Text('current_location'.tr),
-                ),
-              ],
+                  OutlinedButton.icon(
+                    onPressed: () => context
+                        .read<ProfileManagementCubit>()
+                        .execute(CaptureCurrentAddress('current_location'.tr)),
+                    icon: const Icon(Icons.my_location_rounded),
+                    label: Text('current_location'.tr),
+                  ),
+                ],
+              ),
             );
           },
         ),

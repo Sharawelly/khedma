@@ -34,9 +34,17 @@ class ProfileTopProvidersCard extends StatelessWidget {
             ),
             SizedBox(height: 10.h),
             BlocBuilder<FavoritesCubit, FavoritesState>(
-              builder: (_, state) {
+              builder: (context, state) {
                 if (state is FavoritesFailure) {
-                  return CustomerErrorView(state.message);
+                  return Column(
+                    children: <Widget>[
+                      CustomerErrorView(state.message),
+                      TextButton(
+                        onPressed: context.read<FavoritesCubit>().load,
+                        child: Text('retry'.tr),
+                      ),
+                    ],
+                  );
                 }
                 if (state is! FavoritesSuccess) {
                   return const LinearProgressIndicator();

@@ -22,10 +22,21 @@ class ProviderProfileFailure extends ProviderProfileState {
 }
 
 class ProviderProfileSuccess extends ProviderProfileState {
-  const ProviderProfileSuccess(this.profile, this.reviews, this.isFavorite);
+  const ProviderProfileSuccess(
+    this.profile,
+    this.reviews,
+    this.isFavorite, {
+    this.reviewsHaveNextPage = false,
+  });
   final ProviderProfileEntity profile;
   final List<ProviderReviewEntity> reviews;
   final bool isFavorite;
+  final bool reviewsHaveNextPage;
   @override
-  List<Object?> get props => <Object?>[profile, reviews, isFavorite];
+  List<Object?> get props => <Object?>[
+    profile,
+    reviews,
+    isFavorite,
+    reviewsHaveNextPage,
+  ];
 }
