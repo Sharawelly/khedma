@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '/config/locale/app_localizations.dart';
 import '/core/widgets/gaps.dart';
 import '/core/widgets/app_shimmer.dart';
 import '/features/shared/chat/domain/entities/chat_entities.dart';
@@ -24,12 +25,19 @@ class ChatDetailsScreen extends StatelessWidget {
     return BlocProvider(
       create: (_) =>
           ServiceLocator.instance<ChatDetailsCubit>()
-            ..execute(LoadChatHistory(thread.bookingId)),
+            ..execute(LoadChatHistory(thread)),
       child: Scaffold(
         backgroundColor: colors.onboardingBackground,
         body: Column(
           children: <Widget>[
-            ChatDetailsHeader(thread: thread),
+            BlocBuilder<ChatDetailsCubit, ChatDetailsState>(
+              builder: (_, state) => ChatDetailsHeader(
+                thread: thread,
+                isOnline: state is ChatDetailsSuccess
+                    ? state.isPeerOnline
+                    : thread.isOnline,
+              ),
+            ),
             if (_scheduleChip.isNotEmpty)
               Padding(
                 padding: EdgeInsetsDirectional.all(8.r),
@@ -48,7 +56,9 @@ class ChatDetailsScreen extends StatelessWidget {
                     return Center(
                       child: SelectableText.rich(
                         TextSpan(
-                          text: state.message,
+                          text: state.message.startsWith('chat_')
+                              ? state.message.tr
+                              : state.message,
                           style: TextStyle(color: colors.errorColor),
                         ),
                       ),
@@ -70,20 +80,25 @@ class ChatDetailsScreen extends StatelessWidget {
                 },
               ),
             ),
-            Builder(
-              builder: (context) => Padding(
+            BlocBuilder<ChatDetailsCubit, ChatDetailsState>(
+              builder: (context, state) => Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(16.w, 4.h, 16.w, 16.h),
                 child: Column(
                   children: <Widget>[
-                    ChatQuickRepliesRow(
-                      thread: thread,
-                      onSelected: (key) => context
-                          .read<ChatDetailsCubit>()
-                          .execute(SendQuickReply(thread.bookingId, key)),
+                    IgnorePointer(
+                      ignoring: state is ChatDetailsSuccess && state.isLocked,
+                      child: ChatQuickRepliesRow(
+                        thread: thread,
+                        onSelected: (key) => context
+                            .read<ChatDetailsCubit>()
+                            .execute(SendQuickReply(thread.bookingId, key)),
+                      ),
                     ),
                     Gaps.vGap10,
                     ChatMessageInputBar(
-                      enabled: !thread.isLocked,
+                      enabled: state is ChatDetailsSuccess
+                          ? !state.isLocked
+                          : !thread.isLocked,
                       onSend: (text) => context
                           .read<ChatDetailsCubit>()
                           .execute(SendTextMessage(thread.bookingId, text)),

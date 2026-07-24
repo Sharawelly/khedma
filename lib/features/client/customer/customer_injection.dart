@@ -59,6 +59,7 @@ void initCustomerFeatureInjection() {
         getBookingEta: locator(),
         createReview: locator(),
         updateReview: locator(),
+        realtimeService: locator(),
       ),
     );
 }

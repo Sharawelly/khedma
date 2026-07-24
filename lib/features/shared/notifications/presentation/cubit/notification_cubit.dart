@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '/core/realtime/realtime_events.dart';
+import '/core/realtime/realtime_service.dart';
 import '../../domain/entities/notification_entity.dart';
 import '../../domain/usecases/notification_use_cases.dart';
 import '../../domain/usecases/params/notification_query.dart';
@@ -21,12 +25,20 @@ class NotificationCubit extends Cubit<NotificationState> {
     required this.markNotificationRead,
     required this.markAllNotificationsRead,
     required this.deleteNotification,
-  }) : super(const NotificationInitial());
+    required this.realtimeService,
+  }) : super(const NotificationInitial()) {
+    _connectionSubscription = realtimeService.connected
+        .where((event) => event.hub == RealtimeHub.notifications)
+        .listen((_) => unawaited(_load(refresh: true)));
+    unawaited(_load(refresh: true));
+  }
 
   final GetNotifications getNotifications;
   final MarkNotificationRead markNotificationRead;
   final MarkAllNotificationsRead markAllNotificationsRead;
   final DeleteNotification deleteNotification;
+  final RealtimeService realtimeService;
+  late final StreamSubscription<RealtimeHubConnected> _connectionSubscription;
   final List<NotificationEntity> _notifications = <NotificationEntity>[];
   int _page = 1;
   bool _hasNextPage = true;
@@ -102,5 +114,11 @@ class NotificationCubit extends Cubit<NotificationState> {
       (failure) => emit(NotificationFailure(failure.message ?? '')),
       (_) => _load(refresh: true),
     );
+  }
+
+  @override
+  Future<void> close() async {
+    await _connectionSubscription.cancel();
+    return super.close();
   }
 }

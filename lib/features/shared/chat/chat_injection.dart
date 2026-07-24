@@ -16,13 +16,14 @@ void initChatFeatureInjection() {
     ..registerLazySingleton(() => SendChatMessage(locator()))
     ..registerLazySingleton(() => UploadChatAttachment(locator()))
     ..registerLazySingleton(() => MarkChatRead(locator()))
-    ..registerFactory(() => ChatThreadsCubit(locator()))
+    ..registerFactory(() => ChatThreadsCubit(locator(), locator()))
     ..registerFactory(
       () => ChatDetailsCubit(
         getChatHistory: locator(),
         sendChatMessage: locator(),
         uploadChatAttachment: locator(),
         markChatRead: locator(),
+        realtimeService: locator(),
       ),
     );
 }

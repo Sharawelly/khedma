@@ -33,6 +33,28 @@ class ChatThreadEntity extends Equatable {
   final String? scheduleChipEn;
   final String? scheduleChipAr;
 
+  ChatThreadEntity copyWith({
+    String? lastMessage,
+    DateTime? lastMessageAt,
+    int? unreadCount,
+    bool? isOnline,
+    bool? isLocked,
+  }) => ChatThreadEntity(
+    bookingId: bookingId,
+    peerId: peerId,
+    peerName: peerName,
+    peerRoleEn: peerRoleEn,
+    peerRoleAr: peerRoleAr,
+    peerAvatarUrl: peerAvatarUrl,
+    lastMessage: lastMessage ?? this.lastMessage,
+    lastMessageAt: lastMessageAt ?? this.lastMessageAt,
+    unreadCount: unreadCount ?? this.unreadCount,
+    isOnline: isOnline ?? this.isOnline,
+    isLocked: isLocked ?? this.isLocked,
+    scheduleChipEn: scheduleChipEn,
+    scheduleChipAr: scheduleChipAr,
+  );
+
   @override
   List<Object?> get props => <Object?>[
     bookingId,
@@ -75,6 +97,19 @@ class ChatMessageEntity extends Equatable {
   final String? attachmentUrl;
   final DateTime sentAt;
   final bool isRead;
+
+  ChatMessageEntity copyWith({bool? isRead}) => ChatMessageEntity(
+    id: id,
+    bookingId: bookingId,
+    senderId: senderId,
+    senderName: senderName,
+    isMine: isMine,
+    messageType: messageType,
+    messageText: messageText,
+    attachmentUrl: attachmentUrl,
+    sentAt: sentAt,
+    isRead: isRead ?? this.isRead,
+  );
 
   @override
   List<Object?> get props => <Object?>[

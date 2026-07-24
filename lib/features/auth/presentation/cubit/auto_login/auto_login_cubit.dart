@@ -4,20 +4,22 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '/config/routes/app_routes.dart';
+import '/core/realtime/realtime_service.dart';
 import '/injection_container.dart';
 import '../../auth_role_navigation.dart';
 
 part 'auto_login_state.dart';
 
 class AutoLoginCubit extends Cubit<AutoLoginState> {
-  late final StreamSubscription<void> _unauthorizedSubscription;
-
-  AutoLoginCubit() : super(AutoLoginInitial()) {
+  AutoLoginCubit(this._realtimeService) : super(AutoLoginInitial()) {
     _unauthorizedSubscription = eventBus.unauthorizedStream.listen((_) {
       emit(AutoLoginUnauthenticated());
       Routes.router.go(Routes.loginScreenRoute);
     });
   }
+
+  final RealtimeService _realtimeService;
+  late final StreamSubscription<void> _unauthorizedSubscription;
 
   Future<void> checkSession() async {
     emit(AutoLoginLoading());
@@ -30,6 +32,7 @@ class AutoLoginCubit extends Cubit<AutoLoginState> {
       emit(AutoLoginUnauthenticated());
       return;
     }
+    unawaited(_realtimeService.connect());
     emit(AutoLoginAuthenticated(destination: destination));
   }
 

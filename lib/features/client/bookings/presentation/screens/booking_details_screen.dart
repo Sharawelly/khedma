@@ -34,7 +34,10 @@ class BookingDetailsScreen extends StatelessWidget {
             if (state is! BookingDetailSuccess) {
               return const CustomerLoadingView();
             }
-            return _BookingBody(booking: state.booking);
+            return _BookingBody(
+              booking: state.booking,
+              realtimeSnapshot: state.realtime,
+            );
           },
         ),
       ),
@@ -43,8 +46,9 @@ class BookingDetailsScreen extends StatelessWidget {
 }
 
 class _BookingBody extends StatelessWidget {
-  const _BookingBody({required this.booking});
+  const _BookingBody({required this.booking, required this.realtimeSnapshot});
   final BookingEntity booking;
+  final BookingRealtimeSnapshot realtimeSnapshot;
 
   @override
   Widget build(BuildContext context) {
@@ -57,12 +61,20 @@ class _BookingBody extends StatelessWidget {
         ),
         SizedBox(height: 8.h),
         Text(
-          booking.localizedStatus(isArabic),
+          realtimeSnapshot.statusChanged?.localizedLabel(isArabic) ??
+              booking.localizedStatus(isArabic),
           style: TextStyles.bold18(color: colors.errorColor),
         ),
         SizedBox(height: 16.h),
-        _line('customer_provider'.tr, booking.providerName),
-        _line('customer_provider_phone'.tr, booking.providerPhone),
+        _line(
+          'customer_provider'.tr,
+          realtimeSnapshot.providerAssigned?.fullName ?? booking.providerName,
+        ),
+        _line(
+          'customer_provider_phone'.tr,
+          realtimeSnapshot.providerAssigned?.phoneNumber ??
+              booking.providerPhone,
+        ),
         _line('customer_address'.tr, booking.address),
         _line('customer_notes'.tr, booking.notes),
         _line('customer_total'.tr, booking.totalPrice.toStringAsFixed(2)),

@@ -35,7 +35,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     _scrollController
       ..removeListener(_loadNextPage)
       ..dispose();
-    _cubit.close();
     super.dispose();
   }
 

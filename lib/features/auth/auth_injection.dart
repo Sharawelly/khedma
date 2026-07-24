@@ -30,21 +30,29 @@ final _sl = ServiceLocator.instance;
 
 Future<void> initAuthFeatureInjection() async {
   _sl
-    ..registerFactory<LoginCubit>(() => LoginCubit(loginUseCase: _sl()))
+    ..registerFactory<LoginCubit>(
+      () => LoginCubit(loginUseCase: _sl(), realtimeService: _sl()),
+    )
     ..registerFactory<RegisterCubit>(
       () => RegisterCubit(
         registerCustomerUseCase: _sl(),
         registerProviderUseCase: _sl(),
+        realtimeService: _sl(),
       ),
     )
     ..registerFactory<ProfileCubit>(
       () => ProfileCubit(getProfileUseCase: _sl()),
     )
-    ..registerFactory<LogoutCubit>(() => LogoutCubit(logoutUseCase: _sl()))
-    ..registerFactory<DeleteAccountCubit>(
-      () => DeleteAccountCubit(deleteAccountUseCase: _sl()),
+    ..registerFactory<LogoutCubit>(
+      () => LogoutCubit(logoutUseCase: _sl(), realtimeService: _sl()),
     )
-    ..registerFactory<AutoLoginCubit>(AutoLoginCubit.new)
+    ..registerFactory<DeleteAccountCubit>(
+      () => DeleteAccountCubit(
+        deleteAccountUseCase: _sl(),
+        realtimeService: _sl(),
+      ),
+    )
+    ..registerFactory<AutoLoginCubit>(() => AutoLoginCubit(_sl()))
     ..registerFactory<CreateAccountFormCubit>(CreateAccountFormCubit.new)
     ..registerFactory<LanguagePreferenceCubit>(
       () => LanguagePreferenceCubit(appLocaleCubit: _sl<AppLocaleCubit>()),

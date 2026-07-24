@@ -548,6 +548,8 @@
   "provider_job_already_taken": "تم قبول هذه الوظيفة بالفعل",
   "provider_job_action_not_available": "هذا الإجراء غير متاح لحالة الوظيفة الحالية",
   "provider_request_failed": "تعذر إكمال الطلب",
+  "customer_no_provider_found": "لا يوجد مقدم خدمة متاح لهذا الحجز",
+  "chat_realtime_send_failed": "تعذر إرسال الرسالة. يرجى المحاولة مرة أخرى",
   "provider_now_online": "أنت متصل الآن ويمكنك استقبال الوظائف",
   "provider_now_offline": "أنت غير متصل الآن",
   "provider_job_status_updated": "تم تحديث حالة الوظيفة",

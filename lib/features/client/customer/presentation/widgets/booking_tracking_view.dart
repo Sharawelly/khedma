@@ -69,7 +69,7 @@ class _BookingTrackingViewState extends State<BookingTrackingView> {
                 return;
               }
               if (widget.mode == TrackingViewMode.waiting &&
-                  state.booking.providerId != null) {
+                  state.providerId != null) {
                 context.goNamed(
                   Routes.providerFoundRoute,
                   extra: widget.bookingId,
@@ -89,6 +89,7 @@ class _BookingTrackingViewState extends State<BookingTrackingView> {
             }
             return _TrackingBody(
               booking: state.booking,
+              realtimeSnapshot: state.realtime,
               mode: widget.mode,
               etaCubit: etaCubit,
               onRefresh: _refresh,
@@ -103,12 +104,14 @@ class _BookingTrackingViewState extends State<BookingTrackingView> {
 class _TrackingBody extends StatelessWidget {
   const _TrackingBody({
     required this.booking,
+    required this.realtimeSnapshot,
     required this.mode,
     required this.etaCubit,
     required this.onRefresh,
   });
 
   final BookingEntity booking;
+  final BookingRealtimeSnapshot realtimeSnapshot;
   final TrackingViewMode mode;
   final BookingCubit etaCubit;
   final VoidCallback onRefresh;
@@ -129,16 +132,37 @@ class _TrackingBody extends StatelessWidget {
           ),
           SizedBox(height: 18.h),
           Text(
-            booking.localizedStatus(isArabic),
+            realtimeSnapshot.statusChanged?.localizedLabel(isArabic) ??
+                booking.localizedStatus(isArabic),
             style: TextStyles.bold24(color: colors.errorColor),
           ),
           Text(
-            booking.providerName ?? 'customer_waiting_for_provider'.tr,
+            realtimeSnapshot.providerAssigned?.fullName ??
+                booking.providerName ??
+                'customer_waiting_for_provider'.tr,
             style: TextStyles.bold20(color: colors.onboardingHeadline),
           ),
-          if (booking.providerRating != null)
-            Text('${booking.providerRating!.toStringAsFixed(1)} ★'),
-          if (mode == TrackingViewMode.live)
+          if ((realtimeSnapshot.providerAssigned?.rating ??
+                  booking.providerRating) !=
+              null)
+            Text(
+              '${(realtimeSnapshot.providerAssigned?.rating ?? booking.providerRating)!.toStringAsFixed(1)} ★',
+            ),
+          if (realtimeSnapshot.noProviderFound != null)
+            Text(
+              'customer_no_provider_found'.tr,
+              style: TextStyles.medium16(color: colors.errorColor),
+            ),
+          if (mode == TrackingViewMode.live &&
+              realtimeSnapshot.etaMinutes != null)
+            ListTile(
+              contentPadding: EdgeInsetsDirectional.zero,
+              leading: const Icon(Icons.schedule_rounded),
+              title: Text(
+                '${realtimeSnapshot.etaMinutes} ${'customer_minutes'.tr}',
+              ),
+            )
+          else if (mode == TrackingViewMode.live)
             BlocBuilder<BookingCubit, BookingState>(
               bloc: etaCubit,
               builder: (_, state) {

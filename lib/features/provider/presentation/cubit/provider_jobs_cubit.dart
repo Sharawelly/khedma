@@ -6,6 +6,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '/core/error/failures.dart';
+import '/core/realtime/realtime_events.dart';
+import '/core/realtime/realtime_service.dart';
 import '/features/client/customer/domain/entities/customer_entities.dart';
 import '/features/client/customer/domain/usecases/customer_use_cases.dart';
 import '/features/client/customer/domain/usecases/params/customer_params.dart';
@@ -75,8 +77,10 @@ class ProviderJobsCubit extends Cubit<ProviderJobsState>
     required this.getCurrentPosition,
     required this.watchPosition,
     required this.publishLocation,
+    required this.realtimeService,
   }) : super(const ProviderJobsInitial()) {
     WidgetsBinding.instance.addObserver(this);
+    _subscribeToRealtime();
   }
 
   final GetPendingJobs getPendingJobs;
@@ -92,12 +96,16 @@ class ProviderJobsCubit extends Cubit<ProviderJobsState>
   final GetProviderCurrentPosition getCurrentPosition;
   final WatchProviderPosition watchPosition;
   final PublishProviderLocation publishLocation;
+  final RealtimeService realtimeService;
 
   Timer? _countdown;
   Timer? _jobStatusPoll;
   Map<String, DateTime> _offerDeadlines = <String, DateTime>{};
   StreamSubscription<Either<Failure, ProviderCoordinatesEntity>>?
   _positionSubscription;
+  final List<StreamSubscription<Object?>> _realtimeSubscriptions =
+      <StreamSubscription<Object?>>[];
+  final Set<String> _dismissedOfferIds = <String>{};
 
   Future<void> execute(ProviderJobsCommand command) async {
     switch (command.action) {
@@ -167,18 +175,94 @@ class ProviderJobsCubit extends Cubit<ProviderJobsState>
       failure ??= error;
       return snapshot.history;
     }, (page) => page.items);
-    final next = snapshot.copyWith(pendingJobs: pending, history: history);
+    final next = snapshot.copyWith(
+      pendingJobs: _mergeOffers(state.snapshot.pendingJobs, pending),
+      history: history,
+    );
     if (failure != null) {
       emit(ProviderJobsFailure(next, _message(failure!)));
       return;
     }
     emit(ProviderJobsSuccess(next));
-    final now = DateTime.now();
-    _offerDeadlines = <String, DateTime>{
-      for (final job in pending)
-        job.bookingId: now.add(Duration(seconds: job.secondsRemaining)),
-    };
+    _synchronizeDeadlines(next.pendingJobs);
     _startCountdown();
+  }
+
+  void _subscribeToRealtime() {
+    _realtimeSubscriptions
+      ..add(realtimeService.jobDispatched.listen(_addOffer))
+      ..add(realtimeService.jobDismissed.listen(_dismissOffer))
+      ..add(
+        realtimeService.connected
+            .where((event) => event.hub == RealtimeHub.booking)
+            .listen((_) => unawaited(_recoverPendingOffers())),
+      );
+  }
+
+  void _addOffer(PendingJobEntity offer) {
+    _dismissedOfferIds.remove(offer.bookingId);
+    _offerDeadlines[offer.bookingId] = offer.expiresAt;
+    emit(
+      ProviderJobsSuccess(
+        state.snapshot.copyWith(
+          pendingJobs: _mergeOffers(
+            state.snapshot.pendingJobs,
+            <PendingJobEntity>[offer],
+          ),
+        ),
+      ),
+    );
+    _startCountdown();
+  }
+
+  void _dismissOffer(JobOfferDismissed dismissal) {
+    _dismissedOfferIds.add(dismissal.bookingId);
+    _offerDeadlines.remove(dismissal.bookingId);
+    emit(
+      ProviderJobsSuccess(
+        state.snapshot.copyWith(
+          pendingJobs: _withoutOffer(dismissal.bookingId),
+        ),
+        messageKey: dismissal.kind == JobOfferDismissalKind.cancelled
+            ? dismissal.reason ?? 'provider_job_cancelled'
+            : null,
+      ),
+    );
+  }
+
+  Future<void> _recoverPendingOffers() async {
+    final response = await getPendingJobs();
+    response.fold((_) {}, (offers) {
+      final merged = _mergeOffers(state.snapshot.pendingJobs, offers);
+      _synchronizeDeadlines(merged);
+      emit(ProviderJobsSuccess(state.snapshot.copyWith(pendingJobs: merged)));
+      _startCountdown();
+    });
+  }
+
+  List<PendingJobEntity> _mergeOffers(
+    List<PendingJobEntity> current,
+    List<PendingJobEntity> incoming,
+  ) {
+    final byBookingId = <String, PendingJobEntity>{
+      for (final offer in current)
+        if (!_dismissedOfferIds.contains(offer.bookingId))
+          offer.bookingId: offer,
+      for (final offer in incoming)
+        if (!_dismissedOfferIds.contains(offer.bookingId))
+          offer.bookingId: offer,
+    };
+    return byBookingId.values.toList();
+  }
+
+  void _synchronizeDeadlines(List<PendingJobEntity> offers) {
+    final bookingIds = offers.map((offer) => offer.bookingId).toSet();
+    _offerDeadlines.removeWhere(
+      (bookingId, _) => !bookingIds.contains(bookingId),
+    );
+    for (final offer in offers) {
+      _offerDeadlines[offer.bookingId] = offer.expiresAt;
+    }
   }
 
   Future<void> _accept(String bookingId) async {
@@ -426,6 +510,7 @@ class ProviderJobsCubit extends Cubit<ProviderJobsState>
     await _stopPublishing();
     _countdown?.cancel();
     _offerDeadlines.clear();
+    _dismissedOfferIds.clear();
     emit(const ProviderJobsInitial());
   }
 
@@ -452,6 +537,9 @@ class ProviderJobsCubit extends Cubit<ProviderJobsState>
   Future<void> close() async {
     WidgetsBinding.instance.removeObserver(this);
     _countdown?.cancel();
+    for (final subscription in _realtimeSubscriptions) {
+      await subscription.cancel();
+    }
     await _stopPublishing();
     return super.close();
   }

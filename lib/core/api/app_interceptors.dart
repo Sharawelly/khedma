@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
@@ -128,6 +130,7 @@ class AppInterceptors extends Interceptor {
       sharedPreferences.saveAuthUserId(session.userId),
       sharedPreferences.saveUserRole(session.role),
     ]);
+    unawaited(realtime.reconnectWithLatestToken());
     return session;
   }
 
@@ -164,6 +167,7 @@ class AppInterceptors extends Interceptor {
       sharedPreferences.removeUserType(),
       sharedPreferences.removeUserCycle(),
     ]);
+    await realtime.disconnect();
     eventBus.emitUnauthorized();
   }
 }

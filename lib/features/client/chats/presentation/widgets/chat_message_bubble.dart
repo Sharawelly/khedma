@@ -49,9 +49,22 @@ class ChatMessageBubble extends StatelessWidget {
                     ),
                   ),
           ),
-          Text(
-            _time(message.sentAt),
-            style: TextStyles.regular12(color: colors.homeCaption),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                _time(message.sentAt),
+                style: TextStyles.regular12(color: colors.homeCaption),
+              ),
+              if (message.isMine) ...<Widget>[
+                SizedBox(width: 3.w),
+                Icon(
+                  message.isRead ? Icons.done_all_rounded : Icons.done_rounded,
+                  size: 14.r,
+                  color: message.isRead ? colors.main : colors.homeCaption,
+                ),
+              ],
+            ],
           ),
         ],
       ),

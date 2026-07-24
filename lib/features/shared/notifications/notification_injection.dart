@@ -18,12 +18,13 @@ void initNotificationFeatureInjection() {
     ..registerLazySingleton(() => MarkNotificationRead(locator()))
     ..registerLazySingleton(() => MarkAllNotificationsRead(locator()))
     ..registerLazySingleton(() => DeleteNotification(locator()))
-    ..registerFactory(
+    ..registerLazySingleton(
       () => NotificationCubit(
         getNotifications: locator(),
         markNotificationRead: locator(),
         markAllNotificationsRead: locator(),
         deleteNotification: locator(),
+        realtimeService: locator(),
       ),
     );
 }

@@ -13,6 +13,7 @@ import 'core/api/dio_consumer.dart';
 import 'core/services/local_storage/app_secure_storage.dart';
 import 'core/services/deep_link_service.dart';
 import 'core/navigation/navigation_injection.dart';
+import 'core/realtime/realtime_service.dart';
 import 'core/services/local_storage/app_shared_preferences.dart';
 import 'core/services/share_product_service.dart';
 import 'core/utils/values/app_colors.dart';
@@ -43,6 +44,7 @@ abstract class ServiceLocator {
     /// Core
     await _injectSharedPreferences();
     _injectSecureStorage();
+    _injectRealtime();
     _injectDioConsumer();
     _injectShareProductService();
     _injectDeepLinkService();
@@ -121,6 +123,12 @@ abstract class ServiceLocator {
     );
   }
 
+  static void _injectRealtime() {
+    instance.registerLazySingleton<RealtimeService>(
+      () => RealtimeService(instance<AppSecureStorage>()),
+    );
+  }
+
   static void injectAppColors({
     AppColors? appColors,
     BuildContext? context,
@@ -184,6 +192,8 @@ ShareProductService get shareProductService =>
 
 DeepLinkService get deepLinkService =>
     ServiceLocator.instance<DeepLinkService>();
+
+RealtimeService get realtime => ServiceLocator.instance<RealtimeService>();
 
 List<String> get routesStack =>
     ServiceLocator.instance<List<String>>(instanceName: 'routesStack');

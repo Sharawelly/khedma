@@ -53,6 +53,7 @@ void initProviderFeatureInjection() {
         getCurrentPosition: _sl(),
         watchPosition: _sl(),
         publishLocation: _sl(),
+        realtimeService: _sl(),
       ),
     )
     ..registerFactory(

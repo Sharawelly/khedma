@@ -10,8 +10,13 @@ import '/features/shared/chat/domain/entities/chat_entities.dart';
 import '/injection_container.dart';
 
 class ChatDetailsHeader extends StatelessWidget {
-  const ChatDetailsHeader({super.key, required this.thread});
+  const ChatDetailsHeader({
+    super.key,
+    required this.thread,
+    required this.isOnline,
+  });
   final ChatThreadEntity thread;
+  final bool isOnline;
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +45,7 @@ class ChatDetailsHeader extends StatelessWidget {
                   style: TextStyles.bold18(color: colors.homeHeadline),
                 ),
                 Text(
-                  thread.isOnline
-                      ? 'chat_status_online'.tr
-                      : 'chat_status_offline'.tr,
+                  isOnline ? 'chat_status_online'.tr : 'chat_status_offline'.tr,
                   style: TextStyles.medium13(color: colors.lightTextColor),
                 ),
               ],
