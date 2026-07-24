@@ -17,6 +17,7 @@ import 'core/services/local_storage/app_shared_preferences.dart';
 import 'core/services/share_product_service.dart';
 import 'core/utils/values/app_colors.dart';
 import 'features/auth/auth_injection.dart';
+import 'features/client/customer/customer_injection.dart';
 import 'features/provider/provider_injection.dart';
 import 'features/shared/chat/chat_injection.dart';
 import 'features/shared/notifications/notification_injection.dart';
@@ -33,6 +34,7 @@ abstract class ServiceLocator {
     ///
     await initAuthFeatureInjection();
     await initNavigationInjection();
+    initCustomerFeatureInjection();
     initProviderFeatureInjection();
     initProfileFeatureInjection();
     initNotificationFeatureInjection();

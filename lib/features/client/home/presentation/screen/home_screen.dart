@@ -1,42 +1,174 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
-import '/core/widgets/gaps.dart';
-import '/features/client/home/presentation/widgets/home_header.dart';
-import '/features/client/home/presentation/widgets/home_popular_services_section.dart';
-import '/features/client/home/presentation/widgets/home_service_categories_row.dart';
+import '/config/locale/app_localizations.dart';
+import '/config/routes/app_routes.dart';
+import '/core/utils/values/text_styles.dart';
+import '/features/client/customer/domain/entities/customer_entities.dart';
+import '/features/client/customer/presentation/cubit/catalog_cubit.dart';
+import '/features/client/customer/presentation/widgets/customer_state_widgets.dart';
+import '/injection_container.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late final CatalogCubit categoriesCubit = ServiceLocator.instance()
+    ..execute(const CatalogCommand.categories());
+  late final CatalogCubit providersCubit = ServiceLocator.instance()
+    ..execute(const CatalogCommand.providers());
+
+  @override
+  void dispose() {
+    categoriesCubit.close();
+    providersCubit.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
+        child: ListView(
+          padding: EdgeInsetsDirectional.all(16.r),
           children: <Widget>[
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: <Widget>[
-                    const HomeHeader(),
-                    Padding(
-                      padding: EdgeInsetsDirectional.symmetric(
-                        horizontal: 16.w,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          const HomeServiceCategoriesRow(),
-                          Gaps.vGap20,
-                          const HomePopularServicesSection(),
-                          Gaps.vGap16,
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+            Text(
+              'customer_catalogue'.tr,
+              style: TextStyles.bold32(color: colors.onboardingHeadline),
+            ),
+            SizedBox(height: 16.h),
+            SizedBox(
+              height: 128.h,
+              child: BlocBuilder<CatalogCubit, CatalogState>(
+                bloc: categoriesCubit,
+                builder: (_, state) {
+                  if (state is CatalogFailure) {
+                    return CustomerErrorView(state.message);
+                  }
+                  if (state is! CategoriesSuccess) {
+                    return const CustomerLoadingView();
+                  }
+                  return ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: state.items.length,
+                    separatorBuilder: (_, _) => SizedBox(width: 10.w),
+                    itemBuilder: (_, index) {
+                      final category = state.items[index];
+                      return _CategoryCard(
+                        category: category,
+                        onTap: () => context.pushNamed(
+                          Routes.categoryServicesRoute,
+                          pathParameters: <String, String>{
+                            'categoryKey': category.id,
+                          },
+                          extra: category.localizedName(isArabic),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
+            ),
+            SizedBox(height: 24.h),
+            BlocBuilder<CatalogCubit, CatalogState>(
+              bloc: providersCubit,
+              builder: (_, state) {
+                final nearby = state is ProvidersSuccess && state.nearby;
+                return Text(
+                  nearby
+                      ? 'customer_nearby_providers'.tr
+                      : 'customer_all_providers'.tr,
+                  style: TextStyles.bold22(color: colors.onboardingHeadline),
+                );
+              },
+            ),
+            SizedBox(height: 12.h),
+            BlocBuilder<CatalogCubit, CatalogState>(
+              bloc: providersCubit,
+              builder: (_, state) {
+                if (state is CatalogFailure) {
+                  return CustomerErrorView(state.message);
+                }
+                if (state is! ProvidersSuccess) {
+                  return SizedBox(
+                    height: 300.h,
+                    child: const CustomerLoadingView(),
+                  );
+                }
+                return Column(
+                  children: state.items
+                      .map(
+                        (provider) => Card(
+                          child: ListTile(
+                            onTap: () => context.pushNamed(
+                              Routes.providerProfileRoute,
+                              extra: provider.id,
+                            ),
+                            leading: const CircleAvatar(
+                              child: Icon(Icons.person_rounded),
+                            ),
+                            title: Text(provider.name),
+                            subtitle: Text(
+                              provider.distanceKm == null
+                                  ? provider.jobTitle ?? ''
+                                  : '${provider.distanceKm!.toStringAsFixed(1)} ${'customer_km'.tr}',
+                            ),
+                            trailing: provider.rating == null
+                                ? Text('customer_not_enough_ratings'.tr)
+                                : Text(
+                                    '${provider.rating!.toStringAsFixed(1)} ★',
+                                  ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryCard extends StatelessWidget {
+  const _CategoryCard({required this.category, required this.onTap});
+  final CategoryEntity category;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: 130.w,
+        padding: EdgeInsetsDirectional.all(12.r),
+        decoration: BoxDecoration(
+          color: colors.whiteColor,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: colors.onboardingBorderNeutral),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Icon(Icons.home_repair_service_rounded, color: colors.errorColor),
+            SizedBox(height: 8.h),
+            Text(
+              category.localizedName(isArabic),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyles.bold16(color: colors.onboardingHeadline),
+            ),
+            Text(
+              '${category.serviceCount}',
+              style: TextStyles.regular14(color: colors.lightTextColor),
             ),
           ],
         ),

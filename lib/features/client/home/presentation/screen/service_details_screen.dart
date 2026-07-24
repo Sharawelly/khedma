@@ -1,298 +1,178 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '/config/locale/app_localizations.dart';
 import '/config/routes/app_routes.dart';
 import '/core/utils/values/text_styles.dart';
-import '/core/widgets/cached_network_image_with_fallback.dart';
-import '/core/widgets/gaps.dart';
 import '/core/widgets/my_default_button.dart';
-import '/features/client/home/presentation/widgets/category_service_card.dart';
+import '/features/client/customer/domain/entities/customer_entities.dart';
+import '/features/client/customer/domain/usecases/params/customer_params.dart';
+import '/features/client/customer/presentation/cubit/catalog_cubit.dart';
+import '/features/client/customer/presentation/widgets/customer_state_widgets.dart';
 import '/injection_container.dart';
 
 class ServiceDetailsScreen extends StatelessWidget {
-  const ServiceDetailsScreen({super.key, required this.item});
-
-  final CategoryServiceItemData item;
+  const ServiceDetailsScreen({super.key, required this.serviceId});
+  final String serviceId;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: SafeArea(
-        minimum: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 16.h),
-        child: SizedBox(
-          height: 50.h,
-          child: MyDefaultButton(
-            btnText: 'home_service_book_now',
-            onPressed: () => context.pushNamed(Routes.confirmLocationRoute),
-            color: colors.errorColor,
-            borderColor: colors.errorColor,
-            borderRadius: 18,
-            height: 50.h,
-            textStyle: TextStyles.bold22(color: colors.whiteColor),
-          ),
+    return BlocProvider<CatalogCubit>(
+      create: (_) =>
+          ServiceLocator.instance()..execute(CatalogCommand.service(serviceId)),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('customer_service_details'.tr),
+          leading: BackButton(onPressed: context.pop),
+        ),
+        body: BlocBuilder<CatalogCubit, CatalogState>(
+          builder: (context, state) {
+            if (state is CatalogFailure) {
+              return CustomerErrorView(state.message);
+            }
+            if (state is! ServiceSuccess) {
+              return const CustomerLoadingView();
+            }
+            return _ServiceBody(service: state.item);
+          },
         ),
       ),
-      body: ListView(
-        padding: EdgeInsetsDirectional.only(bottom: 88.h),
-        children: <Widget>[
-          _DetailsImageHeader(item: item),
-          Transform.translate(
-            offset: Offset(0, -24.h),
-            child: Container(
-              padding: EdgeInsetsDirectional.fromSTEB(20.w, 20.h, 20.w, 0),
-              decoration: BoxDecoration(
-                color: colors.whiteColor,
-                borderRadius: BorderRadiusDirectional.only(
-                  topStart: Radius.circular(24.r),
-                  topEnd: Radius.circular(24.r),
+    );
+  }
+}
+
+class _ServiceBody extends StatelessWidget {
+  const _ServiceBody({required this.service});
+  final ServiceEntity service;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: EdgeInsetsDirectional.all(20.r),
+      children: <Widget>[
+        if (service.imageUrl != null)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18.r),
+            child: Image.network(
+              service.imageUrl!,
+              height: 230.h,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => SizedBox(height: 230.h),
+            ),
+          ),
+        if (service.imageUrls.isNotEmpty) ...<Widget>[
+          SizedBox(height: 10.h),
+          SizedBox(
+            height: 76.h,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: service.imageUrls.length,
+              separatorBuilder: (_, _) => SizedBox(width: 8.w),
+              itemBuilder: (_, index) => ClipRRect(
+                borderRadius: BorderRadius.circular(10.r),
+                child: Image.network(
+                  service.imageUrls[index],
+                  width: 76.r,
+                  fit: BoxFit.cover,
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Text(
-                        item.categoryTitleKey.tr,
-                        style: TextStyles.medium14(color: colors.homeCaption),
-                      ),
-                      Gaps.hGap4,
-                      Icon(
-                        Icons.chevron_right_rounded,
-                        size: 18.r,
-                        color: colors.homeCaption,
-                      ),
-                      Gaps.hGap4,
-                      Expanded(
-                        child: Text(
-                          item.titleKey.tr,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyles.semiBold14(
-                            color: colors.lightTextColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Gaps.vGap4,
-                  Text(
-                    item.titleKey.tr,
-                    style: TextStyles.bold32(color: colors.onboardingHeadline),
-                  ),
-                  Gaps.vGap12,
-                  Row(
-                    children: <Widget>[
-                      _InfoChip(
-                        icon: Icons.star_rounded,
-                        iconColor: colors.secondary,
-                        label: 'home_service_rating_label'.tr,
-                      ),
-                      Gaps.hGap8,
-                      _InfoChip(
-                        icon: Icons.access_time_filled_rounded,
-                        iconColor: colors.homeCaption,
-                        label: item.durationKey.tr,
-                      ),
-                    ],
-                  ),
-                  Gaps.vGap16,
-                  Divider(color: colors.onboardingBorderNeutral),
-                  Gaps.vGap16,
-                  Text(
-                    'home_service_about_title'.tr,
-                    style: TextStyles.bold24(color: colors.onboardingHeadline),
-                  ),
-                  Gaps.vGap8,
-                  Text(
-                    'home_service_about_description'.tr,
-                    style: TextStyles.medium16(
-                      color: colors.lightTextColor,
-                    ).copyWith(height: 1.5),
-                  ),
-                  Gaps.vGap20,
-                  Text(
-                    'home_service_whats_included_title'.tr,
-                    style: TextStyles.bold24(color: colors.onboardingHeadline),
-                  ),
-                  Gaps.vGap12,
-                  _IncludedItem(textKey: 'home_service_include_item_1'),
-                  Gaps.vGap10,
-                  _IncludedItem(textKey: 'home_service_include_item_2'),
-                  Gaps.vGap10,
-                  _IncludedItem(textKey: 'home_service_include_item_3'),
-                  Gaps.vGap24,
-                  Container(
-                    padding: EdgeInsetsDirectional.symmetric(
-                      horizontal: 14.w,
-                      vertical: 12.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colors.onboardingSurfaceMuted,
-                      borderRadius: BorderRadius.circular(18.r),
-                      border: Border.all(color: colors.onboardingBorderNeutral),
-                    ),
-                    child: Row(
-                      children: <Widget>[
-                        Icon(
-                          Icons.location_on_rounded,
-                          color: colors.errorColor,
-                          size: 20.r,
-                        ),
-                        Gaps.hGap10,
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                'home_service_location_title'.tr,
-                                style: TextStyles.bold14(
-                                  color: colors.homeCaption,
-                                ),
-                              ),
-                              Text(
-                                'home_service_location_value'.tr,
-                                style: TextStyles.bold20(
-                                  color: colors.onboardingHeadline,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text(
-                          'home_service_location_change'.tr,
-                          style: TextStyles.bold18(color: colors.errorColor),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Gaps.vGap24,
-                ],
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _DetailsImageHeader extends StatelessWidget {
-  const _DetailsImageHeader({required this.item});
-
-  final CategoryServiceItemData item;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        CachedNetworkImageWithFallback(
-          imageUrl: item.imageUrl,
-          width: double.infinity,
-          height: 320.h,
-          fit: BoxFit.cover,
+        SizedBox(height: 16.h),
+        Text(
+          service.localizedName(isArabic),
+          style: TextStyles.bold32(color: colors.onboardingHeadline),
         ),
-        SafeArea(
-          child: Padding(
-            padding: EdgeInsetsDirectional.symmetric(
-              horizontal: 14.w,
-              vertical: 8.h,
-            ),
-            child: Row(
-              children: <Widget>[
-                _CircleActionIcon(
-                  icon: Icons.arrow_back_rounded,
-                  onTap: context.pop,
-                ),
-                const Spacer(),
-                _CircleActionIcon(icon: Icons.favorite_rounded, onTap: () {}),
-              ],
-            ),
-          ),
+        SizedBox(height: 8.h),
+        Text(
+          service.localizedDescription(isArabic),
+          style: TextStyles.regular16(color: colors.lightTextColor),
         ),
-      ],
-    );
-  }
-}
-
-class _CircleActionIcon extends StatelessWidget {
-  const _CircleActionIcon({required this.icon, required this.onTap});
-
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 38.r,
-        height: 38.r,
-        decoration: BoxDecoration(
-          color: colors.whiteColor,
-          shape: BoxShape.circle,
+        SizedBox(height: 16.h),
+        Text(
+          '${service.rating.toStringAsFixed(1)} ★ (${service.reviewCount})',
+          style: TextStyles.bold18(color: colors.review),
         ),
-        child: Icon(icon, size: 20.r, color: colors.errorColor),
-      ),
-    );
-  }
-}
-
-class _InfoChip extends StatelessWidget {
-  const _InfoChip({
-    required this.icon,
-    required this.iconColor,
-    required this.label,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsetsDirectional.symmetric(horizontal: 10.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: colors.onboardingSurfaceMuted,
-        borderRadius: BorderRadius.circular(14.r),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(icon, size: 15.r, color: iconColor),
-          Gaps.hGap4,
+        SizedBox(height: 8.h),
+        if (service.total != null)
           Text(
-            label,
-            style: TextStyles.semiBold14(color: colors.lightTextColor),
+            '${service.total} ${service.currency}',
+            style: TextStyles.bold24(color: colors.errorColor),
           ),
-        ],
-      ),
+        if (service.availableProvidersCount != null)
+          Text(
+            '${'customer_available_providers'.tr}: ${service.availableProvidersCount}',
+          ),
+        SizedBox(height: 20.h),
+        _ServiceProviders(service: service),
+        SizedBox(height: 28.h),
+        MyDefaultButton(
+          btnText: 'home_service_book_now',
+          onPressed: () => context.pushNamed(
+            Routes.confirmLocationRoute,
+            extra: BookingDraft(serviceId: service.id, bookingType: 0),
+          ),
+          color: colors.errorColor,
+          borderColor: colors.errorColor,
+        ),
+      ],
     );
   }
 }
 
-class _IncludedItem extends StatelessWidget {
-  const _IncludedItem({required this.textKey});
-
-  final String textKey;
+class _ServiceProviders extends StatelessWidget {
+  const _ServiceProviders({required this.service});
+  final ServiceEntity service;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Icon(Icons.check_rounded, size: 20.r, color: colors.main),
-        Gaps.hGap10,
-        Expanded(
-          child: Text(
-            textKey.tr,
-            style: TextStyles.medium16(color: colors.lightTextColor),
+    return BlocProvider<CatalogCubit>(
+      create: (_) => ServiceLocator.instance()
+        ..execute(
+          CatalogCommand.providers(
+            categoryId: service.categoryId,
+            nearby: false,
           ),
         ),
-      ],
+      child: BlocBuilder<CatalogCubit, CatalogState>(
+        builder: (_, state) {
+          if (state is CatalogFailure) {
+            return CustomerErrorView(state.message);
+          }
+          if (state is! ProvidersSuccess) {
+            return SizedBox(height: 100.h, child: const CustomerLoadingView());
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                'customer_choose_provider'.tr,
+                style: TextStyles.bold22(color: colors.onboardingHeadline),
+              ),
+              ...state.items.map(
+                (provider) => ListTile(
+                  contentPadding: EdgeInsetsDirectional.zero,
+                  onTap: () => context.pushNamed(
+                    Routes.providerProfileRoute,
+                    extra: <String, String>{
+                      'providerId': provider.id,
+                      'serviceId': service.id,
+                    },
+                  ),
+                  leading: const CircleAvatar(
+                    child: Icon(Icons.person_rounded),
+                  ),
+                  title: Text(provider.name),
+                  subtitle: Text(provider.jobTitle ?? ''),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }

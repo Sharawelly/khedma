@@ -23,7 +23,7 @@ import 'package:khedma/features/shared/chat/domain/entities/chat_entities.dart';
 import 'package:khedma/features/provider/chats/presentation/screen/provider_chat_details_screen.dart';
 import 'package:khedma/features/client/bookings/presentation/screens/booking_details_screen.dart';
 import 'package:khedma/features/client/bookings/presentation/screens/provider_profile_screen.dart';
-import 'package:khedma/features/client/bookings/presentation/widgets/booking_service_card.dart';
+import 'package:khedma/features/client/customer/domain/usecases/params/customer_params.dart';
 import 'package:khedma/features/client/home/presentation/screen/choose_date_time_screen.dart';
 import 'package:khedma/features/client/home/presentation/screen/almost_done_screen.dart';
 import 'package:khedma/features/client/home/presentation/screen/provider_found_screen.dart';
@@ -33,8 +33,6 @@ import 'package:khedma/features/client/home/presentation/screen/confirm_location
 import 'package:khedma/features/client/home/presentation/screen/category_services_screen.dart';
 import 'package:khedma/features/client/home/presentation/screen/home_screen.dart';
 import 'package:khedma/features/client/home/presentation/screen/service_details_screen.dart';
-import 'package:khedma/features/client/home/presentation/widgets/category_service_card.dart';
-import 'package:khedma/core/utils/values/img_manager.dart';
 
 import 'package:khedma/features/client/notifications/presentation/screens/notifications_screen.dart';
 
@@ -159,94 +157,60 @@ abstract class Routes {
       GoRoute(
         name: categoryServicesRoute,
         path: '$categoryServicesRoute/:categoryKey',
-        builder: (BuildContext context, GoRouterState state) =>
-            CategoryServicesScreen(
-              categoryKey: state.pathParameters['categoryKey'] ?? 'cleaning',
-            ),
+        builder: (BuildContext context, GoRouterState state) {
+          return CategoryServicesScreen(
+            categoryId: state.pathParameters['categoryKey'] ?? '',
+            categoryName: state.extra is String ? state.extra! as String : '',
+          );
+        },
       ),
       GoRoute(
         name: serviceDetailsRoute,
         path: serviceDetailsRoute,
-        builder: (BuildContext context, GoRouterState state) {
-          final CategoryServiceItemData item =
-              state.extra is CategoryServiceItemData
-              ? state.extra! as CategoryServiceItemData
-              : const CategoryServiceItemData(
-                  categoryTitleKey: 'home_category_cleaning',
-                  titleKey: 'home_cleaning_service_deep_cleaning_title',
-                  subtitleKey: 'home_cleaning_service_deep_cleaning_subtitle',
-                  durationKey: 'home_duration_90_min',
-                  imageUrl:
-                      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
-                );
-          return ServiceDetailsScreen(item: item);
-        },
+        builder: (BuildContext context, GoRouterState state) =>
+            ServiceDetailsScreen(serviceId: state.extra as String),
       ),
       GoRoute(
         name: confirmLocationRoute,
         path: confirmLocationRoute,
         builder: (BuildContext context, GoRouterState state) =>
-            const ConfirmLocationScreen(),
+            ConfirmLocationScreen(draft: state.extra as BookingDraft),
       ),
       GoRoute(
         name: chooseDateTimeRoute,
         path: chooseDateTimeRoute,
         builder: (BuildContext context, GoRouterState state) =>
-            const ChooseDateTimeScreen(),
+            ChooseDateTimeScreen(draft: state.extra as BookingDraft),
       ),
       GoRoute(
         name: almostDoneRoute,
         path: almostDoneRoute,
         builder: (BuildContext context, GoRouterState state) =>
-            const AlmostDoneScreen(),
+            AlmostDoneScreen(draft: state.extra as BookingDraft),
       ),
       GoRoute(
         name: providerTrackingRoute,
         path: providerTrackingRoute,
         builder: (BuildContext context, GoRouterState state) =>
-            const ProviderTrackingScreen(),
+            ProviderTrackingScreen(bookingId: state.extra as String),
       ),
       GoRoute(
         name: providerFoundRoute,
         path: providerFoundRoute,
         builder: (BuildContext context, GoRouterState state) =>
-            const ProviderFoundScreen(),
+            ProviderFoundScreen(bookingId: state.extra as String),
       ),
       GoRoute(
         name: trackLiveRoute,
         path: trackLiveRoute,
         builder: (BuildContext context, GoRouterState state) =>
-            const TrackLiveScreen(),
+            TrackLiveScreen(bookingId: state.extra as String),
       ),
       GoRoute(
         name: bookingDetailsRoute,
         path: bookingDetailsRoute,
-        builder: (BuildContext context, GoRouterState state) {
-          final BookingServiceItemData booking =
-              state.extra is BookingServiceItemData
-              ? state.extra! as BookingServiceItemData
-              : BookingServiceItemData(
-                  serviceTitleKey: 'bookings_service_plumbing_title',
-                  providerNameKey: 'bookings_provider_fixit',
-                  dateTimeKey: 'bookings_time_1',
-                  status: BookingStatus.active,
-                  iconData: Icons.plumbing_rounded,
-                  iconColor: colors.pathsInfoAccent,
-                  serviceCategoryKey: 'bookings_category_plumbing',
-                  serviceDescriptionKey:
-                      'bookings_service_plumbing_description',
-                  timeRangeKey: 'bookings_time_range_1',
-                  locationAddressKey: 'bookings_location_address_1',
-                  providerRatingText: '4.9',
-                  paymentAmountKey: 'bookings_payment_amount_1',
-                  paymentStatusKey: 'bookings_payment_status_paid',
-                  paymentMethodKey: 'bookings_payment_method_1',
-                  serviceImageUrl: ImageAssets.bookingsServiceFaucet,
-                  locationImageUrl: ImageAssets.bookingsLocationMap,
-                  providerImageUrl: ImageAssets.bookingsProviderAvatar,
-                );
-          return BookingDetailsScreen(booking: booking);
-        },
+        builder: (BuildContext context, GoRouterState state) =>
+            BookingDetailsScreen(bookingId: state.extra as String),
       ),
       GoRoute(
         name: chatDetailsRoute,
@@ -260,30 +224,14 @@ abstract class Routes {
         name: providerProfileRoute,
         path: providerProfileRoute,
         builder: (BuildContext context, GoRouterState state) {
-          final BookingServiceItemData booking =
-              state.extra is BookingServiceItemData
-              ? state.extra! as BookingServiceItemData
-              : BookingServiceItemData(
-                  serviceTitleKey: 'bookings_service_plumbing_title',
-                  providerNameKey: 'bookings_provider_fixit',
-                  dateTimeKey: 'bookings_time_1',
-                  status: BookingStatus.active,
-                  iconData: Icons.plumbing_rounded,
-                  iconColor: colors.pathsInfoAccent,
-                  serviceCategoryKey: 'bookings_category_plumbing',
-                  serviceDescriptionKey:
-                      'bookings_service_plumbing_description',
-                  timeRangeKey: 'bookings_time_range_1',
-                  locationAddressKey: 'bookings_location_address_1',
-                  providerRatingText: '4.9',
-                  paymentAmountKey: 'bookings_payment_amount_1',
-                  paymentStatusKey: 'bookings_payment_status_paid',
-                  paymentMethodKey: 'bookings_payment_method_1',
-                  serviceImageUrl: ImageAssets.bookingsServiceFaucet,
-                  locationImageUrl: ImageAssets.bookingsLocationMap,
-                  providerImageUrl: ImageAssets.bookingsProviderAvatar,
-                );
-          return ProviderProfileScreen(booking: booking);
+          if (state.extra is Map<String, String>) {
+            final extra = state.extra! as Map<String, String>;
+            return ProviderProfileScreen(
+              providerId: extra['providerId'] ?? '',
+              serviceId: extra['serviceId'],
+            );
+          }
+          return ProviderProfileScreen(providerId: state.extra as String);
         },
       ),
       GoRoute(

@@ -1,408 +1,207 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
-import '/config/routes/app_routes.dart';
 import '/config/locale/app_localizations.dart';
+import '/config/routes/app_routes.dart';
 import '/core/utils/values/text_styles.dart';
-import '/core/widgets/app_centered_header_bar.dart';
-import '/core/widgets/app_image.dart';
-import '/core/widgets/gaps.dart';
-import '/core/widgets/my_default_button.dart';
-import '/features/client/bookings/presentation/widgets/booking_service_card.dart';
+import '/features/client/customer/domain/entities/customer_entities.dart';
+import '/features/client/customer/domain/usecases/params/customer_params.dart';
+import '/features/client/customer/presentation/cubit/booking_cubit.dart';
+import '/features/client/customer/presentation/widgets/customer_state_widgets.dart';
 import '/injection_container.dart';
 
 class BookingDetailsScreen extends StatelessWidget {
-  const BookingDetailsScreen({super.key, required this.booking});
-
-  final BookingServiceItemData booking;
+  const BookingDetailsScreen({super.key, required this.bookingId});
+  final String bookingId;
 
   @override
   Widget build(BuildContext context) {
-    final bool isActiveBooking = booking.status == BookingStatus.active;
-    return Scaffold(
-      backgroundColor: colors.backGround,
-      body: Column(
-        children: <Widget>[
-          AppCenteredHeaderBar(
-            title: 'bookings_details_title'.tr,
-            onBack: context.pop,
-            contentPadding: EdgeInsetsDirectional.only(
-              start: 8.w,
-              end: 8.w,
-              top: MediaQuery.paddingOf(context).top + 8.h,
-              bottom: 14.h,
-            ),
+    return BlocProvider<BookingCubit>(
+      create: (_) =>
+          ServiceLocator.instance()..execute(BookingCommand.detail(bookingId)),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('bookings_details_title'.tr),
+          leading: BackButton(onPressed: context.pop),
+        ),
+        body: BlocBuilder<BookingCubit, BookingState>(
+          builder: (_, state) {
+            if (state is BookingFailure) {
+              return CustomerErrorView(state.message);
+            }
+            if (state is! BookingDetailSuccess) {
+              return const CustomerLoadingView();
+            }
+            return _BookingBody(booking: state.booking);
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _BookingBody extends StatelessWidget {
+  const _BookingBody({required this.booking});
+  final BookingEntity booking;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: EdgeInsetsDirectional.all(20.r),
+      children: <Widget>[
+        Text(
+          booking.serviceName,
+          style: TextStyles.bold28(color: colors.onboardingHeadline),
+        ),
+        SizedBox(height: 8.h),
+        Text(
+          booking.localizedStatus(isArabic),
+          style: TextStyles.bold18(color: colors.errorColor),
+        ),
+        SizedBox(height: 16.h),
+        _line('customer_provider'.tr, booking.providerName),
+        _line('customer_provider_phone'.tr, booking.providerPhone),
+        _line('customer_address'.tr, booking.address),
+        _line('customer_notes'.tr, booking.notes),
+        _line('customer_total'.tr, booking.totalPrice.toStringAsFixed(2)),
+        SizedBox(height: 20.h),
+        Text(
+          'customer_status_timeline'.tr,
+          style: TextStyles.bold22(color: colors.onboardingHeadline),
+        ),
+        _time('customer_created'.tr, booking.createAt),
+        _time('customer_accepted'.tr, booking.acceptedAt),
+        _time('customer_en_route'.tr, booking.enRouteAt),
+        _time('customer_arrived'.tr, booking.arrivedAt),
+        _time('customer_started'.tr, booking.startedAt),
+        _time('customer_completed'.tr, booking.completedAt),
+        _time('customer_cancelled'.tr, booking.cancelledAt),
+        SizedBox(height: 24.h),
+        if (booking.status < 6)
+          FilledButton(
+            onPressed: () =>
+                context.pushNamed(Routes.trackLiveRoute, extra: booking.id),
+            child: Text('bookings_track_provider'.tr),
           ),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsetsDirectional.only(
-                start: 16.w,
-                end: 16.w,
-                top: 0,
-                bottom: isActiveBooking ? 24.h : 34.h,
-              ),
-              children: <Widget>[
-                if (isActiveBooking) ...<Widget>[
-                  Container(
-                    margin: EdgeInsetsDirectional.only(bottom: 14.h),
-                    padding: EdgeInsetsDirectional.symmetric(vertical: 12.h),
-                    alignment: AlignmentDirectional.center,
-                    color: colors.errorColor.withValues(alpha: 0.08),
-                    child: Text(
-                      'bookings_active_booking'.tr,
-                      style: TextStyles.bold14(color: colors.errorColor),
-                    ),
+        if (booking.status < 6)
+          TextButton(
+            onPressed: () => _cancel(context),
+            child: Text('customer_cancel_booking'.tr),
+          ),
+        if (booking.status == 6)
+          FilledButton(
+            onPressed: () => _review(context),
+            child: Text('customer_leave_review'.tr),
+          ),
+      ],
+    );
+  }
+
+  Widget _line(String label, String? value) {
+    if (value == null || value.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: EdgeInsetsDirectional.only(bottom: 8.h),
+      child: Text('$label: $value'),
+    );
+  }
+
+  Widget _time(String label, DateTime? value) {
+    if (value == null) {
+      return const SizedBox.shrink();
+    }
+    return ListTile(
+      contentPadding: EdgeInsetsDirectional.zero,
+      leading: const Icon(Icons.check_circle_rounded),
+      title: Text(label),
+      subtitle: Text(value.toLocal().toString()),
+    );
+  }
+
+  Future<void> _cancel(BuildContext context) async {
+    final controller = TextEditingController();
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('customer_cancel_booking'.tr),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(hintText: 'customer_cancel_reason'.tr),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => dialogContext.pop(),
+            child: Text('cancel'.tr),
+          ),
+          TextButton(
+            onPressed: () => dialogContext.pop(controller.text),
+            child: Text('yes'.tr),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (reason != null && reason.trim().isNotEmpty && context.mounted) {
+      await context.read<BookingCubit>().execute(
+        BookingCommand.cancel(booking.id, reason.trim()),
+      );
+    }
+  }
+
+  Future<void> _review(BuildContext context) async {
+    var rating = 5;
+    final comment = TextEditingController();
+    final submit = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (_, setState) => AlertDialog(
+          title: Text('customer_leave_review'.tr),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              DropdownButton<int>(
+                value: rating,
+                items: List<DropdownMenuItem<int>>.generate(
+                  5,
+                  (index) => DropdownMenuItem<int>(
+                    value: index + 1,
+                    child: Text('${index + 1} ★'),
                   ),
-                ] else ...<Widget>[Gaps.vGap16],
-                _BookingServiceOverviewCard(booking: booking),
-                Gaps.vGap16,
-                _BookingDateCard(booking: booking),
-                Gaps.vGap16,
-                _BookingLocationCard(booking: booking),
-                Gaps.vGap16,
-                _BookingProviderCard(
-                  booking: booking,
-                  onViewProfile: () =>
-                      context.push(Routes.providerProfileRoute, extra: booking),
                 ),
-                Gaps.vGap16,
-                _BookingPaymentCard(booking: booking),
-              ],
-            ),
-          ),
-          if (isActiveBooking)
-            Padding(
-              padding: EdgeInsetsDirectional.only(
-                start: 16.w,
-                end: 16.w,
-                bottom: 22.h,
+                onChanged: (value) => setState(() => rating = value ?? 5),
               ),
-              child: SizedBox(
-                height: 50.h,
-                child: MyDefaultButton(
-                  btnText: 'bookings_track_provider',
-                  onPressed: () {},
-                  color: colors.errorColor,
-                  borderColor: colors.errorColor,
-                  borderRadius: 18,
-                  height: 50.h,
-                  textStyle: TextStyles.bold22(color: colors.whiteColor),
+              TextField(
+                controller: comment,
+                decoration: InputDecoration(
+                  hintText: 'customer_review_comment'.tr,
                 ),
               ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => dialogContext.pop(true),
+              child: Text('save'.tr),
             ),
-        ],
+          ],
+        ),
       ),
     );
-  }
-}
-
-class _BookingServiceOverviewCard extends StatelessWidget {
-  const _BookingServiceOverviewCard({required this.booking});
-
-  final BookingServiceItemData booking;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsetsDirectional.all(12.r),
-      decoration: BoxDecoration(
-        color: colors.whiteColor,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: colors.onboardingBorderNeutral),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10.r),
-            child: AppImage.network(
-              imageUrl: booking.serviceImageUrl,
-              width: 84.r,
-              height: 84.r,
-              fit: BoxFit.cover,
-              isCached: true,
-            ),
+    final value = comment.text.trim();
+    comment.dispose();
+    if (submit == true && context.mounted) {
+      await context.read<BookingCubit>().execute(
+        BookingCommand.review(
+          ReviewParams(
+            bookingId: booking.id,
+            rating: rating,
+            comment: value.isEmpty ? null : value,
           ),
-          Gaps.hGap12,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Container(
-                  padding: EdgeInsetsDirectional.symmetric(
-                    horizontal: 10.w,
-                    vertical: 4.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colors.errorColor.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(999.r),
-                  ),
-                  child: Text(
-                    booking.serviceCategoryKey.tr,
-                    style: TextStyles.bold10(color: colors.errorColor),
-                  ),
-                ),
-                Gaps.vGap8,
-                Text(
-                  booking.serviceTitleKey.tr,
-                  style: TextStyles.bold20(color: colors.onboardingHeadline),
-                ),
-                Gaps.vGap4,
-                Text(
-                  booking.serviceDescriptionKey.tr,
-                  style: TextStyles.regular14(color: colors.lightTextColor),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BookingDateCard extends StatelessWidget {
-  const _BookingDateCard({required this.booking});
-
-  final BookingServiceItemData booking;
-
-  @override
-  Widget build(BuildContext context) {
-    return _BookingDetailCardShell(
-      child: Row(
-        children: <Widget>[
-          Container(
-            width: 44.r,
-            height: 44.r,
-            decoration: BoxDecoration(
-              color: colors.errorColor.withValues(alpha: 0.08),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.calendar_today_rounded,
-              size: 20.r,
-              color: colors.errorColor,
-            ),
-          ),
-          Gaps.hGap12,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  booking.dateTimeKey.tr,
-                  style: TextStyles.bold18(color: colors.onboardingHeadline),
-                ),
-                Gaps.vGap2,
-                Text(
-                  booking.timeRangeKey.tr,
-                  style: TextStyles.regular14(color: colors.lightTextColor),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BookingLocationCard extends StatelessWidget {
-  const _BookingLocationCard({required this.booking});
-
-  final BookingServiceItemData booking;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.whiteColor,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: colors.onboardingBorderNeutral),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          ClipRRect(
-            borderRadius: BorderRadiusDirectional.only(
-              topStart: Radius.circular(14.r),
-              topEnd: Radius.circular(14.r),
-            ),
-            child: AppImage.network(
-              imageUrl: booking.locationImageUrl,
-              width: double.infinity,
-              height: 158.h,
-              fit: BoxFit.cover,
-              isCached: true,
-            ),
-          ),
-          Padding(
-            padding: EdgeInsetsDirectional.all(14.r),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  'bookings_service_location'.tr,
-                  style: TextStyles.bold20(color: colors.onboardingHeadline),
-                ),
-                Gaps.vGap4,
-                Text(
-                  booking.locationAddressKey.tr,
-                  style: TextStyles.regular17(color: colors.textColor),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BookingProviderCard extends StatelessWidget {
-  const _BookingProviderCard({
-    required this.booking,
-    required this.onViewProfile,
-  });
-
-  final BookingServiceItemData booking;
-  final VoidCallback onViewProfile;
-
-  @override
-  Widget build(BuildContext context) {
-    return _BookingDetailCardShell(
-      child: Row(
-        children: <Widget>[
-          ClipOval(
-            child: AppImage.network(
-              imageUrl: booking.providerImageUrl,
-              width: 44.r,
-              height: 44.r,
-              fit: BoxFit.cover,
-              isCached: true,
-              isCircle: true,
-            ),
-          ),
-          Gaps.hGap10,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  booking.providerNameKey.tr,
-                  style: TextStyles.bold20(color: colors.onboardingHeadline),
-                ),
-                Gaps.vGap2,
-                Row(
-                  children: <Widget>[
-                    Icon(Icons.star_rounded, size: 14.r, color: colors.review),
-                    Gaps.hGap4,
-                    Text(
-                      booking.providerRatingText,
-                      style: TextStyles.semiBold16(
-                        color: colors.lightTextColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          InkWell(
-            onTap: onViewProfile,
-            borderRadius: BorderRadius.circular(8.r),
-            child: Padding(
-              padding: EdgeInsetsDirectional.symmetric(
-                horizontal: 4.w,
-                vertical: 4.h,
-              ),
-              child: Text(
-                'bookings_view_profile'.tr,
-                style: TextStyles.bold18(color: colors.errorColor),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BookingPaymentCard extends StatelessWidget {
-  const _BookingPaymentCard({required this.booking});
-
-  final BookingServiceItemData booking;
-
-  @override
-  Widget build(BuildContext context) {
-    return _BookingDetailCardShell(
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Text(
-                      booking.paymentAmountKey.tr,
-                      style: TextStyles.bold24(color: colors.errorColor),
-                    ),
-                    Gaps.hGap8,
-                    Container(
-                      padding: EdgeInsetsDirectional.symmetric(
-                        horizontal: 8.w,
-                        vertical: 3.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colors.mainAlpha20,
-                        borderRadius: BorderRadius.circular(6.r),
-                      ),
-                      child: Text(
-                        booking.paymentStatusKey.tr,
-                        style: TextStyles.bold11(color: colors.main),
-                      ),
-                    ),
-                  ],
-                ),
-                Gaps.vGap4,
-                Text(
-                  booking.paymentMethodKey.tr,
-                  style: TextStyles.regular16(color: colors.lightTextColor),
-                ),
-              ],
-            ),
-          ),
-          Icon(
-            Icons.account_balance_wallet_outlined,
-            size: 26.r,
-            color: colors.homeCaption,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BookingDetailCardShell extends StatelessWidget {
-  const _BookingDetailCardShell({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsetsDirectional.symmetric(
-        horizontal: 14.w,
-        vertical: 14.h,
-      ),
-      decoration: BoxDecoration(
-        color: colors.whiteColor,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: colors.onboardingBorderNeutral),
-      ),
-      child: child,
-    );
+        ),
+      );
+    }
   }
 }

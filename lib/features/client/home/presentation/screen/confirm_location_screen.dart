@@ -1,181 +1,80 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '/config/locale/app_localizations.dart';
 import '/config/routes/app_routes.dart';
-import '/core/utils/values/text_styles.dart';
-import '/core/widgets/app_centered_header_bar.dart';
-import '/core/widgets/gaps.dart';
-import '/core/widgets/my_default_button.dart';
+import '/features/client/customer/domain/usecases/params/customer_params.dart';
+import '/features/shared/profile/domain/entities/saved_address_entity.dart';
+import '/features/shared/profile/presentation/cubit/profile_management_cubit.dart';
+import '/features/client/customer/presentation/widgets/customer_state_widgets.dart';
 import '/injection_container.dart';
 
-class ConfirmLocationScreen extends StatelessWidget {
-  const ConfirmLocationScreen({super.key});
+class ConfirmLocationScreen extends StatefulWidget {
+  const ConfirmLocationScreen({super.key, required this.draft});
+  final BookingDraft draft;
+
+  @override
+  State<ConfirmLocationScreen> createState() => _ConfirmLocationScreenState();
+}
+
+class _ConfirmLocationScreenState extends State<ConfirmLocationScreen> {
+  SavedAddressEntity? selected;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: SafeArea(
-        minimum: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 16.h),
-        child: SizedBox(
-          height: 52.h,
-          child: MyDefaultButton(
-            btnText: 'home_confirm_location_cta',
-            onPressed: () => context.pushNamed(Routes.chooseDateTimeRoute),
-            color: colors.errorColor,
-            borderColor: colors.errorColor,
-            borderRadius: 18,
-            height: 52,
-            textStyle: TextStyles.bold22(color: colors.whiteColor),
-          ),
+    return BlocProvider<ProfileManagementCubit>(
+      create: (_) => ServiceLocator.instance()..execute(const LoadAddresses()),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('home_confirm_location_header_title'.tr),
+          leading: BackButton(onPressed: context.pop),
         ),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: Stack(
-                children: <Widget>[
-                  Container(
-                    width: double.infinity,
-                    color: colors.onboardingSurfaceMuted,
-                    child: Center(
-                      child: Icon(
-                        Icons.location_on_rounded,
-                        size: 66.r,
-                        color: colors.errorColor.withValues(alpha: 0.8),
-                      ),
-                    ),
+        body: BlocBuilder<ProfileManagementCubit, ProfileManagementState>(
+          builder: (context, state) {
+            if (state is ProfileManagementFailure) {
+              return CustomerErrorView(state.message.tr);
+            }
+            if (state is! ProfileAddressesSuccess) {
+              return const CustomerLoadingView();
+            }
+            return ListView(
+              padding: EdgeInsetsDirectional.all(16.r),
+              children: <Widget>[
+                ...state.addresses.map(
+                  (address) => RadioListTile<String>(
+                    value: address.id,
+                    groupValue: selected?.id,
+                    title: Text(address.label),
+                    subtitle: Text(address.addressLine),
+                    onChanged: (_) => setState(() => selected = address),
                   ),
-                  AppCenteredHeaderBar(
-                    title: 'home_confirm_location_header_title'.tr,
-                    onBack: context.pop,
-                    trailing: SizedBox(width: 48.w),
-                    showBottomBorder: false,
-                    backgroundColor: Colors.transparent,
-                    contentPadding: EdgeInsetsDirectional.fromSTEB(
-                      8.w,
-                      8.h,
-                      16.w,
-                      8.h,
-                    ),
-                  ),
-                  PositionedDirectional(
-                    start: 16.w,
-                    end: 16.w,
-                    top: 84.h,
-                    child: Container(
-                      height: 52.h,
-                      padding: EdgeInsetsDirectional.symmetric(
-                        horizontal: 14.w,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colors.whiteColor,
-                        borderRadius: BorderRadius.circular(24.r),
-                        boxShadow: <BoxShadow>[
-                          BoxShadow(
-                            color: colors.shadowCardLight,
-                            blurRadius: 12.r,
-                            offset: Offset(0, 4.h),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: <Widget>[
-                          Icon(
-                            Icons.search_rounded,
-                            color: colors.errorColor,
-                            size: 22.r,
-                          ),
-                          Gaps.hGap10,
-                          Expanded(
-                            child: Text(
-                              'home_confirm_location_search_value'.tr,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyles.medium18(
-                                color: colors.onboardingHeadline,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: double.infinity,
-              padding: EdgeInsetsDirectional.fromSTEB(20.w, 20.h, 20.w, 20.h),
-              decoration: BoxDecoration(
-                color: colors.whiteColor,
-                borderRadius: BorderRadiusDirectional.only(
-                  topStart: Radius.circular(24.r),
-                  topEnd: Radius.circular(24.r),
                 ),
-                border: Border(
-                  top: BorderSide(color: colors.onboardingBorderNeutral),
+                OutlinedButton.icon(
+                  onPressed: () => context
+                      .read<ProfileManagementCubit>()
+                      .execute(CaptureCurrentAddress('current_location'.tr)),
+                  icon: const Icon(Icons.my_location_rounded),
+                  label: Text('current_location'.tr),
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    'home_confirm_location_title'.tr,
-                    style: TextStyles.bold24(color: colors.onboardingHeadline),
-                  ),
-                  Gaps.vGap12,
-                  Container(
-                    padding: EdgeInsetsDirectional.symmetric(
-                      horizontal: 14.w,
-                      vertical: 12.h,
+              ],
+            );
+          },
+        ),
+        bottomNavigationBar: SafeArea(
+          minimum: EdgeInsets.all(16.r),
+          child: Builder(
+            builder: (context) => FilledButton(
+              onPressed: selected == null
+                  ? null
+                  : () => context.pushNamed(
+                      Routes.chooseDateTimeRoute,
+                      extra: widget.draft.copyWith(addressId: selected!.id),
                     ),
-                    decoration: BoxDecoration(
-                      color: colors.onboardingSurfaceMuted,
-                      borderRadius: BorderRadius.circular(18.r),
-                      border: Border.all(color: colors.onboardingBorderNeutral),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Icon(
-                          Icons.location_on_rounded,
-                          color: colors.errorColor,
-                          size: 20.r,
-                        ),
-                        Gaps.hGap10,
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                'home_confirm_location_value_title'.tr,
-                                style: TextStyles.bold18(
-                                  color: colors.onboardingHeadline,
-                                ).copyWith(height: 1.h),
-                              ),
-                              Text(
-                                'home_confirm_location_value_subtitle'.tr,
-                                style: TextStyles.medium12(
-                                  color: colors.lightTextColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text(
-                          'home_service_location_change'.tr,
-                          style: TextStyles.bold18(color: colors.errorColor),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              child: Text('home_confirm_location_cta'.tr),
             ),
-          ],
+          ),
         ),
       ),
     );
