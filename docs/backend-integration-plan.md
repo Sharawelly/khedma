@@ -192,10 +192,10 @@ source over Swagger." **That is now out of date** — every new endpoint carries
 4. **Do NOT build an image-URL prepend helper.** URLs are absolute now. If any prepending logic exists,
    remove it. (See the `App:PublicBaseUrl` caveat above — it affects deployment, not our client code.)
 
-5. **App identity.** Change `com.example.khedma` → the real bundle/app id in
-   `android/app/build.gradle.kts` (`namespace` + `applicationId`) and iOS `PRODUCT_BUNDLE_IDENTIFIER`
-   (all 3 configs). **⚠️ Confirm the final id with the product owner first** — it's needed for the
-   Google Maps key restrictions in Phase 7 and for store listing.
+5. **App identity — DEFERRED to Phase 7.** The owner will choose the final identifier during the Google
+   Maps setup (it must match the Maps key's package-name + SHA-1 restriction, so the two are done
+   together). `com.example.khedma` stays in place through Phases 0–6; nothing in those phases depends
+   on it.
 
 6. **Secure storage.** Extend `app_secure_storage.dart` with `refreshToken` (+ optionally
    `tokenExpiresAt`, `userRole`) keys and accessors.
@@ -217,8 +217,20 @@ the auth **UI screens** (login, create-account, otp, role-selection, language); 
    Model the token as `AuthTokenModel { accessToken, refreshToken, expiresAt, role, userName, userId }`.
    Persist accessToken + refreshToken in secure storage; **take `userId` straight from the response**.
 
-   > ⚠️ **BLOCKED — confirm before coding:** the backend is waiting on the **final required register
-   > field set per role** so its DTOs match the app form exactly. Settle this first, then implement.
+   > ✅ **RESOLVED 2026-07-24 — register field set confirmed by the product owner:**
+   > - **Customer form:** `fullName`, `email`, `password`, **`phoneNumber`**. (Phone is required so the
+   >   provider's `AcceptResultDto.customerPhone` is populated and they can actually call the customer.)
+   >   `dateOfBirth` and `profilePicture` are **skipped** at signup.
+   > - **Provider form: two-step signup.** Step 1 = the same account fields as customer. Step 2 =
+   >   professional details: `jobTitle`, `hourlyRate`, `serviceArea`, `experienceYears`, `description`.
+   >   `certificateImages` / `portfolioImages` are **deferred to profile editing** (Phase 2), not signup.
+   > - **OTP is skipped.** The backend has no OTP/phone-verification endpoint (only email confirmation,
+   >   whose token prints to the server console with no mail sender wired). Route **past**
+   >   `otp_screen.dart`; leave the file in place but unused rather than deleting it.
+   >
+   > **[V]** `BaseRegisterDto` declares no `[Required]` attributes and `AuthService` does not validate
+   > `PhoneNumber`, so an empty phone would be silently accepted server-side — another reason to collect
+   > it on the client.
 
 2. **Datasource / repo / usecases / cubits.** Rewrite `auth_remote_datasource.dart`, `auth_repo_impl.dart`,
    and the login/register/auto-login cubits. Keep the DI structure (`auth_injection.dart`). Remove
