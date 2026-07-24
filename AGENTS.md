@@ -21,16 +21,27 @@ says so).
 Use `dart format lib test` — **not** `dart format .`. This repo has a ~1.4 GB `build/` directory;
 `dart format .` walks it and stalls for minutes on Windows.
 
-### If you are a sandboxed agent
+### If you are a delegated agent: do not run the gates
 
-`flutter analyze`, `dart analyze`, and `flutter test` depend on a Dart **analysis-server child
-process** that sandboxed environments typically block. If those commands hang or fail to start, that
-is the sandbox — not a repo problem. Run `dart format lib test` only, and let whoever dispatched you
-run the analyzer and tests. **Do not** try to launch the analysis server directly or drive its JSON
-protocol as a workaround; it burns a lot of time and does not work.
+**Write code. Do not verify it.** The orchestrator runs `flutter analyze` and `flutter test` locally
+after you finish, at no cost to you, and sends you a short delta brief if anything fails. Your run is
+billed; theirs is not. Verification you perform is duplicated spend.
 
-Compensate by re-reading each file you change and verifying by hand that referenced symbols exist,
-imports resolve, and every call site of anything you renamed or deleted has been updated.
+Concretely:
+- **Run no Dart or Flutter tooling at all.** Not `flutter analyze`, `dart analyze`, `flutter test`,
+  `flutter build`, `flutter pub`, and **not `dart format`** either. Every one of them hangs in this
+  sandbox: the analyzer and test runner need a blocked analysis-server child process, and `dart
+  format` stalls indefinitely too. Two runs have already been lost this way — one burned 17 minutes,
+  another hung for 29 minutes on `dart format` alone.
+- **Never attempt a workaround** — do not launch the analysis server directly, drive its JSON
+  protocol, or hand-roll a substitute checker. It does not work and it is expensive.
+- Formatting is the orchestrator's job too. Just write idiomatic, already-well-formatted Dart
+  (2-space indent, trailing commas on multi-line argument lists) and leave it.
+- Do not re-read files you have already read unless you changed them, and do not repeat searches you
+  have already run. Read what you need, write the change, move on.
+
+Spend your effort on getting it right the first time, not on proving it afterwards: when you rename,
+retype, or delete a symbol, grep once for it and fix every hit in the same pass.
 
 ### Backend id types (a real trap)
 
