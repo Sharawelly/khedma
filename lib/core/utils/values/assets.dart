@@ -19,7 +19,6 @@ class ImgAssets {
   static const String oil = 'assets/images/oil.png';
   static const String honey = 'assets/images/honey.png';
 
-
   static const String imagesLogoAr = 'assets/images/logo.jpg';
   static const String imagesLogoEn = 'assets/images/logo.jpg';
 
@@ -52,7 +51,7 @@ class ImgAssets {
   static const String myNotificationsIcon = 'assets/images/notification.png';
   static const String myInfoIcon = 'assets/images/Info.png';
   //static const String editProfileImage = 'assets/images/edit_photo.png';
-    static const String editProfileImage = 'assets/images/Button.png';
+  static const String editProfileImage = 'assets/images/Button.png';
 
   static const String changePasswordImage = 'assets/images/change_password.png';
   static const String aboutAppImage = 'assets/images/about_app_image.png';

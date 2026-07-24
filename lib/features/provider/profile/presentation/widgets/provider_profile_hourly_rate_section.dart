@@ -14,7 +14,10 @@ class ProviderProfileHourlyRateSection extends StatelessWidget {
       titleKey: 'provider_hourly_rate'.tr,
       child: Container(
         width: double.infinity,
-        padding: EdgeInsetsDirectional.symmetric(horizontal: 10.w, vertical: 10.h),
+        padding: EdgeInsetsDirectional.symmetric(
+          horizontal: 10.w,
+          vertical: 10.h,
+        ),
         decoration: BoxDecoration(
           color: colors.backGround,
           borderRadius: BorderRadius.circular(10.r),

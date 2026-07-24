@@ -18,21 +18,21 @@ Future<bool?> showAppModalBottomSheet({
     ),
     builder: (BuildContext context) {
       return Padding(
-        padding:
-            EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
         child: PopScope(
           onPopInvokedWithResult: (value, result) async {
             isDismissible;
           },
-          child: Builder(builder: (BuildContext context) {
-            if (height == null) {
-              return child;
-            }
-            return SizedBox(
-              height: height,
-              child: child,
-            );
-          }),
+          child: Builder(
+            builder: (BuildContext context) {
+              if (height == null) {
+                return child;
+              }
+              return SizedBox(height: height, child: child);
+            },
+          ),
         ),
       );
     },

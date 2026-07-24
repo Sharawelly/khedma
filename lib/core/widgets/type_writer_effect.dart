@@ -60,9 +60,9 @@ class _TypewriterEffectState extends State<TypeWriterEffect> {
   Widget build(BuildContext context) {
     return Text(
       _displayText,
-      style: widget.style ?? TextStyles.medium16(
-        color: widget.color ?? colors.textColor,
-      ),
+      style:
+          widget.style ??
+          TextStyles.medium16(color: widget.color ?? colors.textColor),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );

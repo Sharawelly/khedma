@@ -30,12 +30,18 @@ Future<ImageSource?> showImageSourcePicker(BuildContext context) async {
             Gaps.vGap20,
             ListTile(
               leading: Icon(Icons.camera_alt, color: colors.main),
-              title: Text('camera'.tr, style: TextStyles.medium16(color: colors.textColor)),
+              title: Text(
+                'camera'.tr,
+                style: TextStyles.medium16(color: colors.textColor),
+              ),
               onTap: () => Navigator.of(context).pop(ImageSource.camera),
             ),
             ListTile(
               leading: Icon(Icons.photo_library, color: colors.main),
-              title: Text('gallery'.tr, style: TextStyles.medium16(color: colors.textColor)),
+              title: Text(
+                'gallery'.tr,
+                style: TextStyles.medium16(color: colors.textColor),
+              ),
               onTap: () => Navigator.of(context).pop(ImageSource.gallery),
             ),
             Gaps.vGap8,

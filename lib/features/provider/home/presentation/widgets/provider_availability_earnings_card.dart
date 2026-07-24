@@ -66,10 +66,7 @@ class ProviderAvailabilityEarningsCard extends StatelessWidget {
             ],
           ),
           Gaps.vGap12,
-          Container(
-            height: 1,
-            color: colors.whiteColor.withValues(alpha: 0.3),
-          ),
+          Container(height: 1, color: colors.whiteColor.withValues(alpha: 0.3)),
           Gaps.vGap12,
           Row(
             children: <Widget>[
@@ -153,10 +150,7 @@ class _StatBlock extends StatelessWidget {
           style: TextStyles.regular10(color: colors.whiteColor),
         ),
         Gaps.vGap4,
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: value,
-        ),
+        FittedBox(fit: BoxFit.scaleDown, child: value),
       ],
     );
   }

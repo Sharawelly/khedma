@@ -20,7 +20,9 @@ class ChatDetailsHeader extends StatelessWidget {
       padding: EdgeInsetsDirectional.fromSTEB(8.w, 4.h, 12.w, 8.h),
       decoration: BoxDecoration(
         color: colors.whiteColor,
-        border: Border(bottom: BorderSide(color: colors.onboardingBorderNeutral)),
+        border: Border(
+          bottom: BorderSide(color: colors.onboardingBorderNeutral),
+        ),
       ),
       child: SafeArea(
         bottom: false,

@@ -30,20 +30,11 @@ class PasswordStrengthIndicator extends StatelessWidget {
           _StrengthMeterRow(strength: strength),
           SizedBox(height: 12.h),
         ],
-        _CriterionRow(
-          met: hasMinLength,
-          label: 'pwdMinLength'.tr,
-        ),
+        _CriterionRow(met: hasMinLength, label: 'pwdMinLength'.tr),
         SizedBox(height: 4.h),
-        _CriterionRow(
-          met: hasUppercase,
-          label: 'pwdUppercase'.tr,
-        ),
+        _CriterionRow(met: hasUppercase, label: 'pwdUppercase'.tr),
         SizedBox(height: 4.h),
-        _CriterionRow(
-          met: hasNumber,
-          label: 'pwdNumber'.tr,
-        ),
+        _CriterionRow(met: hasNumber, label: 'pwdNumber'.tr),
       ],
     );
   }
@@ -111,10 +102,7 @@ class _StrengthMeterRow extends StatelessWidget {
               'pwdStrengthLabel'.tr,
               style: TextStyles.medium12(color: colors.onboardingBody),
             ),
-            Text(
-              _label,
-              style: TextStyles.medium12(color: _labelColor),
-            ),
+            Text(_label, style: TextStyles.medium12(color: _labelColor)),
           ],
         ),
         SizedBox(height: 4.h),
@@ -157,10 +145,7 @@ class _CriterionRow extends StatelessWidget {
           ),
         ),
         SizedBox(width: 9.w),
-        Text(
-          label,
-          style: TextStyles.medium13(color: colors.onboardingBody),
-        ),
+        Text(label, style: TextStyles.medium13(color: colors.onboardingBody)),
       ],
     );
   }

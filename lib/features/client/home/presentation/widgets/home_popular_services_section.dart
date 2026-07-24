@@ -133,7 +133,9 @@ class HomeServiceCard extends StatelessWidget {
                       item.titleKey.tr,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyles.bold16(color: colors.onboardingHeadline),
+                      style: TextStyles.bold16(
+                        color: colors.onboardingHeadline,
+                      ),
                     ),
                     Gaps.vGap2,
                     Text(

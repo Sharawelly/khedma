@@ -10,12 +10,10 @@ part 'language_preference_state.dart';
 
 class LanguagePreferenceCubit extends Cubit<LanguagePreferenceState> {
   LanguagePreferenceCubit({required AppLocaleCubit appLocaleCubit})
-      : _appLocaleCubit = appLocaleCubit,
-        super(
-          LanguagePreferenceState(
-            selected: sharedPreferences.getLanguageCode(),
-          ),
-        );
+    : _appLocaleCubit = appLocaleCubit,
+      super(
+        LanguagePreferenceState(selected: sharedPreferences.getLanguageCode()),
+      );
 
   final AppLocaleCubit _appLocaleCubit;
 

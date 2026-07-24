@@ -6,9 +6,7 @@ class ProviderNavigationState extends Equatable {
   final ProviderNavItem current;
 
   ProviderNavigationState copyWith({ProviderNavItem? current}) {
-    return ProviderNavigationState(
-      current: current ?? this.current,
-    );
+    return ProviderNavigationState(current: current ?? this.current);
   }
 
   @override

@@ -6,10 +6,10 @@ import '/config/locale/app_localizations.dart';
 /// Uses the restart_app package to restart the app using native APIs
 class RestartAppService {
   /// Restarts the Flutter app
-  /// 
+  ///
   /// On iOS, the app will exit and send a local notification to the user.
   /// The user can then tap this notification to reopen the app.
-  /// 
+  ///
   /// On Android and Web, the app will restart normally.
   static Future<void> restartApp() async {
     await Restart.restartApp(

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -29,8 +28,9 @@ class ShareProductServiceImpl implements ShareProductService {
     final text = 'Check out: $productName\n$link';
 
     final box = context?.findRenderObject() as RenderBox?;
-    final sharePositionOrigin =
-        box != null ? box.localToGlobal(Offset.zero) & box.size : null;
+    final sharePositionOrigin = box != null
+        ? box.localToGlobal(Offset.zero) & box.size
+        : null;
 
     await SharePlus.instance.share(
       ShareParams(

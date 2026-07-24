@@ -13,7 +13,8 @@ abstract class DeepLinkConstants {
   static const String productPathTemplate = '/product-details';
 
   /// Full path for a product details deep link.
-  static String productDetailsPath(int productId) => '$productPathTemplate/$productId';
+  static String productDetailsPath(int productId) =>
+      '$productPathTemplate/$productId';
 
   /// Full shareable URL for a product (https). Use for sharing to WhatsApp, etc.
   static String productShareUrl(int productId) =>

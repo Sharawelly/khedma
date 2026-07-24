@@ -66,7 +66,9 @@ class BookingServiceCard extends StatelessWidget {
                       Gaps.vGap2,
                       Text(
                         booking.providerNameKey.tr,
-                        style: TextStyles.medium14(color: colors.lightTextColor),
+                        style: TextStyles.medium14(
+                          color: colors.lightTextColor,
+                        ),
                       ),
                       Gaps.vGap2,
                       Text(

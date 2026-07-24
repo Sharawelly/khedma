@@ -9,8 +9,5 @@ class AddAccountParams extends Equatable {
   @override
   List<Object?> get props => [id, link];
 
-  Map<String, dynamic> toJson() => {
-    'social_media_id': id,
-    'link': link,
-  };
+  Map<String, dynamic> toJson() => {'social_media_id': id, 'link': link};
 }

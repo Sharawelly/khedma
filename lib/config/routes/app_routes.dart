@@ -83,7 +83,8 @@ abstract class Routes {
   static const String providerProfileRoute = '/provider-profile';
   static const String providerReviewsRoute = '/provider-reviews';
   static const String providerEarningsRoute = '/provider-earnings';
-  static const String providerIncomingRequestRoute = '/provider-incoming-request';
+  static const String providerIncomingRequestRoute =
+      '/provider-incoming-request';
   static const String providerJobDetailsRoute = '/provider-job-details';
   static const String providerTrackLiveRoute = '/provider-track-live';
 
@@ -128,9 +129,7 @@ abstract class Routes {
               registrationRole = v;
             }
           }
-          return CreateAccountScreen(
-            registrationRole: registrationRole,
-          );
+          return CreateAccountScreen(registrationRole: registrationRole);
         },
       ),
 
@@ -235,7 +234,8 @@ abstract class Routes {
                   iconData: Icons.plumbing_rounded,
                   iconColor: colors.pathsInfoAccent,
                   serviceCategoryKey: 'bookings_category_plumbing',
-                  serviceDescriptionKey: 'bookings_service_plumbing_description',
+                  serviceDescriptionKey:
+                      'bookings_service_plumbing_description',
                   timeRangeKey: 'bookings_time_range_1',
                   locationAddressKey: 'bookings_location_address_1',
                   providerRatingText: '4.9',
@@ -282,7 +282,8 @@ abstract class Routes {
                   iconData: Icons.plumbing_rounded,
                   iconColor: colors.pathsInfoAccent,
                   serviceCategoryKey: 'bookings_category_plumbing',
-                  serviceDescriptionKey: 'bookings_service_plumbing_description',
+                  serviceDescriptionKey:
+                      'bookings_service_plumbing_description',
                   timeRangeKey: 'bookings_time_range_1',
                   locationAddressKey: 'bookings_location_address_1',
                   providerRatingText: '4.9',

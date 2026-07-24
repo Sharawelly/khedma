@@ -17,15 +17,9 @@ class ExitAppDialog extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            Strings.confirmExit,
-            style: TextStyles.semiBold20(),
-          ),
+          Text(Strings.confirmExit, style: TextStyles.semiBold20()),
           SizedBox(height: 24.h),
-          Text(
-            Strings.exitAppContent,
-            style: TextStyles.regular14(),
-          ),
+          Text(Strings.exitAppContent, style: TextStyles.regular14()),
           SizedBox(height: 32.h),
           Row(
             children: [
@@ -49,7 +43,7 @@ class ExitAppDialog extends StatelessWidget {
                   },
                   text: Strings.no,
                   backgroundColor: Colors.white,
-                    borderColor: colors.textColor,
+                  borderColor: colors.textColor,
                   textColor: colors.textColor,
                 ),
               ),

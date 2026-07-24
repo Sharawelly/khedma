@@ -40,12 +40,18 @@ class ProviderProfileWorkingAreaSection extends StatelessWidget {
             Gaps.vGap8,
             Row(
               children: <Widget>[
-                Icon(Icons.place_rounded, size: 16.r, color: colors.authBrandRed),
+                Icon(
+                  Icons.place_rounded,
+                  size: 16.r,
+                  color: colors.authBrandRed,
+                ),
                 Gaps.hGap4,
                 Expanded(
                   child: Text(
                     'provider_working_area_value'.tr,
-                    style: TextStyles.medium12(color: colors.onboardingHeadline),
+                    style: TextStyles.medium12(
+                      color: colors.onboardingHeadline,
+                    ),
                   ),
                 ),
               ],

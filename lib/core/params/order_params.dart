@@ -66,43 +66,41 @@ class OrderParams {
   }
 
   factory OrderParams.fromJson(Map<String, dynamic> json) => OrderParams(
-        id: json["id"],
-        providerId: json["provider_id"],
-        address: json["address"],
-        lat: json["lat"],
-        lng: json["lng"],
-        name: json["name"],
-        carts: json["carts"] == null
-            ? []
-            : List<Cart>.from(json["carts"]!.map((x) => Cart.fromJson(x))),
-        phone: json["phone"],
-        date: json["date"] == null ? null : DateTime.parse(json["date"]),
-        time: json["time"],
-        notes: json["notes"],
-        serviceTypeId: json["service_type_id"],
-        status: json["status"],
-      );
+    id: json["id"],
+    providerId: json["provider_id"],
+    address: json["address"],
+    lat: json["lat"],
+    lng: json["lng"],
+    name: json["name"],
+    carts: json["carts"] == null
+        ? []
+        : List<Cart>.from(json["carts"]!.map((x) => Cart.fromJson(x))),
+    phone: json["phone"],
+    date: json["date"] == null ? null : DateTime.parse(json["date"]),
+    time: json["time"],
+    notes: json["notes"],
+    serviceTypeId: json["service_type_id"],
+    status: json["status"],
+  );
 
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "provider_id": providerId,
-        "address": address,
-        "lat": lat,
-        "lng": lng,
-        "name": name,
-        "carts": carts == null
-            ? []
-            : List<dynamic>.from(carts!.map((x) => x.toJson())),
-        "phone": phone,
-        "date":
-            "${date!.year.toString().padLeft(4, '0')}-${date!.month.toString().padLeft(2, '0')}-${date!.day.toString().padLeft(2, '0')}",
-        "time": time,
-        "notes": notes,
-        "service_type_id": serviceTypeId,
-      };
-  Map<String, dynamic> toLaundryOrderJson() => {
-        "status": status,
-      };
+    "id": id,
+    "provider_id": providerId,
+    "address": address,
+    "lat": lat,
+    "lng": lng,
+    "name": name,
+    "carts": carts == null
+        ? []
+        : List<dynamic>.from(carts!.map((x) => x.toJson())),
+    "phone": phone,
+    "date":
+        "${date!.year.toString().padLeft(4, '0')}-${date!.month.toString().padLeft(2, '0')}-${date!.day.toString().padLeft(2, '0')}",
+    "time": time,
+    "notes": notes,
+    "service_type_id": serviceTypeId,
+  };
+  Map<String, dynamic> toLaundryOrderJson() => {"status": status};
 }
 
 class Cart {
@@ -111,24 +109,19 @@ class Cart {
   final double? price;
   final int? quantity;
 
-  Cart({
-    this.serviceId,
-    this.subcategoryId,
-    this.price,
-    this.quantity,
-  });
+  Cart({this.serviceId, this.subcategoryId, this.price, this.quantity});
 
   factory Cart.fromJson(Map<String, dynamic> json) => Cart(
-        serviceId: json["service_id"],
-        subcategoryId: json["subcategory_id"],
-        price: json["price"],
-        quantity: json["quantity"],
-      );
+    serviceId: json["service_id"],
+    subcategoryId: json["subcategory_id"],
+    price: json["price"],
+    quantity: json["quantity"],
+  );
 
   Map<String, dynamic> toJson() => {
-        "service_id": serviceId,
-        "subcategory_id": subcategoryId,
-        "price": price,
-        "quantity": quantity,
-      };
+    "service_id": serviceId,
+    "subcategory_id": subcategoryId,
+    "price": price,
+    "quantity": quantity,
+  };
 }

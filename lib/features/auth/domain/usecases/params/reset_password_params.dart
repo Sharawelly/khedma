@@ -12,11 +12,11 @@ class ResetPasswordParams {
   });
 
   Map<String, dynamic> toJson() => {
-        'email': email,
-        'token': token,
-        'password': password,
-        'password_confirmation': passwordConfirmation,
-      };
+    'email': email,
+    'token': token,
+    'password': password,
+    'password_confirmation': passwordConfirmation,
+  };
 
   ResetPasswordParams copyWith({
     String? email,

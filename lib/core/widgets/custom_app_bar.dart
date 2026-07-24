@@ -47,7 +47,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       InkWell(
-                        onTap: () => onBackButtonPressed?.call() ?? context.pop(),
+                        onTap: () =>
+                            onBackButtonPressed?.call() ?? context.pop(),
                         child: Padding(
                           padding: EdgeInsets.symmetric(horizontal: 10.w),
                           child: Icon(

@@ -101,20 +101,20 @@ class _BookingsScreenState extends State<BookingsScreen> {
       ),
     ];
 
-    final List<BookingServiceItemData> bookings = allBookings
-        .where((BookingServiceItemData item) {
-          if (selectedTab == BookingsTab.all) {
-            return true;
-          }
-          if (selectedTab == BookingsTab.active) {
-            return item.status == BookingStatus.active;
-          }
-          if (selectedTab == BookingsTab.completed) {
-            return item.status == BookingStatus.completed;
-          }
-          return item.status == BookingStatus.cancelled;
-        })
-        .toList();
+    final List<BookingServiceItemData> bookings = allBookings.where((
+      BookingServiceItemData item,
+    ) {
+      if (selectedTab == BookingsTab.all) {
+        return true;
+      }
+      if (selectedTab == BookingsTab.active) {
+        return item.status == BookingStatus.active;
+      }
+      if (selectedTab == BookingsTab.completed) {
+        return item.status == BookingStatus.completed;
+      }
+      return item.status == BookingStatus.cancelled;
+    }).toList();
 
     final bool showCancelledEmptyState =
         selectedTab == BookingsTab.cancelled && bookings.isEmpty;

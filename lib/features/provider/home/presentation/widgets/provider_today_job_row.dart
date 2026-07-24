@@ -85,9 +85,9 @@ class ProviderTodayJobRow extends StatelessWidget {
             ),
             child: Text(
               badgeKey.tr,
-              style: TextStyles.medium10(color: badgeFg).copyWith(
-                letterSpacing: 0.4,
-              ),
+              style: TextStyles.medium10(
+                color: badgeFg,
+              ).copyWith(letterSpacing: 0.4),
             ),
           ),
         ],

@@ -1,5 +1,4 @@
-  import 'dart:ui';
+import 'dart:ui';
 
-Color convertStringColor(String colorCode) => Color(
-        int.parse(colorCode.replaceFirst('#', '0xFF')),
-      );
+Color convertStringColor(String colorCode) =>
+    Color(int.parse(colorCode.replaceFirst('#', '0xFF')));

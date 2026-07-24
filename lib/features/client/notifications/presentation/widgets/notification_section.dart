@@ -33,10 +33,7 @@ class NotificationSection extends StatelessWidget {
               ),
               Gaps.hGap12,
               Expanded(
-                child: Container(
-                  height: 1.h,
-                  color: colors.optionBorder,
-                ),
+                child: Container(height: 1.h, color: colors.optionBorder),
               ),
             ],
           ),

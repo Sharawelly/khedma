@@ -105,7 +105,9 @@ class _ProviderInfoRow extends StatelessWidget {
                   ),
                 ),
                 Icon(
-                  showNavigationArrow ? Icons.chevron_right_rounded : Icons.edit,
+                  showNavigationArrow
+                      ? Icons.chevron_right_rounded
+                      : Icons.edit,
                   size: 18.r,
                   color: colors.authBrandRed,
                 ),

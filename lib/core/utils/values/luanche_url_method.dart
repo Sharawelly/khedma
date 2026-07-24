@@ -9,7 +9,8 @@ Future<void> onLaunch({
   required String platformName,
 }) async {
   final Uri uri = Uri.parse(url);
-  if (platformName == 'Whatsapp') {//todo remove +20 from url
+  if (platformName == 'Whatsapp') {
+    //todo remove +20 from url
     if (!await launchUrl(Uri.parse('https://wa.me/+20$url/?text=Hello'))) {
       _showErrorMessage(context, 'Could not launch WhatsApp');
     }
@@ -23,9 +24,7 @@ Future<void> onLaunch({
 }
 
 void _showErrorMessage(BuildContext context, String message) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(message)),
-  );
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
 }
 
 //--------------launch phone call

@@ -60,35 +60,33 @@ class ImageUploadWidget extends StatelessWidget {
                     ),
                   )
                 : imageUrl != null && imageUrl!.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12.r),
-                        child: CachedNetworkImage(
-                          imageUrl: imageUrl!,
-                          width: imageSize ?? 71.w,
-                          height: imageSize ?? 71.h,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            width: imageSize ?? 71.w,
-                            height: imageSize ?? 71.h,
-                            color: colors.lightBackGroundColor,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: colors.main,
-                              ),
-                            ),
-                          ),
-                          errorWidget: (context, url, error) => Icon(
-                            Icons.broken_image,
-                            size: (iconSize ?? 71).sp,
-                            color: colors.textColor,
-                          ),
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl!,
+                      width: imageSize ?? 71.w,
+                      height: imageSize ?? 71.h,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        width: imageSize ?? 71.w,
+                        height: imageSize ?? 71.h,
+                        color: colors.lightBackGroundColor,
+                        child: Center(
+                          child: CircularProgressIndicator(color: colors.main),
                         ),
-                      )
-                    : Icon(
-                        Icons.add_photo_alternate_outlined,
+                      ),
+                      errorWidget: (context, url, error) => Icon(
+                        Icons.broken_image,
                         size: (iconSize ?? 71).sp,
                         color: colors.textColor,
                       ),
+                    ),
+                  )
+                : Icon(
+                    Icons.add_photo_alternate_outlined,
+                    size: (iconSize ?? 71).sp,
+                    color: colors.textColor,
+                  ),
             Gaps.vGap8,
             if (showMaximumSizeOfImage) ...[
               Gaps.vGap8,

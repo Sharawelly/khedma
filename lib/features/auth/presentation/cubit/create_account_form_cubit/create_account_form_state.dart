@@ -23,9 +23,11 @@ class CreateAccountFormState extends Equatable {
     if (!hasMinLength && !hasUppercase && !hasNumber) {
       return PasswordStrength.none;
     }
-    final met = [hasMinLength, hasUppercase, hasNumber]
-        .where((bool c) => c)
-        .length;
+    final met = [
+      hasMinLength,
+      hasUppercase,
+      hasNumber,
+    ].where((bool c) => c).length;
     if (met <= 1) return PasswordStrength.weak;
     if (met == 2) return PasswordStrength.fair;
     return PasswordStrength.strong;
@@ -51,11 +53,11 @@ class CreateAccountFormState extends Equatable {
 
   @override
   List<Object?> get props => [
-        obscurePassword,
-        hasMinLength,
-        hasUppercase,
-        hasNumber,
-        formFieldsFilled,
-        passwordNotEmpty,
-      ];
+    obscurePassword,
+    hasMinLength,
+    hasUppercase,
+    hasNumber,
+    formFieldsFilled,
+    passwordNotEmpty,
+  ];
 }

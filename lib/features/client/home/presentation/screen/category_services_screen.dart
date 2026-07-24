@@ -48,7 +48,8 @@ class CategoryServicesScreen extends StatelessWidget {
                   bottom: 16.h,
                 ),
                 itemCount: items.length,
-                separatorBuilder: (BuildContext context, int index) => Gaps.vGap12,
+                separatorBuilder: (BuildContext context, int index) =>
+                    Gaps.vGap12,
                 itemBuilder: (BuildContext context, int index) {
                   return CategoryServiceCard(
                     item: items[index],
@@ -130,7 +131,8 @@ const List<CategoryServiceItemData> _plumbingItems = <CategoryServiceItemData>[
   ),
 ];
 
-const List<CategoryServiceItemData> _electricalItems = <CategoryServiceItemData>[
+const List<CategoryServiceItemData>
+_electricalItems = <CategoryServiceItemData>[
   CategoryServiceItemData(
     categoryTitleKey: 'home_category_electrical',
     titleKey: 'home_electrical_service_panel_fix_title',

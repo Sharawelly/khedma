@@ -11,11 +11,7 @@ class WatcherCountBadge extends StatelessWidget {
   final int count;
   final bool isAr;
 
-  const WatcherCountBadge({
-    super.key,
-    required this.count,
-    required this.isAr,
-  });
+  const WatcherCountBadge({super.key, required this.count, required this.isAr});
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +35,7 @@ class WatcherCountBadge extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.visibility_outlined,
-                size: 16.sp,
-                color: colors.main,
-              ),
+              Icon(Icons.visibility_outlined, size: 16.sp, color: colors.main),
               Gaps.hGap6,
               Text(
                 '$count',

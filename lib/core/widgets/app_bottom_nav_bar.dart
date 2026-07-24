@@ -25,9 +25,7 @@ class AppBottomNavBar extends StatelessWidget {
       height: 75.h,
       decoration: BoxDecoration(
         color: colors.whiteColor,
-        border: Border(
-          top: BorderSide(color: colors.onboardingBorderNeutral),
-        ),
+        border: Border(top: BorderSide(color: colors.onboardingBorderNeutral)),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24.r),
           topRight: Radius.circular(24.r),
@@ -76,7 +74,9 @@ class AppBottomNavBar extends StatelessWidget {
     required BottomNavItem index,
   }) {
     final bool isActive = currentIndex == index;
-    final Color itemColor = isActive ? colors.errorColor : colors.lightTextColor;
+    final Color itemColor = isActive
+        ? colors.errorColor
+        : colors.lightTextColor;
 
     return GestureDetector(
       onTap: () => onTap(index),

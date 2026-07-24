@@ -44,12 +44,7 @@ class ProviderCustomerInfoRow extends StatelessWidget {
           ),
         ),
         Gaps.hGap10,
-        Expanded(
-          child: Text(
-            customerNameKey.tr,
-            style: customerNameStyle,
-          ),
-        ),
+        Expanded(child: Text(customerNameKey.tr, style: customerNameStyle)),
         if (showCallChip) ...<Widget>[
           const _ActionChip(
             icon: Icons.call_outlined,

@@ -7,10 +7,7 @@ import '../utils/values/assets.dart';
 class Logo extends StatelessWidget {
   final double? radius;
 
-  const Logo({
-    super.key,
-    this.radius,
-  });
+  const Logo({super.key, this.radius});
 
   @override
   Widget build(BuildContext context) {

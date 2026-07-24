@@ -27,18 +27,17 @@ class BookingsEmptyState extends StatelessWidget {
           Gaps.vGap20,
           Text(
             'bookings_empty_cancelled_title'.tr,
-            style: TextStyles.bold32(color: colors.onboardingHeadline).copyWith(
-              fontSize: 34.sp,
-              height: 1.05,
-            ),
+            style: TextStyles.bold32(
+              color: colors.onboardingHeadline,
+            ).copyWith(fontSize: 34.sp, height: 1.05),
             textAlign: TextAlign.center,
           ),
           Gaps.vGap10,
           Text(
             'bookings_empty_cancelled_message'.tr,
-            style: TextStyles.regular16(color: colors.homeCaption).copyWith(
-              height: 1.55,
-            ),
+            style: TextStyles.regular16(
+              color: colors.homeCaption,
+            ).copyWith(height: 1.55),
             textAlign: TextAlign.center,
           ),
         ],

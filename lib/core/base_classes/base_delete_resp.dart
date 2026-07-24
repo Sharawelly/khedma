@@ -1,12 +1,7 @@
 import '/core/base_classes/base_one_response.dart';
 
 class DeleteRespModel extends BaseOneResponse {
-  const DeleteRespModel({
-    super.data,
-    super.message,
-    super.value,
-    super.key,
-  });
+  const DeleteRespModel({super.data, super.message, super.value, super.key});
 
   factory DeleteRespModel.fromJson(Map<String, dynamic> json) =>
       DeleteRespModel(
@@ -17,8 +12,8 @@ class DeleteRespModel extends BaseOneResponse {
       );
 
   Map<String, dynamic> toJson() => {
-        'data': data,
-        'message': message,
-        'key': key,
-      };
+    'data': data,
+    'message': message,
+    'key': key,
+  };
 }

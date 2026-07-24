@@ -22,9 +22,7 @@ class ServerException extends AppException {
   @override
   final String? message;
 
-  const ServerException({
-    this.message,
-  });
+  const ServerException({this.message});
 
   @override
   Failure toFailure() {
@@ -36,9 +34,7 @@ class FetchDataException extends AppException {
   @override
   final String? message;
 
-  const FetchDataException({
-    this.message,
-  });
+  const FetchDataException({this.message});
 
   @override
   Failure toFailure() {
@@ -50,9 +46,7 @@ class UnauthorizedException extends AppException {
   @override
   final String? message;
 
-  const UnauthorizedException({
-    this.message,
-  });
+  const UnauthorizedException({this.message});
 
   @override
   Failure toFailure() {
@@ -64,9 +58,7 @@ class UpdateRegisterApprovedUserException extends AppException {
   @override
   final String? message;
 
-  const UpdateRegisterApprovedUserException({
-    this.message,
-  });
+  const UpdateRegisterApprovedUserException({this.message});
 
   @override
   Failure toFailure() {
@@ -78,9 +70,7 @@ class InternetConnectionException extends AppException {
   @override
   final String? message;
 
-  const InternetConnectionException({
-    this.message,
-  });
+  const InternetConnectionException({this.message});
 
   @override
   Failure toFailure() {
@@ -92,9 +82,7 @@ class CacheException extends AppException {
   @override
   final String? message;
 
-  const CacheException({
-    this.message,
-  });
+  const CacheException({this.message});
 
   @override
   Failure toFailure() {

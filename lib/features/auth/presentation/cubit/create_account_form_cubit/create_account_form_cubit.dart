@@ -13,7 +13,8 @@ class CreateAccountFormCubit extends Cubit<CreateAccountFormState> {
   }) {
     final String trimmedName = name.trim();
     final String trimmedEmail = email.trim();
-    final bool filled = trimmedName.isNotEmpty &&
+    final bool filled =
+        trimmedName.isNotEmpty &&
         trimmedEmail.isNotEmpty &&
         password.isNotEmpty;
     emit(

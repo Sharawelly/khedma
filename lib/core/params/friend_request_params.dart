@@ -2,8 +2,5 @@
 class FriendRequestParams {
   final int? requestId;
   final String? status;
-  FriendRequestParams({
-    this.requestId,
-    this.status,
-  });
+  FriendRequestParams({this.requestId, this.status});
 }

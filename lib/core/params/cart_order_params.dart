@@ -31,7 +31,7 @@ class CartOrderParams extends Equatable {
     // Add other fields with validation
     formData.fields.addAll([
       MapEntry('order_type', orderType),
-      MapEntry('represent_code', representCode??''),
+      MapEntry('represent_code', representCode ?? ''),
       MapEntry('notes', notes),
       if (promoCodeId != null && promoCodeId!.isNotEmpty)
         MapEntry('promo_code_id', promoCodeId!),
@@ -48,16 +48,14 @@ class CartOrderParams extends Equatable {
     }
   }
 
-
-
   @override
   List<Object?> get props => [
-        itemsIds,
-        orderType,
-        representCode,
-        notes,
-        promoCodeId,
-        itemsQuantities,
-        orderStatusId,
-      ];
+    itemsIds,
+    orderType,
+    representCode,
+    notes,
+    promoCodeId,
+    itemsQuantities,
+    orderStatusId,
+  ];
 }

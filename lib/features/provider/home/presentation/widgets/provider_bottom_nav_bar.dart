@@ -24,9 +24,7 @@ class ProviderBottomNavBar extends StatelessWidget {
       height: 72.h,
       decoration: BoxDecoration(
         color: colors.whiteColor,
-        border: Border(
-          top: BorderSide(color: colors.onboardingBorderNeutral),
-        ),
+        border: Border(top: BorderSide(color: colors.onboardingBorderNeutral)),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20.r),
           topRight: Radius.circular(20.r),
@@ -95,8 +93,9 @@ class _Item extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool active = current == item;
-    final Color itemColor =
-        active ? colors.authBrandRed : colors.lightTextColor;
+    final Color itemColor = active
+        ? colors.authBrandRed
+        : colors.lightTextColor;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -118,4 +117,3 @@ class _Item extends StatelessWidget {
     );
   }
 }
-

@@ -47,18 +47,18 @@ class CartParams extends Equatable {
   }
 
   factory CartParams.fromJson(Map<String, dynamic> json) => CartParams(
-        id: json["id"],
-        userId: json["user_id"],
-        providerId: json["provider_id"],
-        serviceId: json['service_id'],
-        serviceName: json['service_name'],
-        serviceTypeId: json['service_type_id'],
-        subCategoryId: json['subcategory_id'],
-        subCategoryName: json['subcategory_name'],
-        subCategoryPhoto: json['subcategory_photo'],
-        servicePrice: json['price'],
-        serviceCount: json['quantity'],
-      );
+    id: json["id"],
+    userId: json["user_id"],
+    providerId: json["provider_id"],
+    serviceId: json['service_id'],
+    serviceName: json['service_name'],
+    serviceTypeId: json['service_type_id'],
+    subCategoryId: json['subcategory_id'],
+    subCategoryName: json['subcategory_name'],
+    subCategoryPhoto: json['subcategory_photo'],
+    servicePrice: json['price'],
+    serviceCount: json['quantity'],
+  );
 
   @override
   String toString() {
@@ -76,26 +76,25 @@ class CartParams extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        subCategoryId,
-        subCategoryName,
-        subCategoryPhoto,
-        serviceId,
-        serviceName,
-        serviceCount,
-        servicePrice,
-        totalPrice,
-      ];
+    id,
+    subCategoryId,
+    subCategoryName,
+    subCategoryPhoto,
+    serviceId,
+    serviceName,
+    serviceCount,
+    servicePrice,
+    totalPrice,
+  ];
 
   CartParams copyWith({
     int? id,
     String? subCategoryId,
     String? serviceId,
     String? path,
-  }) =>
-      CartParams(
-        id: id ?? this.id,
-        subCategoryId: subCategoryId ?? this.subCategoryId,
-        serviceId: serviceId ?? this.serviceId,
-      );
+  }) => CartParams(
+    id: id ?? this.id,
+    subCategoryId: subCategoryId ?? this.subCategoryId,
+    serviceId: serviceId ?? this.serviceId,
+  );
 }

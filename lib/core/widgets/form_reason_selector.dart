@@ -25,7 +25,9 @@ class FormReasonSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading || reasons.isEmpty) {
-      return FormReasonSelectorShimmer(itemCount: reasons.isEmpty ? 4 : reasons.length);
+      return FormReasonSelectorShimmer(
+        itemCount: reasons.isEmpty ? 4 : reasons.length,
+      );
     }
 
     return SingleChildScrollView(

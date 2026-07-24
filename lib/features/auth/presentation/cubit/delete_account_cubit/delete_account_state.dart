@@ -28,4 +28,3 @@ class DeleteAccountError extends DeleteAccountState {
   @override
   List<Object?> get props => [message];
 }
-

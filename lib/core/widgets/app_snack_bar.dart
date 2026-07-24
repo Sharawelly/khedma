@@ -31,7 +31,7 @@ SnackBar _buildAppSnackBar({
   return SnackBar(
     content: _buildContent(context, message, type),
     dismissDirection: DismissDirection.horizontal,
-    
+
     padding: _padding,
     margin: _getMargin(context, behavior),
     backgroundColor: type.color,
@@ -46,11 +46,7 @@ Widget _buildContent(BuildContext context, String message, ToastType type) {
   return Wrap(
     crossAxisAlignment: WrapCrossAlignment.center,
     children: <Widget>[
-      Icon(
-        type.icon,
-        color: colors.backGround,
-        size: 32.r,
-      ),
+      Icon(type.icon, color: colors.backGround, size: 32.r),
       SizedBox(width: 8.w),
       Text(
         message,
@@ -69,23 +65,16 @@ EdgeInsetsGeometry get _padding =>
     EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h);
 
 EdgeInsetsGeometry? _getMargin(
-    BuildContext context, SnackBarBehavior? behavior) {
+  BuildContext context,
+  SnackBarBehavior? behavior,
+) {
   if (behavior != SnackBarBehavior.floating) {
     return null;
   }
-  return EdgeInsetsDirectional.only(
-    bottom: 16.h,
-    start: 16.w,
-    end: 16.w,
-  );
+  return EdgeInsetsDirectional.only(bottom: 16.h, start: 16.w, end: 16.w);
 }
 
-enum ToastType {
-  success,
-  error,
-  warning,
-  info,
-}
+enum ToastType { success, error, warning, info }
 
 extension ToastTypeColor on ToastType {
   Color get color {

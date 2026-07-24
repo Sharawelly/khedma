@@ -19,10 +19,12 @@ Future<bool?> showAppDialog({
           borderRadius: BorderRadius.circular(borderRadius ?? 12.r),
         ),
         child: Dialog(
-          insetAnimationDuration: Duration(seconds: 3,),
+          insetAnimationDuration: Duration(seconds: 3),
           backgroundColor: backgroundColor ?? Colors.white,
           insetPadding: EdgeInsets.symmetric(
-              horizontal: horizontalPadding.w, vertical: verticalPadding.h),
+            horizontal: horizontalPadding.w,
+            vertical: verticalPadding.h,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius ?? 12.r),
           ),

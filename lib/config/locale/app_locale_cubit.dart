@@ -6,7 +6,7 @@ import '/core/services/local_storage/app_shared_preferences.dart';
 /// Drives [MaterialApp.locale] so [Directionality] matches the active language.
 class AppLocaleCubit extends Cubit<Locale> {
   AppLocaleCubit(AppSharedPreferences prefs)
-      : super(Locale(prefs.getLanguageCode().name));
+    : super(Locale(prefs.getLanguageCode().name));
 
   void setLocale(Locale value) => emit(value);
 }

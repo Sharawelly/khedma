@@ -60,16 +60,14 @@ class AuthSignUpRoleCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       alignment: Alignment.center,
-                      child: Icon(
-                        leadIcon,
-                        size: 20.r,
-                        color: leadIconColor,
-                      ),
+                      child: Icon(leadIcon, size: 20.r, color: leadIconColor),
                     ),
                     Gaps.vGap12,
                     Text(
                       titleKey.tr,
-                      style: TextStyles.bold15(color: colors.onboardingTextStrong),
+                      style: TextStyles.bold15(
+                        color: colors.onboardingTextStrong,
+                      ),
                     ),
                     Gaps.vGap4,
                     Text(

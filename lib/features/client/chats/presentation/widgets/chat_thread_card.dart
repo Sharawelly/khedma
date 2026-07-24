@@ -8,11 +8,7 @@ import '/core/widgets/gaps.dart';
 import '/injection_container.dart';
 
 class ChatThreadCard extends StatelessWidget {
-  const ChatThreadCard({
-    super.key,
-    required this.thread,
-    required this.onTap,
-  });
+  const ChatThreadCard({super.key, required this.thread, required this.onTap});
 
   final ChatThreadData thread;
   final VoidCallback onTap;
@@ -23,7 +19,10 @@ class ChatThreadCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(18.r),
       onTap: onTap,
       child: Ink(
-        padding: EdgeInsetsDirectional.symmetric(horizontal: 12.w, vertical: 12.h),
+        padding: EdgeInsetsDirectional.symmetric(
+          horizontal: 12.w,
+          vertical: 12.h,
+        ),
         decoration: BoxDecoration(
           color: colors.whiteColor,
           borderRadius: BorderRadius.circular(18.r),

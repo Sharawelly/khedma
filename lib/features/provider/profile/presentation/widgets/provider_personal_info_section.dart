@@ -19,7 +19,10 @@ class ProviderPersonalInfoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsetsDirectional.symmetric(horizontal: 14.w, vertical: 12.h),
+      padding: EdgeInsetsDirectional.symmetric(
+        horizontal: 14.w,
+        vertical: 12.h,
+      ),
       decoration: BoxDecoration(
         color: colors.whiteColor,
         borderRadius: BorderRadius.circular(16.r),
@@ -89,7 +92,9 @@ class _ProviderPersonalInfoItem extends StatelessWidget {
                 Expanded(
                   child: Text(
                     labelKey.tr,
-                    style: TextStyles.semiBold16(color: colors.onboardingHeadline),
+                    style: TextStyles.semiBold16(
+                      color: colors.onboardingHeadline,
+                    ),
                   ),
                 ),
                 Icon(

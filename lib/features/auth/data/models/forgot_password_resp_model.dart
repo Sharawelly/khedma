@@ -12,11 +12,7 @@ class ForgotPasswordDataModel {
 }
 
 class ForgotPasswordRespModel extends BaseOneResponse {
-  const ForgotPasswordRespModel({
-    super.success,
-    super.message,
-    super.data,
-  });
+  const ForgotPasswordRespModel({super.success, super.message, super.data});
 
   factory ForgotPasswordRespModel.fromJson(Map<String, dynamic> json) =>
       ForgotPasswordRespModel(
@@ -30,8 +26,8 @@ class ForgotPasswordRespModel extends BaseOneResponse {
       );
 
   Map<String, dynamic> toJson() => {
-        'success': success,
-        'message': message,
-        'data': (data as ForgotPasswordDataModel?)?.toJson(),
-      };
+    'success': success,
+    'message': message,
+    'data': (data as ForgotPasswordDataModel?)?.toJson(),
+  };
 }

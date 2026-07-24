@@ -45,9 +45,18 @@ class ProviderEarningsScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    _SegmentTab(titleKey: 'provider_earnings_daily', isActive: false),
-                    _SegmentTab(titleKey: 'provider_earnings_weekly', isActive: false),
-                    _SegmentTab(titleKey: 'provider_earnings_monthly', isActive: true),
+                    _SegmentTab(
+                      titleKey: 'provider_earnings_daily',
+                      isActive: false,
+                    ),
+                    _SegmentTab(
+                      titleKey: 'provider_earnings_weekly',
+                      isActive: false,
+                    ),
+                    _SegmentTab(
+                      titleKey: 'provider_earnings_monthly',
+                      isActive: true,
+                    ),
                   ],
                 ),
               ],
@@ -94,7 +103,9 @@ class ProviderEarningsScreen extends StatelessWidget {
                     Expanded(
                       child: Text(
                         'provider_earnings_payout_history'.tr,
-                        style: TextStyles.bold20(color: colors.onboardingHeadline),
+                        style: TextStyles.bold20(
+                          color: colors.onboardingHeadline,
+                        ),
                       ),
                     ),
                     Text(
@@ -104,11 +115,23 @@ class ProviderEarningsScreen extends StatelessWidget {
                   ],
                 ),
                 Gaps.vGap12,
-                const _PayoutCard(amount: 'EGP 1,250.00', date: 'April 24, 2024', paid: true),
+                const _PayoutCard(
+                  amount: 'EGP 1,250.00',
+                  date: 'April 24, 2024',
+                  paid: true,
+                ),
                 Gaps.vGap10,
-                const _PayoutCard(amount: 'EGP 850.00', date: 'April 18, 2024', paid: false),
+                const _PayoutCard(
+                  amount: 'EGP 850.00',
+                  date: 'April 18, 2024',
+                  paid: false,
+                ),
                 Gaps.vGap10,
-                const _PayoutCard(amount: 'EGP 2,100.00', date: 'April 10, 2024', paid: true),
+                const _PayoutCard(
+                  amount: 'EGP 2,100.00',
+                  date: 'April 10, 2024',
+                  paid: true,
+                ),
                 Gaps.vGap20,
                 OutlinedButton(
                   onPressed: () {},
@@ -206,12 +229,18 @@ class _PayoutCard extends StatelessWidget {
                   amount,
                   style: TextStyles.bold20(color: colors.onboardingHeadline),
                 ),
-                Text(date, style: TextStyles.regular13(color: colors.homeCaption)),
+                Text(
+                  date,
+                  style: TextStyles.regular13(color: colors.homeCaption),
+                ),
               ],
             ),
           ),
           Container(
-            padding: EdgeInsetsDirectional.symmetric(horizontal: 10.w, vertical: 5.h),
+            padding: EdgeInsetsDirectional.symmetric(
+              horizontal: 10.w,
+              vertical: 5.h,
+            ),
             decoration: BoxDecoration(
               color: paid
                   ? colors.main.withValues(alpha: 0.14)
@@ -219,7 +248,9 @@ class _PayoutCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Text(
-              paid ? 'provider_earnings_paid'.tr : 'provider_earnings_pending'.tr,
+              paid
+                  ? 'provider_earnings_paid'.tr
+                  : 'provider_earnings_pending'.tr,
               style: TextStyles.semiBold12(
                 color: paid ? colors.main : colors.secondary,
               ),

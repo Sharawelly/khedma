@@ -6,11 +6,7 @@ import 'package:khedma/core/widgets/gaps.dart';
 import 'package:khedma/injection_container.dart';
 
 class ProviderQuickActionsGrid extends StatelessWidget {
-  const ProviderQuickActionsGrid({
-    super.key,
-    this.onPayouts,
-    this.onHelp,
-  });
+  const ProviderQuickActionsGrid({super.key, this.onPayouts, this.onHelp});
 
   final VoidCallback? onPayouts;
   final VoidCallback? onHelp;
@@ -40,11 +36,7 @@ class ProviderQuickActionsGrid extends StatelessWidget {
 }
 
 class _ActionTile extends StatelessWidget {
-  const _ActionTile({
-    required this.icon,
-    required this.labelKey,
-    this.onTap,
-  });
+  const _ActionTile({required this.icon, required this.labelKey, this.onTap});
 
   final IconData icon;
   final String labelKey;
@@ -77,7 +69,9 @@ class _ActionTile extends StatelessWidget {
               Gaps.vGap8,
               Text(
                 labelKey.tr,
-                style: TextStyles.semiBold14(color: colors.onboardingTextStrong),
+                style: TextStyles.semiBold14(
+                  color: colors.onboardingTextStrong,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],

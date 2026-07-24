@@ -24,7 +24,10 @@ class ProviderProfileAboutSection extends StatelessWidget {
 }
 
 class ProviderProfileServicesSection extends StatelessWidget {
-  const ProviderProfileServicesSection({super.key, required this.primaryServiceKey});
+  const ProviderProfileServicesSection({
+    super.key,
+    required this.primaryServiceKey,
+  });
 
   final String primaryServiceKey;
 

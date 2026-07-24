@@ -11,7 +11,10 @@ class ProfileSupportSection extends StatelessWidget {
       titleKey: 'profile_support',
       items: const <({String labelKey, IconData iconData})>[
         (labelKey: 'profile_help_support', iconData: Icons.help_rounded),
-        (labelKey: 'profile_terms_privacy', iconData: Icons.verified_user_rounded),
+        (
+          labelKey: 'profile_terms_privacy',
+          iconData: Icons.verified_user_rounded,
+        ),
       ],
     );
   }

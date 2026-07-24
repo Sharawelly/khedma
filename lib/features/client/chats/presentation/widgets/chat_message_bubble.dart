@@ -44,9 +44,14 @@ class ChatMessageBubble extends StatelessWidget {
         children: <Widget>[
           Container(
             constraints: BoxConstraints(maxWidth: 300.w),
-            padding: EdgeInsetsDirectional.symmetric(horizontal: 16.w, vertical: 14.h),
+            padding: EdgeInsetsDirectional.symmetric(
+              horizontal: 16.w,
+              vertical: 14.h,
+            ),
             decoration: BoxDecoration(
-              color: isOutgoing ? colors.errorColor : colors.onboardingSurfaceMuted,
+              color: isOutgoing
+                  ? colors.errorColor
+                  : colors.onboardingSurfaceMuted,
               borderRadius: radius,
             ),
             child: Text(

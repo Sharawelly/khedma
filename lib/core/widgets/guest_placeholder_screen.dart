@@ -13,10 +13,7 @@ import '/injection_container.dart';
 class GuestPlaceholderScreen extends StatelessWidget {
   final String sectionTitle;
 
-  const GuestPlaceholderScreen({
-    super.key,
-    required this.sectionTitle,
-  });
+  const GuestPlaceholderScreen({super.key, required this.sectionTitle});
 
   @override
   Widget build(BuildContext context) {

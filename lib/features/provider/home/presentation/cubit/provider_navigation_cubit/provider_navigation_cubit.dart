@@ -7,9 +7,7 @@ part 'provider_navigation_state.dart';
 
 class ProviderNavigationCubit extends Cubit<ProviderNavigationState> {
   ProviderNavigationCubit()
-      : super(
-          const ProviderNavigationState(current: ProviderNavItem.home),
-        );
+    : super(const ProviderNavigationState(current: ProviderNavItem.home));
 
   void changeIndex(ProviderNavItem index) {
     if (state.current == index) {
@@ -22,9 +20,7 @@ class ProviderNavigationCubit extends Cubit<ProviderNavigationState> {
 
   void reset() {
     if (!isClosed) {
-      emit(
-        const ProviderNavigationState(current: ProviderNavItem.home),
-      );
+      emit(const ProviderNavigationState(current: ProviderNavItem.home));
     }
   }
 }

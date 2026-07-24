@@ -12,7 +12,10 @@ class ProviderProfileStatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsetsDirectional.symmetric(horizontal: 12.w, vertical: 12.h),
+      padding: EdgeInsetsDirectional.symmetric(
+        horizontal: 12.w,
+        vertical: 12.h,
+      ),
       decoration: BoxDecoration(
         color: colors.whiteColor,
         borderRadius: BorderRadius.circular(14.r),
@@ -45,7 +48,10 @@ class ProviderProfileStatsRow extends StatelessWidget {
 }
 
 class _ProviderProfileStatItem extends StatelessWidget {
-  const _ProviderProfileStatItem({required this.valueKey, required this.labelKey});
+  const _ProviderProfileStatItem({
+    required this.valueKey,
+    required this.labelKey,
+  });
 
   final String valueKey;
   final String labelKey;

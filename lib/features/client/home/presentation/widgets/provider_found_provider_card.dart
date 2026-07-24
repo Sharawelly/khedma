@@ -65,7 +65,9 @@ class ProviderFoundProviderCard extends StatelessWidget {
                         Gaps.vGap2,
                         Text(
                           'home_provider_found_provider_rating_reviews'.tr,
-                          style: TextStyles.medium14(color: colors.lightTextColor),
+                          style: TextStyles.medium14(
+                            color: colors.lightTextColor,
+                          ),
                         ),
                       ],
                     ),

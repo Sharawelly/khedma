@@ -509,7 +509,8 @@ class AppColors extends ThemeExtension<AppColors> {
       pathsInfoAccent:
           Color.lerp(pathsInfoAccent, other.pathsInfoAccent, t) ??
           pathsInfoAccent,
-      authBrandRed: Color.lerp(authBrandRed, other.authBrandRed, t) ?? authBrandRed,
+      authBrandRed:
+          Color.lerp(authBrandRed, other.authBrandRed, t) ?? authBrandRed,
       authSignUpSelectedSurface:
           Color.lerp(
             authSignUpSelectedSurface,

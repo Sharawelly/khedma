@@ -1,4 +1,4 @@
- class AddServiceParams {
+class AddServiceParams {
   final int? id;
   final String? serviceTypeId;
   final String? categoryId;
@@ -25,9 +25,9 @@
       );
 
   Map<String, dynamic> toJson() => {
-        "service_type_id": serviceTypeId,
-        "category_id": categoryId,
-        "subcategory_id": subcategoryId,
-        "prices": prices,
-      };
+    "service_type_id": serviceTypeId,
+    "category_id": categoryId,
+    "subcategory_id": subcategoryId,
+    "prices": prices,
+  };
 }

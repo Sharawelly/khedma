@@ -59,17 +59,17 @@ class MySearchBar extends StatelessWidget {
           filled: true,
           fillColor: backgroundColor ?? colors.backGround,
           hintText: hintText,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 16.w,
+            vertical: 12.h,
+          ),
           hintStyle: theme.bodyMedium!.copyWith(
             color: hintTextColor ?? defaultColor,
             fontSize: myFontSize,
           ),
           prefixIcon: IconButton(
             onPressed: onPressed,
-            icon: Icon(
-              Icons.search,
-              color: iconColor ?? defaultColor,
-            ),
+            icon: Icon(Icons.search, color: iconColor ?? defaultColor),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(radius),

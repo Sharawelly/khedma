@@ -16,18 +16,13 @@ class PostReturnsSalaParams extends Equatable {
       'discount': discount,
       'discount_percentage': percentDiscount,
       'items': orderItems
-          ?.map((item) => {
-                'item_id': item.itemId,
-                'quantity': item.quantity,
-              })
+          ?.map((item) => {'item_id': item.itemId, 'quantity': item.quantity})
           .toList(),
     };
   }
 
   @override
-  List<Object> get props => [
-        orderItems ?? const [],
-      ];
+  List<Object> get props => [orderItems ?? const []];
 
   @override
   bool get stringify => true;

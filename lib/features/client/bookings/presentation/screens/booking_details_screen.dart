@@ -63,10 +63,8 @@ class BookingDetailsScreen extends StatelessWidget {
                 Gaps.vGap16,
                 _BookingProviderCard(
                   booking: booking,
-                  onViewProfile: () => context.push(
-                    Routes.providerProfileRoute,
-                    extra: booking,
-                  ),
+                  onViewProfile: () =>
+                      context.push(Routes.providerProfileRoute, extra: booking),
                 ),
                 Gaps.vGap16,
                 _BookingPaymentCard(booking: booking),

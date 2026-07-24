@@ -10,10 +10,7 @@ import '/injection_container.dart';
 class FormReasonSelectorShimmer extends StatelessWidget {
   final int itemCount;
 
-  const FormReasonSelectorShimmer({
-    super.key,
-    this.itemCount = 4,
-  });
+  const FormReasonSelectorShimmer({super.key, this.itemCount = 4});
 
   @override
   Widget build(BuildContext context) {
@@ -57,5 +54,3 @@ class FormReasonSelectorShimmer extends StatelessWidget {
     );
   }
 }
-
-

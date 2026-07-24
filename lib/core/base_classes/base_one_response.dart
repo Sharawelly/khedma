@@ -20,12 +20,12 @@ class BaseOneResponse extends Equatable {
 
   @override
   List<Object?> get props => [
-        data,
-        message,
-        success,
-        value,
-        key,
-        status,
-        statusCode,
-      ];
+    data,
+    message,
+    success,
+    value,
+    key,
+    status,
+    statusCode,
+  ];
 }

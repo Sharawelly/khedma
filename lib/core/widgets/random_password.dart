@@ -4,7 +4,7 @@ import 'dart:math';
 import '/core/utils/string_extension.dart';
 
 class RandomPassword {
-// A list of special characters, numbers, and uppercase letters.
+  // A list of special characters, numbers, and uppercase letters.
 
   static const _characters = [
     'A',
@@ -32,13 +32,13 @@ class RandomPassword {
     'W',
     'X',
     'Y',
-    'Z'
+    'Z',
   ];
 
   static const _num = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
   static const _specialChar = ['@', '#', '%', '&', '*'];
 
-// Generate a random word that starts with a capital letter and consists of special characters and numbers.
+  // Generate a random word that starts with a capital letter and consists of special characters and numbers.
   static String generateWord() {
     // Create an empty string to store the word.
 

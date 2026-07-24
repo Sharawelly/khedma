@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-class ChangePasswordParams extends Equatable{
+class ChangePasswordParams extends Equatable {
   final String currentPassword;
   final String newPassword;
   final String newPasswordConfirmation;
@@ -18,7 +18,11 @@ class ChangePasswordParams extends Equatable{
       'new_password_confirmation': newPasswordConfirmation,
     };
   }
-  
+
   @override
-  List<Object?> get props => [currentPassword, newPassword, newPasswordConfirmation];
+  List<Object?> get props => [
+    currentPassword,
+    newPassword,
+    newPasswordConfirmation,
+  ];
 }

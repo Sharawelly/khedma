@@ -88,13 +88,19 @@ class _ProviderReviewItem extends StatelessWidget {
               Expanded(
                 child: Text(
                   nameKey.tr,
-                  style: TextStyles.semiBold14(color: colors.onboardingHeadline),
+                  style: TextStyles.semiBold14(
+                    color: colors.onboardingHeadline,
+                  ),
                 ),
               ),
               Row(
                 children: List<Widget>.generate(
                   5,
-                  (_) => Icon(Icons.star_rounded, size: 12.r, color: colors.review),
+                  (_) => Icon(
+                    Icons.star_rounded,
+                    size: 12.r,
+                    color: colors.review,
+                  ),
                 ),
               ),
             ],
@@ -102,7 +108,9 @@ class _ProviderReviewItem extends StatelessWidget {
           Gaps.vGap8,
           Text(
             messageKey.tr,
-            style: TextStyles.regular13(color: colors.lightTextColor).copyWith(height: 1.4),
+            style: TextStyles.regular13(
+              color: colors.lightTextColor,
+            ).copyWith(height: 1.4),
           ),
         ],
       ),

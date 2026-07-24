@@ -409,10 +409,7 @@ class MyDate {
     final target = status == 'open' ? endTime : startTime;
     final isClosing = status == 'open';
     final remaining = getRemainingTime(target);
-    return {
-      ...remaining,
-      'isClosing': isClosing,
-    };
+    return {...remaining, 'isClosing': isClosing};
   }
 
   /// Calculates the remaining time until a specific datetime string

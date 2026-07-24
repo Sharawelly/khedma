@@ -13,9 +13,9 @@ class ProfileIsLoading extends ProfileState {}
 class ProfileLoaded extends ProfileState {
   final UserEntity user;
   final DateTime timestamp;
-  
+
   ProfileLoaded({required this.user}) : timestamp = DateTime.now();
-  
+
   @override
   List<Object> get props => [user, timestamp];
 }
@@ -23,7 +23,7 @@ class ProfileLoaded extends ProfileState {
 class ProfileError extends ProfileState {
   final String message;
   const ProfileError(this.message);
-  
+
   @override
   List<Object> get props => [message];
 }

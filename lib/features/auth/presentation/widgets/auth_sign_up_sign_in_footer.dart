@@ -25,7 +25,10 @@ class AuthSignUpSignInFooter extends StatelessWidget {
           },
           borderRadius: BorderRadius.circular(4.r),
           child: Padding(
-            padding: EdgeInsetsDirectional.symmetric(horizontal: 2.w, vertical: 2.h),
+            padding: EdgeInsetsDirectional.symmetric(
+              horizontal: 2.w,
+              vertical: 2.h,
+            ),
             child: Text(
               'auth_sign_up_sign_in'.tr,
               style: TextStyles.semiBold15(color: colors.authBrandRed),

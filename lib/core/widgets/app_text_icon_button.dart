@@ -31,10 +31,7 @@ class AppTextIconButton extends StatelessWidget {
         foregroundColor: colors.main,
       ),
       icon: Icon(icon, size: (iconSize ?? 16).r),
-      label: Text(
-        labelKey.tr,
-        style: TextStyles.bold14(color: colors.main),
-      ),
+      label: Text(labelKey.tr, style: TextStyles.bold14(color: colors.main)),
     );
   }
 }

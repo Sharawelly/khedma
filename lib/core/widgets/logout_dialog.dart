@@ -16,15 +16,9 @@ class LogoutDialog extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            Strings.logout,
-            style: TextStyles.semiBold20(),
-          ),
+          Text(Strings.logout, style: TextStyles.semiBold20()),
           SizedBox(height: 24.h),
-          Text(
-            Strings.doYouWantToLogout,
-            style: TextStyles.regular14(),
-          ),
+          Text(Strings.doYouWantToLogout, style: TextStyles.regular14()),
           SizedBox(height: 32.h),
           Row(
             children: [

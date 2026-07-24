@@ -8,7 +8,11 @@ import '/core/widgets/gaps.dart';
 import '/injection_container.dart';
 
 class CategoryServiceCard extends StatelessWidget {
-  const CategoryServiceCard({super.key, required this.item, required this.onTap});
+  const CategoryServiceCard({
+    super.key,
+    required this.item,
+    required this.onTap,
+  });
 
   final CategoryServiceItemData item;
   final VoidCallback onTap;

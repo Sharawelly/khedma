@@ -38,7 +38,11 @@ class ProviderProfileCertificateCard extends StatelessWidget {
             ),
             child: Row(
               children: <Widget>[
-                Icon(Icons.description_rounded, size: 20.r, color: colors.errorColor),
+                Icon(
+                  Icons.description_rounded,
+                  size: 20.r,
+                  color: colors.errorColor,
+                ),
                 Gaps.hGap8,
                 Expanded(
                   child: Column(
@@ -46,11 +50,15 @@ class ProviderProfileCertificateCard extends StatelessWidget {
                     children: <Widget>[
                       Text(
                         'provider_profile_certificate_name'.tr,
-                        style: TextStyles.semiBold14(color: colors.onboardingHeadline),
+                        style: TextStyles.semiBold14(
+                          color: colors.onboardingHeadline,
+                        ),
                       ),
                       Text(
                         'provider_profile_certificate_issuer'.tr,
-                        style: TextStyles.regular12(color: colors.lightTextColor),
+                        style: TextStyles.regular12(
+                          color: colors.lightTextColor,
+                        ),
                       ),
                     ],
                   ),
