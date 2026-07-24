@@ -1,197 +1,89 @@
 import 'package:dartz/dartz.dart';
 
 import '/core/base_classes/base_one_response.dart';
-import '/core/params/auth_params.dart';
 import '/core/error/exceptions.dart';
 import '/core/error/failures.dart';
-import '/core/usecases/usecase.dart';
+import '/core/params/auth_params.dart';
 import '/core/utils/enums.dart';
-import '/core/utils/log_utils.dart' as log;
-import '../../../../injection_container.dart';
+import '/injection_container.dart';
+import '../../domain/entities/auth_entity.dart';
+import '../../domain/entities/profile_entity.dart';
 import '../../domain/repositories/auth_repo.dart';
 import '../../domain/usecases/params/forgot_password_params.dart';
 import '../../domain/usecases/params/reset_password_params.dart';
-import '../../domain/usecases/save_user_role.dart';
-import '../../domain/usecases/save_user_type_usecase.dart';
 import '../datasources/auth_remote_datasource.dart';
 import '../models/auth_resp_model.dart';
+import '../models/profile_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remote;
 
   AuthRepositoryImpl({required this.remote});
 
-  /// Impl
-
   @override
-  Future<Either<Failure, UserType>> getUserType({
-    required NoParams params,
-  }) async {
-    try {
-      UserType userType = sharedPreferences.getUserType();
-      return Right<Failure, UserType>(userType);
-    } on AppException catch (error) {
-      log.Log.e(
-        '[getUserType] [${error.runtimeType.toString()}] ---- ${error.message}',
-      );
-      return Left<Failure, UserType>(error.toFailure());
-    }
+  Future<Either<Failure, AuthResponseEntity>> login(LoginParams params) async {
+    return _authenticate(() => remote.login(params));
   }
 
   @override
-  Future<Either<Failure, bool>> saveUserType({
-    required SaveUserTypeParams params,
-  }) async {
-    try {
-      bool result = await sharedPreferences.saveUserType(params.type);
-      return Right<Failure, bool>(result);
-    } on AppException catch (error) {
-      log.Log.e(
-        '[saveUserType] [${error.runtimeType.toString()}] ---- ${error.message}',
-      );
-      return Left<Failure, bool>(error.toFailure());
-    }
-  }
-
-  // USer Cycle Repo -----------------------------------------------------
-  @override
-  Future<Either<Failure, bool>> saveUserCycle({
-    required SaveUserCycleParams params,
-  }) async {
-    try {
-      bool result = await sharedPreferences.saveUserCycle(params.type);
-      return Right<Failure, bool>(result);
-    } on AppException catch (error) {
-      log.Log.e(
-        '[saveUserRole] [${error.runtimeType.toString()}] ---- ${error.message}',
-      );
-      return Left<Failure, bool>(error.toFailure());
-    }
+  Future<Either<Failure, AuthResponseEntity>> registerCustomer(
+    RegisterCustomerParams params,
+  ) async {
+    return _authenticate(() => remote.registerCustomer(params));
   }
 
   @override
-  Future<Either<Failure, UserCycle>> getUserCycle({
-    required NoParams params,
-  }) async {
-    try {
-      UserCycle userCycle = sharedPreferences.getUserCycle();
-      return Right<Failure, UserCycle>(userCycle);
-    } on AppException catch (error) {
-      log.Log.e(
-        '[getUserRole] [${error.runtimeType.toString()}] ---- ${error.message}',
-      );
-      return Left<Failure, UserCycle>(error.toFailure());
-    }
+  Future<Either<Failure, AuthResponseEntity>> registerProvider(
+    RegisterProviderParams params,
+  ) async {
+    return _authenticate(() => remote.registerProvider(params));
   }
 
   @override
-  Future<Either<Failure, BaseOneResponse>> loginWithPassword(
-    AuthParams params,
+  Future<Either<Failure, AuthResponseEntity>> refreshToken(
+    RefreshTokenParams params,
   ) async {
     try {
-      final BaseOneResponse response = await remote.loginWithPassword(
-        params: params,
-      );
-      final authModel = response.data as AuthModel;
-
-      // Clear old user data first to prevent stale data issues
-      await sharedPreferences.removeUserId();
-      await sharedPreferences.removeUser();
-      await sharedPreferences.removeUserType();
-      await sharedPreferences.removeUserCycle();
-
-      // Save new user data
-      await sharedPreferences.saveUserId(authModel.user.id ?? 0);
-      await sharedPreferences.saveUser(authModel.user);
-      await secureStorage.saveAccessToken(authModel.token);
-
-      return Right<Failure, BaseOneResponse>(response);
+      final authResponse = await remote.refreshToken(params);
+      await _persistAuthResponse(authResponse);
+      return Right<Failure, AuthResponseEntity>(authResponse);
     } on AppException catch (error) {
-      log.Log.e(
-        '[loginWithPassword] [${error.runtimeType.toString()}] ---- ${error.message}',
-      );
-      return Left<Failure, BaseOneResponse>(error.toFailure());
+      return Left<Failure, AuthResponseEntity>(error.toFailure());
     }
   }
 
   @override
-  Future<Either<Failure, BaseOneResponse>> registerWithPassword(
-    AuthParams params,
-  ) async {
+  Future<Either<Failure, Unit>> logout() async {
     try {
-      final BaseOneResponse response = await remote.registerWithPassword(
-        params: params,
-      );
-      final authModel = response.data as AuthModel;
-
-      // Clear old user data first to prevent stale data issues
-      await sharedPreferences.removeUserId();
-      await sharedPreferences.removeUser();
-      await sharedPreferences.removeUserType();
-      await sharedPreferences.removeUserCycle();
-
-      // Save new user data
-      await sharedPreferences.saveUserId(authModel.user.id ?? 0);
-      await sharedPreferences.saveUser(authModel.user);
-      await secureStorage.saveAccessToken(authModel.token);
-
-      return Right<Failure, BaseOneResponse>(response);
+      final refreshToken = await secureStorage.getRefreshToken();
+      if (refreshToken != null && refreshToken.isNotEmpty) {
+        await remote.logout(RefreshTokenParams(refreshToken: refreshToken));
+      }
+      await _clearSession();
+      return const Right<Failure, Unit>(unit);
     } on AppException catch (error) {
-      log.Log.e(
-        '[registerWithPassword] [${error.runtimeType.toString()}] ---- ${error.message}',
-      );
-      return Left<Failure, BaseOneResponse>(error.toFailure());
+      return Left<Failure, Unit>(error.toFailure());
     }
   }
 
   @override
-  Future<Either<Failure, BaseOneResponse>> logout() async {
+  Future<Either<Failure, ProfileEntity>> getProfile() async {
     try {
-      final BaseOneResponse response = await remote.logout();
-
-      // Preserve language preference across logout
-      final savedLangCode = sharedPreferences.getLanguageCode();
-
-      // Clear ALL SharedPreferences to ensure no stale user data remains
-      await sharedPreferences.clearAll();
-
-      // Restore language preference
-      await sharedPreferences.saveLanguageCode(savedLangCode.name);
-
-      // Clear secure storage (token)
-      await secureStorage.saveAccessToken(null);
-
-      return Right<Failure, BaseOneResponse>(response);
+      final profile = await remote.getProfile();
+      await _cacheProfile(profile);
+      return Right<Failure, ProfileEntity>(profile);
     } on AppException catch (error) {
-      log.Log.e(
-        '[logout] [${error.runtimeType.toString()}] ---- ${error.message}',
-      );
-      return Left<Failure, BaseOneResponse>(error.toFailure());
+      return Left<Failure, ProfileEntity>(error.toFailure());
     }
   }
 
   @override
   Future<Either<Failure, BaseOneResponse>> deleteAccount() async {
     try {
-      final BaseOneResponse response = await remote.deleteAccount();
-
-      // Preserve language preference across account deletion
-      final savedLangCode = sharedPreferences.getLanguageCode();
-
-      // Clear ALL SharedPreferences to ensure no stale user data remains
-      await sharedPreferences.clearAll();
-
-      // Restore language preference
-      await sharedPreferences.saveLanguageCode(savedLangCode.name);
-
-      // Clear secure storage (token)
-      await secureStorage.saveAccessToken(null);
-
+      final response = await remote.deleteAccount();
+      await _clearSession();
       return Right<Failure, BaseOneResponse>(response);
     } on AppException catch (error) {
-      log.Log.e(
-        '[deleteAccount] [${error.runtimeType.toString()}] ---- ${error.message}',
-      );
       return Left<Failure, BaseOneResponse>(error.toFailure());
     }
   }
@@ -201,14 +93,9 @@ class AuthRepositoryImpl implements AuthRepository {
     ForgotPasswordParams params,
   ) async {
     try {
-      final BaseOneResponse response = await remote.forgotPassword(
-        params: params,
-      );
+      final response = await remote.forgotPassword(params);
       return Right<Failure, BaseOneResponse>(response);
     } on AppException catch (error) {
-      log.Log.e(
-        '[forgotPassword] [${error.runtimeType.toString()}] ---- ${error.message}',
-      );
       return Left<Failure, BaseOneResponse>(error.toFailure());
     }
   }
@@ -218,32 +105,65 @@ class AuthRepositoryImpl implements AuthRepository {
     ResetPasswordParams params,
   ) async {
     try {
-      final BaseOneResponse response = await remote.resetPassword(
-        params: params,
-      );
+      final response = await remote.resetPassword(params);
       return Right<Failure, BaseOneResponse>(response);
     } on AppException catch (error) {
-      log.Log.e(
-        '[resetPassword] [${error.runtimeType.toString()}] ---- ${error.message}',
-      );
       return Left<Failure, BaseOneResponse>(error.toFailure());
     }
   }
 
-  @override
-  Future<Either<Failure, BaseOneResponse>> getProfile() async {
+  Future<Either<Failure, AuthResponseEntity>> _authenticate(
+    Future<AuthRespModel> Function() request,
+  ) async {
     try {
-      final BaseOneResponse response = await remote.getProfile();
-      final authModel = response.data as AuthModel;
-      await sharedPreferences.saveUserId(authModel.user.id ?? 0);
-      await sharedPreferences.saveUser(authModel.user);
-
-      return Right<Failure, BaseOneResponse>(response);
+      final authResponse = await request();
+      await _persistAuthResponse(authResponse);
+      try {
+        await _cacheProfile(await remote.getProfile());
+      } on AppException {
+        await _clearSession();
+        rethrow;
+      }
+      return Right<Failure, AuthResponseEntity>(authResponse);
     } on AppException catch (error) {
-      log.Log.e(
-        '[getProfile] [${error.runtimeType.toString()}] ---- ${error.message}',
-      );
-      return Left<Failure, BaseOneResponse>(error.toFailure());
+      return Left<Failure, AuthResponseEntity>(error.toFailure());
     }
+  }
+
+  Future<void> _persistAuthResponse(AuthRespModel response) async {
+    final token = response.token;
+    if (token == null) {
+      throw ServerException(message: response.errorMessage);
+    }
+    await Future.wait<void>(<Future<void>>[
+      secureStorage.saveAccessToken(token.accessToken),
+      secureStorage.saveRefreshToken(token.refreshToken),
+      secureStorage.saveTokenExpiresAt(token.expiresAt.toIso8601String()),
+      sharedPreferences.saveAuthUserId(token.userId),
+      sharedPreferences.saveUserRole(token.role),
+      sharedPreferences.saveUserType(
+        token.role == 'Provider' ? UserType.provider : UserType.user,
+      ),
+      sharedPreferences.saveUserCycle(UserCycle.auth),
+    ]);
+  }
+
+  Future<void> _cacheProfile(ProfileModel profile) async {
+    await sharedPreferences.saveUser(profile);
+  }
+
+  Future<void> _clearSession() async {
+    final languageCode = sharedPreferences.getLanguageCode().name;
+    await Future.wait<void>(<Future<void>>[
+      secureStorage.saveAccessToken(null),
+      secureStorage.removeRefreshToken(),
+      secureStorage.removeTokenExpiresAt(),
+      sharedPreferences.removeAuthUserId(),
+      sharedPreferences.removeUserRole(),
+      sharedPreferences.removeUser(),
+      sharedPreferences.removeUserType(),
+      sharedPreferences.removeUserCycle(),
+    ]);
+    await sharedPreferences.saveLanguageCode(languageCode);
   }
 }

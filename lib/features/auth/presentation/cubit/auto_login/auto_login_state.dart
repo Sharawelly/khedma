@@ -1,25 +1,23 @@
 part of 'auto_login_cubit.dart';
 
-class AutoLoginState extends Equatable {
+abstract class AutoLoginState extends Equatable {
   const AutoLoginState();
 
   @override
   List<Object?> get props => <Object?>[];
 }
 
-class AutoLoginUserTypeState extends AutoLoginState {
-  final UserType userType;
-  final String? message;
+class AutoLoginInitial extends AutoLoginState {}
 
-  const AutoLoginUserTypeState({this.userType = UserType.user, this.message});
-}
+class AutoLoginLoading extends AutoLoginState {}
 
-class AutoLoginUserCycleState extends AutoLoginState {
-  final UserCycle userCycle;
-  final String? message;
+class AutoLoginUnauthenticated extends AutoLoginState {}
 
-  const AutoLoginUserCycleState({
-    this.userCycle = UserCycle.firstOpen,
-    this.message,
-  });
+class AutoLoginAuthenticated extends AutoLoginState {
+  final String destination;
+
+  const AutoLoginAuthenticated({required this.destination});
+
+  @override
+  List<Object?> get props => <Object?>[destination];
 }

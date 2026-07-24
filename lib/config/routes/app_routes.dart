@@ -49,7 +49,6 @@ abstract class Routes {
   static const String onBoardingFourthRoute = '/OnBoardingFourthScreen';
   static const String onBoardingFifthRoute = '/OnBoardingFifthScreen';
   static const String onBoardingSixthRoute = '/OnBoardingSixthScreen';
-  static const String countrySelectionRoute = '/CountrySelectionScreen';
   static const String loginScreenRoute = '/LoginScreen';
   static const String passwordResetRoute = '/PasswordResetScreen';
   static const String resetPasswordRoute = '/ResetPasswordScreen';

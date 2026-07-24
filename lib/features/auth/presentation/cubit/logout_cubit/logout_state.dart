@@ -12,12 +12,7 @@ class LogoutInitial extends LogoutState {}
 class LogoutIsLoading extends LogoutState {}
 
 class LogoutSuccess extends LogoutState {
-  final String? message;
-
-  const LogoutSuccess({this.message});
-
-  @override
-  List<Object?> get props => [message];
+  const LogoutSuccess();
 }
 
 class LogoutError extends LogoutState {

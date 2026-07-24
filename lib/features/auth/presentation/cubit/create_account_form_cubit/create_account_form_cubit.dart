@@ -9,13 +9,16 @@ class CreateAccountFormCubit extends Cubit<CreateAccountFormState> {
   void onFormInputChanged({
     required String name,
     required String email,
+    required String phoneNumber,
     required String password,
   }) {
     final String trimmedName = name.trim();
     final String trimmedEmail = email.trim();
+    final String trimmedPhone = phoneNumber.trim();
     final bool filled =
         trimmedName.isNotEmpty &&
         trimmedEmail.isNotEmpty &&
+        trimmedPhone.isNotEmpty &&
         password.isNotEmpty;
     emit(
       state.copyWith(

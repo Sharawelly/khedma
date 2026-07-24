@@ -17,7 +17,7 @@ class RegistrationProgressBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(100.r),
       ),
       child: FractionallySizedBox(
-        alignment: Alignment.centerLeft,
+        alignment: AlignmentDirectional.centerStart,
         widthFactor: progress.clamp(0.0, 1.0),
         child: Container(
           decoration: BoxDecoration(

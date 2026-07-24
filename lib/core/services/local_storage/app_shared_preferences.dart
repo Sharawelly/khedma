@@ -12,6 +12,8 @@ import '../../utils/extension.dart';
 abstract class _AppSharedPreferencesKeys {
   static const countryId = 'countryId';
   static const userId = 'userId';
+  static const authUserId = 'authUserId';
+  static const userRole = 'userRole';
   static const user = 'user';
   static const appTheme = 'appTheme';
   static const languageCode = 'languageCode';
@@ -47,6 +49,18 @@ abstract class AppSharedPreferences {
   int? getUserId();
   Future<bool> saveUserId(int id);
   Future<bool> removeUserId();
+
+  //region:: auth user Id
+  /// The KHDMA identity id, which is a string rather than the legacy int id.
+  String? getAuthUserId();
+  Future<bool> saveAuthUserId(String id);
+  Future<bool> removeAuthUserId();
+
+  //region:: user role
+  /// "Customer" or "Provider", as reported by the server on login/refresh.
+  String? getUserRole();
+  Future<bool> saveUserRole(String role);
+  Future<bool> removeUserRole();
 
   //region:: user
   UserEntity? getUser();
@@ -145,6 +159,36 @@ class AppSharedPreferencesImpl extends AppSharedPreferences {
   @override
   Future<bool> removeUserId() =>
       instance.remove(_AppSharedPreferencesKeys.userId);
+
+  //endregion
+
+  //region:: auth user Id
+  @override
+  String? getAuthUserId() =>
+      instance.getString(_AppSharedPreferencesKeys.authUserId);
+
+  @override
+  Future<bool> saveAuthUserId(String id) =>
+      instance.setString(_AppSharedPreferencesKeys.authUserId, id);
+
+  @override
+  Future<bool> removeAuthUserId() =>
+      instance.remove(_AppSharedPreferencesKeys.authUserId);
+
+  //endregion
+
+  //region:: user role
+  @override
+  String? getUserRole() =>
+      instance.getString(_AppSharedPreferencesKeys.userRole);
+
+  @override
+  Future<bool> saveUserRole(String role) =>
+      instance.setString(_AppSharedPreferencesKeys.userRole, role);
+
+  @override
+  Future<bool> removeUserRole() =>
+      instance.remove(_AppSharedPreferencesKeys.userRole);
 
   //endregion
 

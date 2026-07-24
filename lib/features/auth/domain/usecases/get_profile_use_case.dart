@@ -1,17 +1,15 @@
 import 'package:dartz/dartz.dart';
 
-import '/core/base_classes/base_one_response.dart';
-import '/core/usecases/usecase.dart';
-import '../repositories/auth_repo.dart';
 import '/core/error/failures.dart';
+import '../entities/profile_entity.dart';
+import '../repositories/auth_repo.dart';
 
-class GetProfileUseCase extends UseCase<BaseOneResponse, NoParams> {
+class GetProfileUseCase {
   final AuthRepository repository;
 
   GetProfileUseCase({required this.repository});
 
-  @override
-  Future<Either<Failure, BaseOneResponse>> call(NoParams params) async {
-    return await repository.getProfile();
+  Future<Either<Failure, ProfileEntity>> call() {
+    return repository.getProfile();
   }
 }

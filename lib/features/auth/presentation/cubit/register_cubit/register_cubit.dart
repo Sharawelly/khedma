@@ -1,35 +1,32 @@
-import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '/core/base_classes/base_one_response.dart';
 import '/core/params/auth_params.dart';
-import '../../../domain/usecases/register_with_password_use_case.dart';
-import '/core/error/failures.dart';
+import '../../../domain/entities/auth_entity.dart';
+import '../../../domain/usecases/register_customer_use_case.dart';
+import '../../../domain/usecases/register_provider_use_case.dart';
 
 part 'register_state.dart';
 
 class RegisterCubit extends Cubit<RegisterState> {
-  final RegisterWithPasswordUseCase registerWithPasswordUseCase;
+  final RegisterCustomerUseCase registerCustomerUseCase;
+  final RegisterProviderUseCase registerProviderUseCase;
 
-  RegisterCubit({required this.registerWithPasswordUseCase})
-    : super(RegisterInitial());
+  RegisterCubit({
+    required this.registerCustomerUseCase,
+    required this.registerProviderUseCase,
+  }) : super(RegisterInitial());
 
-  Future<void> register(AuthParams params) async {
+  Future<void> register(RegisterParams params) async {
     emit(RegisterIsLoading());
-    try {
-      final Either<Failure, BaseOneResponse> eitherResult =
-          await registerWithPasswordUseCase(params);
-      eitherResult.fold(
-        (Failure failure) {
-          emit(RegisterError(failure.message ?? ''));
-        },
-        (BaseOneResponse response) {
-          emit(RegisterLoaded(response: response));
-        },
-      );
-    } catch (e) {
-      emit(RegisterError(e.toString()));
-    }
+    final registerResult = switch (params) {
+      RegisterCustomerParams() => registerCustomerUseCase(params),
+      RegisterProviderParams() => registerProviderUseCase(params),
+    };
+    final response = await registerResult;
+    response.fold(
+      (failure) => emit(RegisterError(failure.message ?? '')),
+      (authResponse) => emit(RegisterLoaded(response: authResponse)),
+    );
   }
 }

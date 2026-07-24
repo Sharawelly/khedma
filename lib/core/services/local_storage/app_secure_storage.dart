@@ -4,7 +4,6 @@ abstract class _AppSecureStorageKeys {
   static const String accessToken = 'accessToken';
   static const String refreshToken = 'refreshToken';
   static const String tokenExpiresAt = 'tokenExpiresAt';
-  static const String userRole = 'userRole';
   static const String deviceToken = 'deviceToken';
 }
 
@@ -35,15 +34,6 @@ abstract class AppSecureStorage {
   Future<void> saveTokenExpiresAt(String? expiresAt);
 
   Future<void> removeTokenExpiresAt();
-
-  //endregion
-
-  //region:: UserRole
-  Future<String?> getUserRole();
-
-  Future<void> saveUserRole(String? role);
-
-  Future<void> removeUserRole();
 
   //endregion
 
@@ -102,21 +92,6 @@ class AppSecureStorageImpl extends AppSecureStorage {
   @override
   Future<void> removeTokenExpiresAt() =>
       instance.delete(key: _AppSecureStorageKeys.tokenExpiresAt);
-
-  //endregion
-
-  //region:: UserRole
-  @override
-  Future<String?> getUserRole() =>
-      instance.read(key: _AppSecureStorageKeys.userRole);
-
-  @override
-  Future<void> saveUserRole(String? role) =>
-      instance.write(key: _AppSecureStorageKeys.userRole, value: role);
-
-  @override
-  Future<void> removeUserRole() =>
-      instance.delete(key: _AppSecureStorageKeys.userRole);
 
   //endregion
 

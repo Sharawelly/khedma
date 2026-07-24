@@ -111,7 +111,7 @@ class _StrengthMeterRow extends StatelessWidget {
             final filled = index < _filledBars;
             return Expanded(
               child: Container(
-                margin: EdgeInsets.only(right: index < 3 ? 4.w : 0),
+                margin: EdgeInsetsDirectional.only(end: index < 3 ? 4.w : 0),
                 height: 4.h,
                 decoration: BoxDecoration(
                   color: filled ? _barColor : colors.disabledButtonBg,

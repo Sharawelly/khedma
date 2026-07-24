@@ -7,6 +7,7 @@ import 'package:khedma/config/routes/app_routes.dart';
 import 'package:khedma/core/utils/values/text_styles.dart';
 import 'package:khedma/core/widgets/gaps.dart';
 import 'package:khedma/core/widgets/my_default_button.dart';
+import 'package:khedma/features/auth/presentation/cubit/auto_login/auto_login_cubit.dart';
 import 'package:khedma/features/auth/presentation/cubit/role_selection_cubit/role_selection_cubit.dart';
 import 'package:khedma/features/auth/presentation/widgets/auth_sign_up_brand_header.dart';
 import 'package:khedma/features/auth/presentation/widgets/auth_sign_up_role_card.dart';
@@ -14,14 +15,36 @@ import 'package:khedma/features/auth/presentation/widgets/auth_sign_up_sign_in_f
 import 'package:khedma/features/auth/presentation/widgets/auth_sign_up_title_section.dart';
 import 'package:khedma/injection_container.dart';
 
-class RoleSelectionScreen extends StatelessWidget {
+class RoleSelectionScreen extends StatefulWidget {
   const RoleSelectionScreen({super.key});
 
   @override
+  State<RoleSelectionScreen> createState() => _RoleSelectionScreenState();
+}
+
+class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<AutoLoginCubit>().checkSession();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider<RoleSelectionCubit>(
-      create: (_) => ServiceLocator.instance<RoleSelectionCubit>(),
-      child: const _RoleSelectionView(),
+    return BlocListener<AutoLoginCubit, AutoLoginState>(
+      listener: (context, state) {
+        if (state is AutoLoginAuthenticated) {
+          context.go(state.destination);
+        }
+      },
+      child: BlocProvider<RoleSelectionCubit>(
+        create: (_) => ServiceLocator.instance<RoleSelectionCubit>(),
+        child: const _RoleSelectionView(),
+      ),
     );
   }
 }
@@ -118,18 +141,13 @@ class _RoleSelectionView extends StatelessWidget {
                           if (!state.hasSelection) {
                             return;
                           }
-                          if (state.selectedRole == 'need_service') {
-                            context.go(Routes.appShellRoute);
-                            return;
-                          }
-                          if (state.selectedRole == 'provide_services') {
-                            context.go(Routes.providerAppShellRoute);
-                            return;
-                          }
                           context.push(
                             Routes.createAccountRoute,
                             extra: <String, String>{
-                              'registration_role': state.selectedRole,
+                              'registration_role':
+                                  state.selectedRole == 'provide_services'
+                                  ? 'Provider'
+                                  : 'Customer',
                             },
                           );
                         },

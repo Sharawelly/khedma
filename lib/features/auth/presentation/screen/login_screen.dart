@@ -2,161 +2,168 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:khedma/config/locale/app_localizations.dart';
-import 'package:khedma/config/routes/app_routes.dart';
-import 'package:khedma/core/utils/enums.dart';
-import 'package:khedma/core/utils/values/text_styles.dart';
-import 'package:khedma/core/widgets/gaps.dart';
-import 'package:khedma/core/widgets/my_default_button.dart';
-import 'package:khedma/features/auth/presentation/cubit/auto_login/auto_login_cubit.dart';
-import 'package:khedma/features/auth/presentation/cubit/login/login_cubit.dart';
-import 'package:khedma/features/auth/presentation/widgets/login_brand_header.dart';
-import 'package:khedma/features/auth/presentation/widgets/login_invitation_code_field.dart';
-import 'package:khedma/features/auth/presentation/widgets/login_secure_footer.dart';
-import 'package:khedma/injection_container.dart';
+
+import '/config/locale/app_localizations.dart';
+import '/core/params/auth_params.dart';
+import '/core/utils/values/text_styles.dart';
+import '/core/widgets/app_shimmer.dart';
+import '/core/widgets/app_text_form_field.dart';
+import '/core/widgets/gaps.dart';
+import '/core/widgets/my_default_button.dart';
+import '/injection_container.dart';
+import '../auth_role_navigation.dart';
+import '../cubit/login/login_cubit.dart';
+import '../widgets/login_brand_header.dart';
+import '../widgets/login_secure_footer.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  LoginScreenState createState() => LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class LoginScreenState extends State<LoginScreen> {
-  late final GlobalKey<FormState> _formKey;
-  late final TextEditingController _codeController;
-  late final FocusNode _codeFocus;
-  String? _fcmToken;
-
-  @override
-  void initState() {
-    super.initState();
-    _formKey = GlobalKey<FormState>();
-    _codeController = TextEditingController();
-    _codeFocus = FocusNode();
-    _initializeUserState();
-  }
+class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _emailFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
-    _codeController.dispose();
-    _codeFocus.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
-  void _initializeUserState() {
-    final autoLoginCubit = context.read<AutoLoginCubit>();
-    autoLoginCubit.saveUserCycle(type: UserCycle.login);
-    autoLoginCubit.saveUserType(type: UserType.pending);
-    autoLoginCubit.getUserType();
-  }
-
-  Future<void> _onVerifyPressed() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      // final deviceType = Platform.isAndroid ? 'android' : 'ios';
-      // final deviceName = await Constants.getModel();
-      // if (!mounted) return;
-      // context.read<LoginCubit>().login(
-      //   AuthParams(
-      //     invitationCode: _codeController.text.trim().toUpperCase(),
-      //     fcmDeviceToken: _fcmToken,
-      //     deviceType: deviceType,
-      //     deviceName: deviceName,
-      //   ),
-      // );
-      context.push(Routes.languagePreferenceRoute);
+  void _submit() {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
     }
-  }
-
-  void _unFocus() {
-    _codeFocus.unfocus();
+    context.read<LoginCubit>().login(
+      LoginParams(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _unFocus,
-      child: BlocListener<LoginCubit, LoginState>(
-        listener: (context, state) {
-          if (state is LoginLoaded) {
-            context
-                .read<AutoLoginCubit>()
-                .saveUserCycle(type: UserCycle.auth)
-                .then((_) {
-                  if (context.mounted) {
-                    context.push(Routes.languagePreferenceRoute);
-                  }
-                });
+    return BlocConsumer<LoginCubit, LoginState>(
+      listener: (context, state) {
+        if (state is LoginLoaded) {
+          final destination = AuthRoleNavigation.routeForRole(
+            state.response.token!.role,
+          );
+          if (destination != null) {
+            context.go(destination);
           }
-        },
-        child: Scaffold(
+        }
+      },
+      builder: (context, state) {
+        return Scaffold(
           backgroundColor: colors.whiteColor,
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              padding: EdgeInsetsDirectional.symmetric(horizontal: 20.w),
               child: Form(
                 key: _formKey,
                 child: Column(
-                  children: [
-                    Gaps.vGap32,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Gaps.vGap24,
                     LoginBrandHeader(colors: colors),
-                    Gaps.vGap40,
+                    Gaps.vGap24,
                     Text(
-                      'loginInvitationTitle'.tr,
+                      'authLoginTitle'.tr,
                       textAlign: TextAlign.center,
                       style: TextStyles.bold28(
                         color: colors.onboardingHeadline,
                       ),
                     ),
-                    Gaps.vGap12,
+                    Gaps.vGap8,
                     Text(
-                      'loginInvitationSubtitle'.tr,
+                      'authLoginSubtitle'.tr,
                       textAlign: TextAlign.center,
                       style: TextStyles.medium16(color: colors.onboardingBody),
                     ),
-                    SizedBox(height: 36.h),
-                    LoginInvitationCodeField(
-                      controller: _codeController,
-                      focusNode: _codeFocus,
-                      onFieldSubmitted: _onVerifyPressed,
-                    ),
-                    // if (err != null && err.isNotEmpty) ...[
-                    //   Gaps.vGap12,
-                    //   SelectableText.rich(
-                    //     TextSpan(
-                    //       text: err,
-                    //       style: TextStyles.medium14(
-                    //         color: colors.errorColor,
-                    //       ),
-                    //     ),
-                    //     textAlign: TextAlign.center,
-                    //   ),
-                    // ],
-                    Gaps.vGap24,
-                    // if (loading)
-                    //   AppShimmer(
-                    //     child: Container(
-                    //       width: double.infinity,
-                    //       height: 56.h,
-                    //       decoration: BoxDecoration(
-                    //         color: colors.whiteColor,
-                    //         borderRadius: BorderRadius.circular(14.r),
-                    //       ),
-                    //     ),
-                    //   )
-                    // else
-                    MyDefaultButton(
-                      width: double.infinity,
-                      height: 56,
-                      borderRadius: 14,
-                      btnText: 'loginVerifyCode',
-                      color: colors.main,
-                      textColor: colors.whiteColor,
-                      borderColor: colors.main,
-                      textStyle: TextStyles.bold16(color: colors.whiteColor),
-                      onPressed: _onVerifyPressed,
-                    ),
                     Gaps.vGap32,
+                    _FieldLabel(label: 'authEmailLabel'.tr),
+                    Gaps.vGap8,
+                    AppTextFormField(
+                      controller: _emailController,
+                      focusNode: _emailFocus,
+                      hintText: 'authEmailHint'.tr,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      wrapWithElasticAnimation: false,
+                      validator: _validateEmail,
+                      onSubmit: (_) => _passwordFocus.requestFocus(),
+                    ),
+                    Gaps.vGap16,
+                    _FieldLabel(label: 'authPasswordLabel'.tr),
+                    Gaps.vGap8,
+                    AppTextFormField(
+                      controller: _passwordController,
+                      focusNode: _passwordFocus,
+                      hintText: 'authPasswordHint'.tr,
+                      obscureText: _obscurePassword,
+                      textInputAction: TextInputAction.done,
+                      wrapWithElasticAnimation: false,
+                      validator: (value) => value == null || value.isEmpty
+                          ? 'authPasswordRequired'.tr
+                          : null,
+                      suffix: GestureDetector(
+                        onTap: () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
+                        child: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: colors.invitationInputBorder,
+                        ),
+                      ),
+                      onSubmit: (_) => _submit(),
+                    ),
+                    if (state is LoginError) ...<Widget>[
+                      Gaps.vGap12,
+                      SelectableText.rich(
+                        TextSpan(
+                          text: state.message,
+                          style: TextStyles.medium14(color: colors.errorColor),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                    Gaps.vGap24,
+                    if (state is LoginIsLoading)
+                      AppShimmer(
+                        child: Container(
+                          height: 56.h,
+                          decoration: BoxDecoration(
+                            color: colors.whiteColor,
+                            borderRadius: BorderRadius.circular(14.r),
+                          ),
+                        ),
+                      )
+                    else
+                      MyDefaultButton(
+                        btnText: 'authLoginAction'.tr,
+                        localeText: true,
+                        onPressed: _submit,
+                        height: 56,
+                        borderRadius: 14,
+                        color: colors.main,
+                        textColor: colors.whiteColor,
+                        textStyle: TextStyles.bold16(color: colors.whiteColor),
+                      ),
+                    Gaps.vGap24,
                     LoginSecureFooter(colors: colors),
                     Gaps.vGap24,
                   ],
@@ -164,8 +171,33 @@ class LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
+    );
+  }
+
+  String? _validateEmail(String? value) {
+    final email = value?.trim() ?? '';
+    if (email.isEmpty) {
+      return 'authEmailRequired'.tr;
+    }
+    if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,}$').hasMatch(email)) {
+      return 'authEmailInvalid'.tr;
+    }
+    return null;
+  }
+}
+
+class _FieldLabel extends StatelessWidget {
+  final String label;
+
+  const _FieldLabel({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: TextStyles.medium14(color: colors.registerLabelText),
     );
   }
 }

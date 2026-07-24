@@ -2,98 +2,183 @@ import 'dart:io';
 
 import 'package:equatable/equatable.dart';
 
-class AuthParams extends Equatable {
-  final int? countryId;
-  final String? type; // individual | organization
-  final String? phone;
-  final String? name;
-  final String? email;
-  final int? governorateId;
-  final String? address;
-  final String? password;
-  final String? passwordConfirmation;
-  final String? gender;
-  final int? activityTypeId;
+class LoginParams extends Equatable {
+  final String email;
+  final String password;
 
-  final int? verifiedAccount;
-  final String? commercialRegistration;
-  final String? taxNumber;
-  final File? image;
-  final String? deviceToken;
-  final String? fcmDeviceToken;
-  final String? deviceType;
-  final String? deviceName;
-  final String? invitationCode;
-  final String? jobTitle;
+  const LoginParams({required this.email, required this.password});
 
-  const AuthParams({
-    this.countryId,
-    this.type,
-    this.phone,
-    this.name,
-    this.email,
-    this.governorateId,
-    this.address,
-    this.password,
-    this.passwordConfirmation,
-    this.gender,
-    this.activityTypeId,
-    this.verifiedAccount,
-    this.commercialRegistration,
-    this.taxNumber,
-    this.image,
-    this.deviceToken,
-    this.fcmDeviceToken,
-    this.deviceType,
-    this.deviceName,
-    this.invitationCode,
-    this.jobTitle,
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'email': email,
+    'password': password,
+  };
+
+  LoginParams copyWith({String? email, String? password}) {
+    return LoginParams(
+      email: email ?? this.email,
+      password: password ?? this.password,
+    );
+  }
+
+  @override
+  List<Object?> get props => <Object?>[email, password];
+}
+
+sealed class RegisterParams extends Equatable {
+  final String fullName;
+  final String email;
+  final String password;
+  final String phoneNumber;
+  final DateTime? dateOfBirth;
+  final File? profilePicture;
+
+  const RegisterParams({
+    required this.fullName,
+    required this.email,
+    required this.password,
+    required this.phoneNumber,
+    this.dateOfBirth,
+    this.profilePicture,
   });
 
   @override
-  List<Object?> get props => [
-    countryId,
-    type,
-    phone,
-    name,
+  List<Object?> get props => <Object?>[
+    fullName,
     email,
-    governorateId,
-    address,
     password,
-    passwordConfirmation,
-    gender,
-    activityTypeId,
-    verifiedAccount,
-    commercialRegistration,
-    taxNumber,
-    image,
-    deviceToken,
-    fcmDeviceToken,
-    deviceType,
-    deviceName,
-    invitationCode,
+    phoneNumber,
+    dateOfBirth,
+    profilePicture,
+  ];
+}
+
+class RegisterCustomerParams extends RegisterParams {
+  const RegisterCustomerParams({
+    required super.fullName,
+    required super.email,
+    required super.password,
+    required super.phoneNumber,
+    super.dateOfBirth,
+    super.profilePicture,
+  });
+
+  RegisterCustomerParams copyWith({
+    String? fullName,
+    String? email,
+    String? password,
+    String? phoneNumber,
+    DateTime? dateOfBirth,
+    File? profilePicture,
+  }) {
+    return RegisterCustomerParams(
+      fullName: fullName ?? this.fullName,
+      email: email ?? this.email,
+      password: password ?? this.password,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      profilePicture: profilePicture ?? this.profilePicture,
+    );
+  }
+}
+
+class RegisterProviderParams extends RegisterParams {
+  final double hourlyRate;
+  final String serviceArea;
+  final String jobTitle;
+  final int experienceYears;
+  final String description;
+  final int availabilityStatus;
+  final double? currentLatitude;
+  final double? currentLongitude;
+  final List<File> certificateImages;
+  final List<File> portfolioImages;
+
+  const RegisterProviderParams({
+    required super.fullName,
+    required super.email,
+    required super.password,
+    required super.phoneNumber,
+    required this.hourlyRate,
+    required this.serviceArea,
+    required this.jobTitle,
+    required this.experienceYears,
+    required this.description,
+    this.availabilityStatus = 1,
+    this.currentLatitude,
+    this.currentLongitude,
+    this.certificateImages = const <File>[],
+    this.portfolioImages = const <File>[],
+    super.dateOfBirth,
+    super.profilePicture,
+  });
+
+  @override
+  List<Object?> get props => <Object?>[
+    ...super.props,
+    hourlyRate,
+    serviceArea,
     jobTitle,
+    experienceYears,
+    description,
+    availabilityStatus,
+    currentLatitude,
+    currentLongitude,
+    certificateImages,
+    portfolioImages,
   ];
 
-  Map<String, dynamic> toJson() => {
-    "country_id": countryId,
-    "type": type,
-    "phone": phone,
-    "name": name,
-    "email": email,
-    "governorate_id": governorateId,
-    "address": address,
-    "password": password,
-    "password_confirmation": passwordConfirmation,
-    "gender": gender,
-    "activity_type_id": activityTypeId,
-    "verified_account": verifiedAccount,
-    "commercial_registration": commercialRegistration,
-    "tax_number": taxNumber,
-    "device_token": fcmDeviceToken,
-    "device_type": deviceType,
-    "device_name": deviceName,
-    "invitation_code": invitationCode,
-    "job_title": jobTitle,
+  RegisterProviderParams copyWith({
+    String? fullName,
+    String? email,
+    String? password,
+    String? phoneNumber,
+    double? hourlyRate,
+    String? serviceArea,
+    String? jobTitle,
+    int? experienceYears,
+    String? description,
+    int? availabilityStatus,
+    double? currentLatitude,
+    double? currentLongitude,
+    List<File>? certificateImages,
+    List<File>? portfolioImages,
+    DateTime? dateOfBirth,
+    File? profilePicture,
+  }) {
+    return RegisterProviderParams(
+      fullName: fullName ?? this.fullName,
+      email: email ?? this.email,
+      password: password ?? this.password,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      hourlyRate: hourlyRate ?? this.hourlyRate,
+      serviceArea: serviceArea ?? this.serviceArea,
+      jobTitle: jobTitle ?? this.jobTitle,
+      experienceYears: experienceYears ?? this.experienceYears,
+      description: description ?? this.description,
+      availabilityStatus: availabilityStatus ?? this.availabilityStatus,
+      currentLatitude: currentLatitude ?? this.currentLatitude,
+      currentLongitude: currentLongitude ?? this.currentLongitude,
+      certificateImages: certificateImages ?? this.certificateImages,
+      portfolioImages: portfolioImages ?? this.portfolioImages,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      profilePicture: profilePicture ?? this.profilePicture,
+    );
+  }
+}
+
+class RefreshTokenParams extends Equatable {
+  final String refreshToken;
+
+  const RefreshTokenParams({required this.refreshToken});
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'refreshToken': refreshToken,
   };
+
+  RefreshTokenParams copyWith({String? refreshToken}) {
+    return RefreshTokenParams(refreshToken: refreshToken ?? this.refreshToken);
+  }
+
+  @override
+  List<Object?> get props => <Object?>[refreshToken];
 }

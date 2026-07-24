@@ -5,12 +5,14 @@ import '/core/params/auth_params.dart';
 import '../entities/auth_entity.dart';
 import '../repositories/auth_repo.dart';
 
-class LoginUseCase {
+class RegisterCustomerUseCase {
   final AuthRepository repository;
 
-  LoginUseCase({required this.repository});
+  RegisterCustomerUseCase({required this.repository});
 
-  Future<Either<Failure, AuthResponseEntity>> call(LoginParams params) {
-    return repository.login(params);
+  Future<Either<Failure, AuthResponseEntity>> call(
+    RegisterCustomerParams params,
+  ) {
+    return repository.registerCustomer(params);
   }
 }

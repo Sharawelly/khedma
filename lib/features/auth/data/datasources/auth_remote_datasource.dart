@@ -1,272 +1,242 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 
 import '/core/api/dio_consumer.dart';
 import '/core/base_classes/base_one_response.dart';
 import '/core/error/exceptions.dart';
 import '/core/params/auth_params.dart';
-
-import '../models/auth_resp_model.dart';
-import '../models/forgot_password_resp_model.dart';
-
+import '/injection_container.dart';
 import '../../domain/usecases/params/forgot_password_params.dart';
 import '../../domain/usecases/params/reset_password_params.dart';
-import '../../../../injection_container.dart';
-import '../models/countries_resp_model.dart';
+import '../models/auth_resp_model.dart';
+import '../models/forgot_password_resp_model.dart';
+import '../models/profile_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<AuthRespModel> loginWithPassword({required AuthParams params});
-  Future<AuthRespModel> registerWithPassword({required AuthParams params});
-  Future<AuthRespModel> getProfile();
-  Future<BaseOneResponse> logout();
+  Future<AuthRespModel> login(LoginParams params);
+  Future<AuthRespModel> registerCustomer(RegisterCustomerParams params);
+  Future<AuthRespModel> registerProvider(RegisterProviderParams params);
+  Future<AuthRespModel> refreshToken(RefreshTokenParams params);
+  Future<AuthRespModel> logout(RefreshTokenParams params);
+  Future<ProfileModel> getProfile();
   Future<BaseOneResponse> deleteAccount();
-  Future<ForgotPasswordRespModel> forgotPassword({
-    required ForgotPasswordParams params,
-  });
-  Future<BaseOneResponse> resetPassword({required ResetPasswordParams params});
-
-  Future<CountriesRespModel> getAllCountries();
+  Future<ForgotPasswordRespModel> forgotPassword(ForgotPasswordParams params);
+  Future<BaseOneResponse> resetPassword(ResetPasswordParams params);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
-  Future<CountriesRespModel> getAllCountries() async {
-    try {
-      final dynamic response = await dioConsumer.get('/countries');
-      if (response['success'] == true) {
-        return CountriesRespModel.fromJson(response);
-      }
-      throw ServerException(message: response['message'] ?? '');
-    } catch (error) {
-      rethrow;
-    }
+  Future<AuthRespModel> login(LoginParams params) async {
+    final response = await dioConsumer.post(
+      ApiConstants.login,
+      body: params.toJson(),
+    );
+    return _parseSessionResponse(response);
   }
 
   @override
-  Future<AuthRespModel> loginWithPassword({required AuthParams params}) async {
-    try {
-      final String currentLang = sharedPreferences.getLanguageCode().name;
-      final body = <String, dynamic>{'current_lang': currentLang};
-      final String? code = params.invitationCode?.trim();
-      if (code != null && code.isNotEmpty) {
-        body['invitation_code'] = code;
-      } else {
-        body['phone'] = params.phone;
-        body['password'] = params.password;
-      }
-      if (params.fcmDeviceToken != null && params.fcmDeviceToken!.isNotEmpty) {
-        body['device_token'] = params.fcmDeviceToken;
-      }
-      if (params.deviceType != null) {
-        body['device_type'] = params.deviceType;
-      }
-      if (params.deviceName != null) {
-        body['device_name'] = params.deviceName;
-      }
-      final dynamic response = await dioConsumer.post(
-        ApiConstants.login,
-        body: body,
-      );
-      if (response['success'] == true) {
-        return AuthRespModel.fromJson(response);
-      }
-      throw ServerException(message: response['message'] ?? '');
-    } catch (error) {
-      rethrow;
-    }
+  Future<AuthRespModel> registerCustomer(RegisterCustomerParams params) async {
+    final formData = await _customerFormData(params);
+    final response = await dioConsumer.post(
+      ApiConstants.registerCustomer,
+      formData: formData,
+    );
+    return _parseSessionResponse(response);
   }
 
   @override
-  Future<AuthRespModel> registerWithPassword({
-    required AuthParams params,
-  }) async {
-    try {
-      final FormData formData = FormData();
-      final String currentLang = sharedPreferences.getLanguageCode().name;
-
-      if (params.image != null) {
-        formData.files.add(
-          MapEntry(
-            'image',
-            await MultipartFile.fromFile(
-              params.image!.path,
-              filename: params.image!.path.split(RegExp(r'[/\\]')).last,
-            ),
-          ),
-        );
-      }
-
-      if (params.countryId != null) {
-        formData.fields.add(
-          MapEntry('country_id', params.countryId.toString()),
-        );
-      }
-      if (params.type != null) {
-        formData.fields.add(MapEntry('type', params.type!));
-      }
-      if (params.phone != null) {
-        formData.fields.add(MapEntry('phone', params.phone!));
-      }
-      if (params.name != null) {
-        formData.fields.add(MapEntry('name', params.name!));
-      }
-      if (params.email != null) {
-        formData.fields.add(MapEntry('email', params.email!));
-      }
-      if (params.governorateId != null) {
-        formData.fields.add(
-          MapEntry('governorate_id', params.governorateId.toString()),
-        );
-      }
-      if (params.address != null) {
-        formData.fields.add(MapEntry('address', params.address!));
-      }
-      if (params.password != null) {
-        formData.fields.add(MapEntry('password', params.password!));
-      }
-      if (params.passwordConfirmation != null) {
-        formData.fields.add(
-          MapEntry('password_confirmation', params.passwordConfirmation!),
-        );
-      }
-      if (params.gender != null) {
-        formData.fields.add(MapEntry('gender', params.gender!));
-      }
-      if (params.activityTypeId != null) {
-        formData.fields.add(
-          MapEntry('activity_type_id', params.activityTypeId.toString()),
-        );
-      }
-      if (params.verifiedAccount != null) {
-        formData.fields.add(
-          MapEntry('verified_account', params.verifiedAccount.toString()),
-        );
-      }
-      if (params.commercialRegistration != null) {
-        formData.fields.add(
-          MapEntry('commercial_registration', params.commercialRegistration!),
-        );
-      }
-      if (params.taxNumber != null) {
-        formData.fields.add(MapEntry('tax_number', params.taxNumber!));
-      }
-      if (params.jobTitle != null) {
-        formData.fields.add(MapEntry('job_title', params.jobTitle!));
-      }
-      // Always send device fields as text (string)
-      final deviceToken =
-          (params.fcmDeviceToken?.isNotEmpty == true
-                  ? params.fcmDeviceToken
-                  : params.deviceToken)
-              ?.toString() ??
-          '';
-      final deviceType = (params.deviceType ?? '').toString();
-      final deviceName = (params.deviceName ?? '').toString();
-      formData.fields.add(MapEntry('device_token', deviceToken));
-      formData.fields.add(MapEntry('device_type', deviceType));
-      formData.fields.add(MapEntry('device_name', deviceName));
-      formData.fields.add(MapEntry('current_lang', currentLang));
-
-      final dynamic response = await dioConsumer.post(
-        '/register',
-        formData: formData,
-      );
-      if (response['success'] == true) {
-        return AuthRespModel.fromJson(response);
-      }
-      throw ServerException(message: response['message'] ?? '');
-    } catch (error) {
-      rethrow;
-    }
+  Future<AuthRespModel> registerProvider(RegisterProviderParams params) async {
+    final formData = await _providerFormData(params);
+    final response = await dioConsumer.post(
+      ApiConstants.registerProvider,
+      formData: formData,
+    );
+    return _parseSessionResponse(response);
   }
 
   @override
-  Future<AuthRespModel> getProfile() async {
-    try {
-      final dynamic response = await dioConsumer.get('/profile');
-      if (response['success'] == true) {
-        return AuthRespModel.fromJson(response);
-      }
-      throw ServerException(message: response['message'] ?? '');
-    } catch (error) {
-      rethrow;
-    }
+  Future<AuthRespModel> refreshToken(RefreshTokenParams params) async {
+    final response = await dioConsumer.post(
+      ApiConstants.refreshToken,
+      body: params.toJson(),
+    );
+    return _parseSessionResponse(response);
   }
 
   @override
-  Future<BaseOneResponse> logout() async {
+  Future<AuthRespModel> logout(RefreshTokenParams params) async {
+    final response = await dioConsumer.post(
+      ApiConstants.logout,
+      body: params.toJson(),
+    );
+    return _parseAuthResponse(response);
+  }
+
+  @override
+  Future<ProfileModel> getProfile() async {
+    final response = await dioConsumer.get(ApiConstants.profile);
+    if (response is! Map<String, dynamic>) {
+      throw const ServerException();
+    }
+    final responseMap = response;
+    if (responseMap['success'] != true) {
+      throw ServerException(message: responseMap['message'] as String?);
+    }
     try {
-      final dynamic response = await dioConsumer.post('/logout');
-      if (response['success'] == true) {
-        return BaseOneResponse(
-          success: response['success'] as bool?,
-          message: response['message'] as String?,
-          data: response['data'],
-        );
-      }
-      throw ServerException(message: response['message'] ?? '');
-    } catch (error) {
-      rethrow;
+      return ProfileModel.fromJson(responseMap['data'] as Map<String, dynamic>);
+    } on FormatException {
+      throw ServerException(message: responseMap['message'] as String?);
+    } on TypeError {
+      throw ServerException(message: responseMap['message'] as String?);
     }
   }
 
   @override
   Future<BaseOneResponse> deleteAccount() async {
-    try {
-      final dynamic response = await dioConsumer.delete(
-        '/profile/delete-account',
-      );
-      if (response['success'] == true) {
-        return BaseOneResponse(
-          success: response['success'] as bool?,
-          message: response['message'] as String?,
-          data: response['data'],
-        );
-      }
-      throw ServerException(message: response['message'] ?? '');
-    } catch (error) {
-      rethrow;
-    }
+    final response = await dioConsumer.delete('/profile/delete-account');
+    return _parseStandardResponse(response);
   }
 
   @override
-  Future<ForgotPasswordRespModel> forgotPassword({
-    required ForgotPasswordParams params,
-  }) async {
-    try {
-      final dynamic response = await dioConsumer.post(
-        ApiConstants.forgotPassword,
-        body: params.toJson(),
-      );
-      if (response['success'] == true) {
-        return ForgotPasswordRespModel.fromJson(
-          response as Map<String, dynamic>,
-        );
-      }
-      throw ServerException(message: response['message'] ?? '');
-    } catch (error) {
-      rethrow;
+  Future<ForgotPasswordRespModel> forgotPassword(
+    ForgotPasswordParams params,
+  ) async {
+    final response = await dioConsumer.post(
+      ApiConstants.forgotPassword,
+      body: params.toJson(),
+    );
+    final responseMap = response as Map<String, dynamic>;
+    if (responseMap['success'] != true) {
+      throw ServerException(message: responseMap['message'] as String?);
     }
+    return ForgotPasswordRespModel.fromJson(responseMap);
   }
 
   @override
-  Future<BaseOneResponse> resetPassword({
-    required ResetPasswordParams params,
-  }) async {
-    try {
-      final dynamic response = await dioConsumer.post(
-        ApiConstants.resetPassword,
-        body: params.toJson(),
-      );
-      if (response['success'] == true) {
-        return BaseOneResponse(
-          success: response['success'] as bool?,
-          message: response['message'] as String?,
-          data: response['data'],
-        );
-      }
-      throw ServerException(message: response['message'] ?? '');
-    } catch (error) {
-      rethrow;
+  Future<BaseOneResponse> resetPassword(ResetPasswordParams params) async {
+    final response = await dioConsumer.post(
+      ApiConstants.resetPassword,
+      body: params.toJson(),
+    );
+    return _parseStandardResponse(response);
+  }
+
+  AuthRespModel _parseAuthResponse(Object? response) {
+    if (response is! Map<String, dynamic>) {
+      throw const ServerException();
     }
+    final responseMap = response;
+    late final AuthRespModel authResponse;
+    try {
+      authResponse = AuthRespModel.fromJson(responseMap);
+    } on FormatException {
+      throw ServerException(message: responseMap['errorMessage'] as String?);
+    } on TypeError {
+      throw ServerException(message: responseMap['errorMessage'] as String?);
+    }
+    if (!authResponse.isSuccess) {
+      throw ServerException(message: authResponse.errorMessage);
+    }
+    return authResponse;
+  }
+
+  AuthRespModel _parseSessionResponse(Object? response) {
+    final authResponse = _parseAuthResponse(response);
+    final token = authResponse.token;
+    if (token == null ||
+        token.accessToken.isEmpty ||
+        token.refreshToken.isEmpty ||
+        token.userId.isEmpty ||
+        (token.role != 'Customer' && token.role != 'Provider')) {
+      throw ServerException(message: authResponse.errorMessage);
+    }
+    return authResponse;
+  }
+
+  BaseOneResponse _parseStandardResponse(Object? response) {
+    final responseMap = response as Map<String, dynamic>;
+    if (responseMap['success'] != true) {
+      throw ServerException(message: responseMap['message'] as String?);
+    }
+    return BaseOneResponse(
+      success: true,
+      message: responseMap['message'] as String?,
+      statusCode: responseMap['statusCode'] as int?,
+      data: responseMap['data'],
+    );
+  }
+
+  Future<FormData> _customerFormData(RegisterParams params) async {
+    final formData = FormData.fromMap(<String, dynamic>{
+      'fullName': params.fullName,
+      'email': params.email,
+      'password': params.password,
+      'phoneNumber': params.phoneNumber,
+      if (params.dateOfBirth != null)
+        'dateOfBirth': params.dateOfBirth!.toIso8601String(),
+    });
+    if (params.profilePicture != null) {
+      formData.files.add(
+        MapEntry(
+          'profilePicture',
+          await _multipartFile(params.profilePicture!.path),
+        ),
+      );
+    }
+    return formData;
+  }
+
+  Future<FormData> _providerFormData(RegisterProviderParams params) async {
+    final formData = await _customerFormData(params);
+    formData.fields.addAll(<MapEntry<String, String>>[
+      MapEntry<String, String>('hourlyRate', params.hourlyRate.toString()),
+      MapEntry<String, String>('serviceArea', params.serviceArea),
+      MapEntry<String, String>('jobTitle', params.jobTitle),
+      MapEntry<String, String>(
+        'experienceYears',
+        params.experienceYears.toString(),
+      ),
+      MapEntry<String, String>('description', params.description),
+      MapEntry<String, String>(
+        'availabilityStatus',
+        params.availabilityStatus.toString(),
+      ),
+      if (params.currentLatitude != null)
+        MapEntry<String, String>(
+          'currentLatitude',
+          params.currentLatitude.toString(),
+        ),
+      if (params.currentLongitude != null)
+        MapEntry<String, String>(
+          'currentLongitude',
+          params.currentLongitude.toString(),
+        ),
+    ]);
+    await _addFiles(formData, 'certificateImages', params.certificateImages);
+    await _addFiles(formData, 'portfolioImages', params.portfolioImages);
+    return formData;
+  }
+
+  Future<void> _addFiles(
+    FormData formData,
+    String fieldName,
+    List<File> files,
+  ) async {
+    for (final file in files) {
+      formData.files.add(
+        MapEntry<String, MultipartFile>(
+          fieldName,
+          await _multipartFile(file.path),
+        ),
+      );
+    }
+  }
+
+  Future<MultipartFile> _multipartFile(String path) {
+    return MultipartFile.fromFile(
+      path,
+      filename: path.split(RegExp(r'[/\\]')).last,
+    );
   }
 }
