@@ -25,11 +25,13 @@ void initCustomerFeatureInjection() {
     ..registerLazySingleton(() => GetProviders(locator()))
     ..registerLazySingleton(() => GetProvider(locator()))
     ..registerLazySingleton(() => GetProviderReviews(locator()))
+    ..registerLazySingleton(() => GetBookingQuote(locator()))
     ..registerLazySingleton(() => CreateBooking(locator(), locator()))
     ..registerLazySingleton(() => GetBooking(locator()))
     ..registerLazySingleton(() => GetBookingHistory(locator()))
     ..registerLazySingleton(() => CancelBooking(locator()))
     ..registerLazySingleton(() => GetBookingEta(locator()))
+    ..registerLazySingleton(() => GetBookingRoute(locator()))
     ..registerLazySingleton(() => ToggleFavorite(locator()))
     ..registerLazySingleton(() => GetFavorites(locator()))
     ..registerLazySingleton(() => CreateReview(locator()))
@@ -52,11 +54,13 @@ void initCustomerFeatureInjection() {
     ..registerFactory(() => FavoritesCubit(locator()))
     ..registerFactory(
       () => BookingCubit(
+        getBookingQuote: locator(),
         createBooking: locator(),
         getBooking: locator(),
         getBookingHistory: locator(),
         cancelBooking: locator(),
         getBookingEta: locator(),
+        getBookingRoute: locator(),
         createReview: locator(),
         updateReview: locator(),
         realtimeService: locator(),

@@ -102,6 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
                       wrapWithElasticAnimation: false,
+                      focusedBorderColor: colors.authBrandRed,
                       validator: _validateEmail,
                       onSubmit: (_) => _passwordFocus.requestFocus(),
                     ),
@@ -115,6 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       obscureText: _obscurePassword,
                       textInputAction: TextInputAction.done,
                       wrapWithElasticAnimation: false,
+                      focusedBorderColor: colors.authBrandRed,
                       validator: (value) => value == null || value.isEmpty
                           ? 'authPasswordRequired'.tr
                           : null,
@@ -159,8 +161,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: _submit,
                         height: 56,
                         borderRadius: 14,
-                        color: colors.main,
+                        color: colors.authBrandRed,
                         textColor: colors.whiteColor,
+                        borderColor: colors.authBrandRed,
                         textStyle: TextStyles.bold16(color: colors.whiteColor),
                       ),
                     Gaps.vGap24,

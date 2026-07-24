@@ -9,7 +9,9 @@ import '/core/utils/values/text_styles.dart';
 import '/features/client/customer/domain/entities/customer_entities.dart';
 import '/features/client/customer/domain/usecases/params/customer_params.dart';
 import '/features/client/customer/presentation/cubit/booking_cubit.dart';
+import '/features/client/customer/presentation/widgets/cancel_booking_dialog.dart';
 import '/features/client/customer/presentation/widgets/customer_state_widgets.dart';
+import '/features/shared/chat/domain/entities/chat_entities.dart';
 import '/injection_container.dart';
 
 class BookingDetailsScreen extends StatelessWidget {
@@ -50,7 +52,6 @@ class BookingDetailsScreen extends StatelessWidget {
             return _BookingBody(
               booking: state.booking,
               realtimeSnapshot: state.realtime,
-              reviewId: state.reviewId,
               review: state.review,
             );
           },
@@ -64,13 +65,11 @@ class _BookingBody extends StatelessWidget {
   const _BookingBody({
     required this.booking,
     required this.realtimeSnapshot,
-    required this.reviewId,
     required this.review,
   });
   final BookingEntity booking;
   final BookingRealtimeSnapshot realtimeSnapshot;
-  final String? reviewId;
-  final ReviewParams? review;
+  final BookingReviewEntity? review;
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +77,7 @@ class _BookingBody extends StatelessWidget {
       padding: EdgeInsetsDirectional.all(20.r),
       children: <Widget>[
         Text(
-          booking.serviceName,
+          booking.localizedService(isArabic),
           style: TextStyles.bold28(color: colors.onboardingHeadline),
         ),
         SizedBox(height: 8.h),
@@ -100,6 +99,13 @@ class _BookingBody extends StatelessWidget {
         _line('customer_address'.tr, booking.address),
         _line('customer_notes'.tr, booking.notes),
         _line('customer_total'.tr, booking.totalPrice.toStringAsFixed(2)),
+        // Only worth a line when it was actually charged: a free cancellation
+        // reads as reassurance, not as a zero to explain.
+        if ((booking.cancellationFee ?? 0) > 0)
+          _line(
+            'customer_cancellation_fee'.tr,
+            booking.cancellationFee!.toStringAsFixed(2),
+          ),
         SizedBox(height: 20.h),
         Text(
           'customer_status_timeline'.tr,
@@ -119,16 +125,34 @@ class _BookingBody extends StatelessWidget {
                 context.pushNamed(Routes.trackLiveRoute, extra: booking.id),
             child: Text('bookings_track_provider'.tr),
           ),
+        // Available whenever a provider is assigned, active or finished, so the
+        // customer can reach the same booking conversation from here instead of
+        // hunting for it in the chats list.
+        if (booking.providerId != null)
+          OutlinedButton.icon(
+            onPressed: () => _openChat(context),
+            icon: const Icon(Icons.chat_bubble_outline_rounded),
+            label: Text('customer_chat_provider'.tr),
+          ),
         if (booking.status < 6)
           TextButton(
             onPressed: () => _cancel(context),
             child: Text('customer_cancel_booking'.tr),
           ),
+        if (review != null) ...<Widget>[
+          SizedBox(height: 20.h),
+          Text(
+            'customer_your_review'.tr,
+            style: TextStyles.bold22(color: colors.onboardingHeadline),
+          ),
+          SizedBox(height: 8.h),
+          _ReviewCard(review: review!),
+        ],
         if (booking.status == 6)
           FilledButton(
             onPressed: () => _review(context),
             child: Text(
-              reviewId == null
+              review == null
                   ? 'customer_leave_review'.tr
                   : 'customer_edit_review'.tr,
             ),
@@ -159,92 +183,212 @@ class _BookingBody extends StatelessWidget {
     );
   }
 
-  Future<void> _cancel(BuildContext context) async {
-    final controller = TextEditingController();
-    final reason = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('customer_cancel_booking'.tr),
-        content: TextField(
-          controller: controller,
-          decoration: InputDecoration(hintText: 'customer_cancel_reason'.tr),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => dialogContext.pop(),
-            child: Text('cancel'.tr),
-          ),
-          TextButton(
-            onPressed: () => dialogContext.pop(controller.text),
-            child: Text('yes'.tr),
-          ),
-        ],
+  /// Opens the conversation for this booking. Chat is keyed on the booking id,
+  /// so this always lands on the one existing thread - it never spawns a new
+  /// conversation. The input is locked once the booking is finished (>= 6),
+  /// matching the server's completed/cancelled rule.
+  void _openChat(BuildContext context) {
+    final providerId = booking.providerId;
+    if (providerId == null) {
+      return;
+    }
+    context.pushNamed(
+      Routes.chatDetailsRoute,
+      extra: ChatThreadEntity(
+        bookingId: booking.id,
+        peerId: providerId,
+        peerName: booking.providerName ?? '',
+        unreadCount: 0,
+        isOnline: false,
+        isLocked: booking.status >= 6,
       ),
     );
-    controller.dispose();
-    if (reason != null && reason.trim().isNotEmpty && context.mounted) {
-      await context.read<BookingCubit>().execute(
-        BookingCommand.cancel(booking.id, reason.trim()),
-      );
+  }
+
+  Future<void> _cancel(BuildContext context) async {
+    final reason = await showCancelBookingDialog(context);
+    if (reason == null || reason.isEmpty || !context.mounted) {
+      return;
     }
+    await context.read<BookingCubit>().execute(
+      BookingCommand.cancel(booking.id, reason),
+    );
   }
 
   Future<void> _review(BuildContext context) async {
-    var rating = review?.rating ?? 5;
-    final comment = TextEditingController(text: review?.comment);
-    final submit = await showDialog<bool>(
+    final existing = review;
+    final draft = await showDialog<_ReviewDraft>(
       context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (_, setState) => AlertDialog(
-          title: Text(
-            reviewId == null
-                ? 'customer_leave_review'.tr
-                : 'customer_edit_review'.tr,
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              DropdownButton<int>(
-                value: rating,
-                items: List<DropdownMenuItem<int>>.generate(
-                  5,
-                  (index) => DropdownMenuItem<int>(
-                    value: index + 1,
-                    child: Text('${index + 1} ★'),
-                  ),
+      builder: (_) => _ReviewDialog(review: existing),
+    );
+    if (draft == null || !context.mounted) {
+      return;
+    }
+    final params = ReviewParams(
+      bookingId: existing == null ? booking.id : null,
+      rating: draft.rating,
+      comment: draft.comment.isEmpty ? null : draft.comment,
+    );
+    await context.read<BookingCubit>().execute(
+      existing == null
+          ? BookingCommand.review(params)
+          : BookingCommand.updateReview(existing.id, params),
+    );
+  }
+}
+
+class _ReviewDraft {
+  const _ReviewDraft({required this.rating, required this.comment});
+  final int rating;
+  final String comment;
+}
+
+class _ReviewDialog extends StatefulWidget {
+  const _ReviewDialog({required this.review});
+  final BookingReviewEntity? review;
+
+  @override
+  State<_ReviewDialog> createState() => _ReviewDialogState();
+}
+
+class _ReviewDialogState extends State<_ReviewDialog> {
+  late final TextEditingController _comment = TextEditingController(
+    text: widget.review?.comment,
+  );
+  late int _rating = widget.review?.rating ?? 5;
+
+  @override
+  void dispose() {
+    _comment.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(
+        widget.review == null
+            ? 'customer_leave_review'.tr
+            : 'customer_edit_review'.tr,
+      ),
+      // Scrollable so the on-screen keyboard cannot overflow the content.
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            DropdownButton<int>(
+              value: _rating,
+              items: List<DropdownMenuItem<int>>.generate(
+                5,
+                (index) => DropdownMenuItem<int>(
+                  value: index + 1,
+                  child: Text('${index + 1} ★'),
                 ),
-                onChanged: (value) => setState(() => rating = value ?? 5),
               ),
-              TextField(
-                controller: comment,
-                decoration: InputDecoration(
-                  hintText: 'customer_review_comment'.tr,
-                ),
+              onChanged: (value) => setState(() => _rating = value ?? 5),
+            ),
+            TextField(
+              controller: _comment,
+              decoration: InputDecoration(
+                hintText: 'customer_review_comment'.tr,
               ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => dialogContext.pop(true),
-              child: Text('save'.tr),
             ),
           ],
         ),
       ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => context.pop(
+            _ReviewDraft(rating: _rating, comment: _comment.text.trim()),
+          ),
+          child: Text('save'.tr),
+        ),
+      ],
     );
-    final value = comment.text.trim();
-    comment.dispose();
-    if (submit == true && context.mounted) {
-      final params = ReviewParams(
-        bookingId: reviewId == null ? booking.id : null,
-        rating: rating,
-        comment: value.isEmpty ? null : value,
-      );
-      await context.read<BookingCubit>().execute(
-        reviewId == null
-            ? BookingCommand.review(params)
-            : BookingCommand.updateReview(reviewId!, params),
-      );
+  }
+}
+
+class _ReviewCard extends StatelessWidget {
+  const _ReviewCard({required this.review});
+  final BookingReviewEntity review;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: EdgeInsetsDirectional.all(14.r),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                for (int star = 1; star <= 5; star++)
+                  Icon(
+                    star <= review.rating
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
+                    size: 20.r,
+                    color: colors.review,
+                  ),
+                const Spacer(),
+                Text(review.createAt.toLocal().toString().split('.').first),
+              ],
+            ),
+            if (review.comment != null &&
+                review.comment!.isNotEmpty) ...<Widget>[
+              SizedBox(height: 8.h),
+              Text(review.comment!),
+            ],
+            _breakdown(
+              'customer_review_punctuality'.tr,
+              review.punctualityRating,
+            ),
+            _breakdown(
+              'customer_review_work_quality'.tr,
+              review.workQualityRating,
+            ),
+            _breakdown(
+              'customer_review_cleanliness'.tr,
+              review.cleanlinessRating,
+            ),
+            if (review.providerReply != null &&
+                review.providerReply!.isNotEmpty) ...<Widget>[
+              SizedBox(height: 12.h),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsetsDirectional.all(10.r),
+                decoration: BoxDecoration(
+                  color: colors.lightBackGroundColor,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      'customer_provider_reply'.tr,
+                      style: TextStyles.bold16(
+                        color: colors.onboardingHeadline,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(review.providerReply!),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _breakdown(String label, int? value) {
+    if (value == null) {
+      return const SizedBox.shrink();
     }
+    return Padding(
+      padding: EdgeInsetsDirectional.only(top: 4.h),
+      child: Text('$label: $value/5'),
+    );
   }
 }

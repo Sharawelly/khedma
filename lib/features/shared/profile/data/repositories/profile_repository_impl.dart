@@ -75,6 +75,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return Right<Failure, T>(await request());
     } on AppException catch (error) {
       return Left<Failure, T>(error.toFailure());
+    } catch (_) {
+      // A payload shaped differently from what the model expects throws
+      // TypeError, which is not an AppException. Without this it escapes as an
+      // unhandled async error and takes the screen down instead of surfacing.
+      return Left<Failure, T>(const ServerFailure());
     }
   }
 

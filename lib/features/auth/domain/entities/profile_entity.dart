@@ -19,6 +19,12 @@ class ProfileEntity extends Equatable {
   final String? state;
   final String? availabilityStatus;
   final bool emailConfirmed;
+
+  /// The point the provider is available at, and the only one dispatch matches
+  /// against. Distinct from [currentLatitude], which live tracking moves.
+  final double? workingLatitude;
+  final double? workingLongitude;
+
   final double? currentLatitude;
   final double? currentLongitude;
 
@@ -40,6 +46,8 @@ class ProfileEntity extends Equatable {
     this.numberOfJobsDone,
     this.state,
     this.availabilityStatus,
+    this.workingLatitude,
+    this.workingLongitude,
     this.currentLatitude,
     this.currentLongitude,
     this.emailConfirmed = false,
@@ -66,6 +74,8 @@ class ProfileEntity extends Equatable {
     numberOfJobsDone,
     state,
     availabilityStatus,
+    workingLatitude,
+    workingLongitude,
     currentLatitude,
     currentLongitude,
     emailConfirmed,

@@ -54,6 +54,21 @@ class MarkProviderJobInProgress {
       repository.markInProgress(bookingId);
 }
 
+class GetProviderServices {
+  const GetProviderServices(this.repository);
+  final ProviderRepository repository;
+  Future<Either<Failure, List<ProviderServiceEntity>>> call() =>
+      repository.getServices();
+}
+
+class UpdateProviderServices {
+  const UpdateProviderServices(this.repository);
+  final ProviderRepository repository;
+  Future<Either<Failure, List<ProviderServiceEntity>>> call(
+    List<String> serviceIds,
+  ) => repository.updateServices(serviceIds);
+}
+
 class UpdateProviderAvailability {
   const UpdateProviderAvailability(this.repository);
   final ProviderRepository repository;
@@ -79,9 +94,8 @@ class WatchProviderPosition {
 class PublishProviderLocation {
   const PublishProviderLocation(this.repository);
   final ProviderRepository repository;
-  Future<Either<Failure, ProviderCoordinatesEntity>> call(
-    ProviderLocationParams params,
-  ) => repository.updateLocation(params);
+  Future<Either<Failure, Unit>> call(ProviderLocationParams params) =>
+      repository.updateLocation(params);
 }
 
 class GetProviderEarnings {

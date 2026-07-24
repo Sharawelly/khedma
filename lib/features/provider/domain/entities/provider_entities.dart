@@ -138,6 +138,48 @@ class ProviderCoordinatesEntity {
   final double? headingDegrees;
 }
 
+/// A catalogue service plus whether this provider offers it.
+///
+/// Dispatch only ever offers a booking to a provider who offers that service,
+/// so an empty selection means they receive nothing at all.
+class ProviderServiceEntity {
+  const ProviderServiceEntity({
+    required this.serviceId,
+    required this.nameEn,
+    required this.nameAr,
+    required this.categoryNameEn,
+    required this.categoryNameAr,
+    required this.isOffered,
+    this.image,
+    this.fixedPrice,
+  });
+
+  final String serviceId;
+  final String nameEn;
+  final String nameAr;
+  final String categoryNameEn;
+  final String categoryNameAr;
+  final bool isOffered;
+  final String? image;
+  final double? fixedPrice;
+
+  String localizedName(bool isArabic) => isArabic ? nameAr : nameEn;
+
+  String localizedCategory(bool isArabic) =>
+      isArabic ? categoryNameAr : categoryNameEn;
+
+  ProviderServiceEntity copyWith({bool? isOffered}) => ProviderServiceEntity(
+    serviceId: serviceId,
+    nameEn: nameEn,
+    nameAr: nameAr,
+    categoryNameEn: categoryNameEn,
+    categoryNameAr: categoryNameAr,
+    isOffered: isOffered ?? this.isOffered,
+    image: image,
+    fixedPrice: fixedPrice,
+  );
+}
+
 class ProviderAvailabilityEntity {
   const ProviderAvailabilityEntity({
     required this.status,

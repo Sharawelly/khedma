@@ -43,6 +43,11 @@ class SendImageMessage extends ChatCommand {
   final File file;
 }
 
+class RetryMessage extends ChatCommand {
+  const RetryMessage(this.message);
+  final ChatMessageEntity message;
+}
+
 class ChatDetailsCubit extends Cubit<ChatDetailsState> {
   ChatDetailsCubit({
     required this.getChatHistory,
@@ -74,6 +79,7 @@ class ChatDetailsCubit extends Cubit<ChatDetailsState> {
   int _historyPage = 1;
   bool _historyHasNextPage = false;
   bool _isLoadingHistory = false;
+  int _errorNonce = 0;
 
   Future<void> execute(ChatCommand command) async {
     if (command is LoadChatHistory) {
@@ -98,6 +104,8 @@ class ChatDetailsCubit extends Cubit<ChatDetailsState> {
       );
     } else if (command is SendImageMessage) {
       await _sendImage(command);
+    } else if (command is RetryMessage) {
+      await _retry(command.message);
     }
   }
 
@@ -175,34 +183,55 @@ class ChatDetailsCubit extends Cubit<ChatDetailsState> {
     );
   }
 
+  /// Optimistically shows the caller's bubble immediately, then delivers it over
+  /// whichever transport is available. A send failure marks that one bubble as
+  /// failed (tap to retry) - it never wipes the conversation.
   Future<void> _send(SendMessageParams params) async {
+    final pending = _pendingMessage(params);
+    _append(pending);
+    try {
+      final sent = await _deliver(params);
+      _replacePending(pending.id, sent);
+    } on Exception catch (error) {
+      _markFailed(pending.id);
+      final reason = error is _ChatSendException ? error.message : null;
+      if (reason != null && reason.isNotEmpty) {
+        _emitTransientError(reason);
+      }
+    }
+  }
+
+  /// Realtime first, then REST. A socket that reports Connected can still fail an
+  /// invoke, and the REST endpoint is the backend's designed fallback for a
+  /// broken socket - so a realtime failure retries over HTTP before giving up.
+  Future<ChatMessageEntity> _deliver(SendMessageParams params) async {
     if (realtimeService.isChatConnected) {
       try {
-        _append(
-          await realtimeService.sendChatMessage(
-            params.bookingId,
-            params.toJson(),
-          ),
+        return await realtimeService.sendChatMessage(
+          params.bookingId,
+          params.toJson(),
         );
       } on Exception {
-        emit(const ChatDetailsFailure('chat_realtime_send_failed'));
+        // Fall through to REST.
       }
-      return;
     }
     final response = await sendChatMessage(params);
-    response.fold(
-      (failure) => emit(ChatDetailsFailure(failure.message ?? '')),
-      _append,
+    return response.fold(
+      (failure) => throw _ChatSendException(failure.message),
+      (message) => message,
     );
   }
 
   Future<void> _sendImage(SendImageMessage command) async {
+    // Upload has no bubble yet, so a failure here surfaces as a transient error
+    // rather than a phantom failed image. The bubble only appears once we have a
+    // url to render.
     final uploadResponse = await uploadChatAttachment(
       command.bookingId,
       command.file,
     );
     await uploadResponse.fold(
-      (failure) async => emit(ChatDetailsFailure(failure.message ?? '')),
+      (failure) async => _emitTransientError('chat_realtime_send_failed'),
       (url) => _send(
         SendMessageParams(
           bookingId: command.bookingId,
@@ -213,9 +242,71 @@ class ChatDetailsCubit extends Cubit<ChatDetailsState> {
     );
   }
 
+  Future<void> _retry(ChatMessageEntity failed) async {
+    _messages.removeWhere((message) => message.id == failed.id);
+    await _send(
+      SendMessageParams(
+        bookingId: failed.bookingId,
+        messageType: failed.messageType,
+        messageText: failed.messageText,
+        attachmentUrl: failed.attachmentUrl,
+      ),
+    );
+  }
+
+  ChatMessageEntity _pendingMessage(SendMessageParams params) =>
+      ChatMessageEntity(
+        id: 'local-${DateTime.now().microsecondsSinceEpoch}',
+        bookingId: params.bookingId,
+        senderId: '',
+        isMine: true,
+        messageType: params.messageType,
+        messageText: params.messageText,
+        attachmentUrl: params.attachmentUrl,
+        sentAt: DateTime.now().toUtc(),
+        isRead: false,
+        deliveryStatus: ChatDeliveryStatus.sending,
+      );
+
+  void _replacePending(String pendingId, ChatMessageEntity sent) {
+    _messages.removeWhere((message) => message.id == pendingId);
+    _append(sent);
+  }
+
+  void _markFailed(String pendingId) {
+    final index = _messages.indexWhere((message) => message.id == pendingId);
+    if (index < 0) {
+      return;
+    }
+    _messages[index] = _messages[index].copyWith(
+      deliveryStatus: ChatDeliveryStatus.failed,
+    );
+    _emitMessages();
+  }
+
   void _messageReceived(ChatMessageEntity message) {
-    if (message.bookingId == _bookingId) {
-      _append(message);
+    if (message.bookingId != _bookingId) {
+      return;
+    }
+    // The server echoes our own message back over the socket; drop the matching
+    // optimistic bubble so it is not shown twice while the invoke is in flight.
+    if (message.isMine) {
+      _dropMatchingPending(message);
+    }
+    _append(message);
+  }
+
+  void _dropMatchingPending(ChatMessageEntity real) {
+    final index = _messages.indexWhere(
+      (message) =>
+          message.isPending &&
+          message.isMine &&
+          message.messageType == real.messageType &&
+          message.messageText == real.messageText &&
+          message.attachmentUrl == real.attachmentUrl,
+    );
+    if (index >= 0) {
+      _messages.removeAt(index);
     }
   }
 
@@ -255,16 +346,21 @@ class ChatDetailsCubit extends Cubit<ChatDetailsState> {
     _emitMessages();
   }
 
-  void _emitMessages() {
+  void _emitMessages({String? transientError}) {
     emit(
       ChatDetailsSuccess(
         List<ChatMessageEntity>.unmodifiable(_messages),
         isLocked: _isLocked,
         isPeerOnline: _isPeerOnline,
         hasNextPage: _historyHasNextPage,
+        transientError: transientError,
+        errorNonce: transientError == null ? _errorNonce : ++_errorNonce,
       ),
     );
   }
+
+  void _emitTransientError(String message) =>
+      _emitMessages(transientError: message);
 
   @override
   Future<void> close() async {
@@ -277,4 +373,11 @@ class ChatDetailsCubit extends Cubit<ChatDetailsState> {
     }
     return super.close();
   }
+}
+
+/// Raised when every transport has refused a message, carrying the server reason
+/// so the failed bubble/snackbar can explain why.
+class _ChatSendException implements Exception {
+  const _ChatSendException(this.message);
+  final String? message;
 }

@@ -48,6 +48,10 @@ abstract class ApiConstants {
   static const String booking = '/Booking';
   static const String directBooking = '/Booking/direct';
   static const String bookingHistory = '/Booking/history';
+
+  /// Price for a service without creating anything, so checkout can show the
+  /// figures before the customer commits.
+  static const String bookingQuote = '/Booking/quote';
   static String bookingDetails(String id) => '/Booking/$id';
   static String acceptBooking(String id) => '/Booking/$id/accept';
   static String rejectBooking(String id) => '/Booking/$id/reject';
@@ -58,10 +62,12 @@ abstract class ApiConstants {
       '/Booking/$id/mark-in-progress';
   static String retryBookingPayment(String id) => '/Booking/$id/retry-payment';
   static String bookingEta(String id) => '/bookings/$id/eta';
+  static String bookingRoute(String id) => '/bookings/$id/route';
 
   // Provider
   static const String pendingJobs = '/provider/pending-jobs';
   static const String providerAvailability = '/provider/availability';
+  static const String providerServices = '/provider/services';
   static const String providerEarnings = '/providers/earnings';
   static const String providerWallet = '/providers/wallet';
   static const String providerPayouts = '/providers/payouts';

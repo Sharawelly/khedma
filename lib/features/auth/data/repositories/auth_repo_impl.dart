@@ -59,11 +59,13 @@ class AuthRepositoryImpl implements AuthRepository {
       if (refreshToken != null && refreshToken.isNotEmpty) {
         await remote.logout(RefreshTokenParams(refreshToken: refreshToken));
       }
+    } on AppException {
+      // Revoking the token server-side is best-effort; always clear the local
+      // session below so the user is logged out even if the request fails.
+    } finally {
       await _clearSession();
-      return const Right<Failure, Unit>(unit);
-    } on AppException catch (error) {
-      return Left<Failure, Unit>(error.toFailure());
     }
+    return const Right<Failure, Unit>(unit);
   }
 
   @override

@@ -36,6 +36,9 @@ class AppTextFormField extends StatelessWidget {
   final Color? backgroundColor;
   final List<TextInputFormatter>? inputFormatters;
   final Color? borderColor;
+
+  /// Border colour while the field is focused. Defaults to [MyColors.main].
+  final Color? focusedBorderColor;
   final Color? hintColor;
   final Iterable<String>? autofillHints;
   final bool wrapWithElasticAnimation;
@@ -78,6 +81,7 @@ class AppTextFormField extends StatelessWidget {
     this.inputFormatters,
     this.radius,
     this.borderColor,
+    this.focusedBorderColor,
     this.hintColor,
     this.autofillHints,
     this.wrapWithElasticAnimation = true,
@@ -147,7 +151,7 @@ class AppTextFormField extends StatelessWidget {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(cornerRadius)),
           borderSide: BorderSide(
-            color: colors.main,
+            color: focusedBorderColor ?? colors.main,
             width: focusedBorderWidth ?? 1.0,
           ),
         ),

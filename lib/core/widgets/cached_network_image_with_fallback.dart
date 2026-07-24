@@ -2,12 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '/core/utils/values/img_manager.dart';
 import '/core/widgets/app_shimmer.dart';
 import '/injection_container.dart';
 
 /// Cached network image with shimmer placeholder. On error or empty [imageUrl],
-/// shows [fallbackSvgAsset] if set, otherwise [ImageAssets.logo].
+/// shows [fallbackSvgAsset] if set, otherwise a neutral image icon.
 class CachedNetworkImageWithFallback extends StatelessWidget {
   const CachedNetworkImageWithFallback({
     super.key,
@@ -76,7 +75,11 @@ class CachedNetworkImageWithFallback extends StatelessWidget {
               height: height,
               fit: BoxFit.contain,
             )
-          : Image.asset(ImageAssets.logo, fit: BoxFit.contain),
+          : Icon(
+              Icons.image_outlined,
+              size: (width ?? height ?? 40) * 0.5,
+              color: colors.homeCaption,
+            ),
     );
   }
 }

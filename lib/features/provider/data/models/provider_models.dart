@@ -1,11 +1,14 @@
+import '/core/utils/server_datetime.dart';
 import '../../domain/entities/provider_entities.dart';
 
 double _double(Object? value) => value is num ? value.toDouble() : 0;
 double? _nullableDouble(Object? value) =>
     value is num ? value.toDouble() : null;
 int _int(Object? value) => value is num ? value.toInt() : 0;
-DateTime? _date(Object? value) =>
-    value is String ? DateTime.tryParse(value) : null;
+
+/// Server timestamps are UTC but arrive zone-less; [parseServerDateTime] reads
+/// them as UTC so deadline math is not thrown off by the device's offset.
+DateTime? _date(Object? value) => parseServerDateTime(value);
 
 class PendingJobModel extends PendingJobEntity {
   const PendingJobModel({
@@ -125,6 +128,31 @@ class AcceptedJobModel extends AcceptedJobEntity {
   };
 }
 
+class ProviderServiceModel extends ProviderServiceEntity {
+  const ProviderServiceModel({
+    required super.serviceId,
+    required super.nameEn,
+    required super.nameAr,
+    required super.categoryNameEn,
+    required super.categoryNameAr,
+    required super.isOffered,
+    super.image,
+    super.fixedPrice,
+  });
+
+  factory ProviderServiceModel.fromJson(Map<String, dynamic> json) =>
+      ProviderServiceModel(
+        serviceId: json['serviceId'] as String,
+        nameEn: json['nameEn'] as String? ?? '',
+        nameAr: json['nameAr'] as String? ?? '',
+        categoryNameEn: json['categoryNameEn'] as String? ?? '',
+        categoryNameAr: json['categoryNameAr'] as String? ?? '',
+        isOffered: json['isOffered'] as bool? ?? false,
+        image: json['image'] as String?,
+        fixedPrice: _nullableDouble(json['fixedPrice']),
+      );
+}
+
 class ProviderAvailabilityModel extends ProviderAvailabilityEntity {
   const ProviderAvailabilityModel({
     required super.status,
@@ -146,26 +174,6 @@ class ProviderAvailabilityModel extends ProviderAvailabilityEntity {
   };
 }
 
-class ProviderLocationModel extends ProviderCoordinatesEntity {
-  const ProviderLocationModel({
-    required super.latitude,
-    required super.longitude,
-    super.headingDegrees,
-  });
-
-  factory ProviderLocationModel.fromJson(Map<String, dynamic> json) =>
-      ProviderLocationModel(
-        latitude: _double(json['latitude']),
-        longitude: _double(json['longitude']),
-        headingDegrees: _nullableDouble(json['headingDegrees']),
-      );
-
-  Map<String, dynamic> toJson() => <String, dynamic>{
-    'latitude': latitude,
-    'longitude': longitude,
-    'headingDegrees': headingDegrees,
-  };
-}
 
 class EarningsBreakdownModel extends EarningsBreakdownEntity {
   const EarningsBreakdownModel({

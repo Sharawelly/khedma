@@ -26,6 +26,23 @@ class CaptureCurrentAddress extends ProfileCommand {
   final String label;
 }
 
+/// Saves a point the user chose on the map. Unlike [CaptureCurrentAddress] this
+/// does no GPS or geocoding of its own - the picker already resolved both, and
+/// re-deriving them here would overwrite the exact point the user confirmed.
+class SavePickedAddress extends ProfileCommand {
+  const SavePickedAddress({
+    required this.label,
+    required this.addressLine,
+    required this.latitude,
+    required this.longitude,
+  });
+
+  final String label;
+  final String addressLine;
+  final double latitude;
+  final double longitude;
+}
+
 class RemoveAddress extends ProfileCommand {
   const RemoveAddress(this.id);
   final String id;
@@ -90,6 +107,15 @@ class ProfileManagementCubit extends Cubit<ProfileManagementState> {
       await _loadAddresses();
     } else if (command is CaptureCurrentAddress) {
       await _captureAddress(command.label);
+    } else if (command is SavePickedAddress) {
+      await _createAddress(
+        AddAddressParams(
+          label: command.label,
+          addressLine: command.addressLine,
+          latitude: command.latitude,
+          longitude: command.longitude,
+        ),
+      );
     } else if (command is RemoveAddress) {
       await _removeAddress(command.id);
     } else if (command is SaveProfile) {

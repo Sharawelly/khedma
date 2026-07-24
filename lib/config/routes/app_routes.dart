@@ -255,8 +255,12 @@ abstract class Routes {
       GoRoute(
         name: providerJobDetailsRoute,
         path: providerJobDetailsRoute,
+        // No id means the active job: the accept flow pushes this route before
+        // it has a booking to name.
         builder: (BuildContext context, GoRouterState state) =>
-            const ProviderJobDetailsScreen(),
+            ProviderJobDetailsScreen(
+              bookingId: state.extra is String ? state.extra! as String : null,
+            ),
       ),
       GoRoute(
         name: providerTrackLiveRoute,

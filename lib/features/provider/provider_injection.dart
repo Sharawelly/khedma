@@ -7,6 +7,7 @@ import 'package:khedma/features/provider/domain/usecases/provider_use_cases.dart
 import 'package:khedma/features/provider/presentation/cubit/provider_finance_cubit.dart';
 import 'package:khedma/features/provider/presentation/cubit/provider_jobs_cubit.dart';
 import 'package:khedma/features/provider/presentation/cubit/provider_reviews_cubit.dart';
+import 'package:khedma/features/provider/presentation/cubit/provider_services_cubit.dart';
 import 'package:khedma/features/provider/home/presentation/cubit/provider_navigation_cubit/provider_navigation_cubit.dart';
 import 'package:khedma/injection_container.dart';
 
@@ -53,8 +54,15 @@ void initProviderFeatureInjection() {
         getCurrentPosition: _sl(),
         watchPosition: _sl(),
         publishLocation: _sl(),
+        getRoute: _sl(),
+        getProfile: _sl(),
         realtimeService: _sl(),
       ),
+    )
+    ..registerLazySingleton(() => GetProviderServices(_sl()))
+    ..registerLazySingleton(() => UpdateProviderServices(_sl()))
+    ..registerFactory(
+      () => ProviderServicesCubit(getServices: _sl(), updateServices: _sl()),
     )
     ..registerFactory(
       () => ProviderFinanceCubit(

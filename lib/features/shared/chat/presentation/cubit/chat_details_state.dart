@@ -27,16 +27,27 @@ class ChatDetailsSuccess extends ChatDetailsState {
     required this.isLocked,
     required this.isPeerOnline,
     required this.hasNextPage,
+    this.transientError,
+    this.errorNonce = 0,
   });
   final List<ChatMessageEntity> messages;
   final bool isLocked;
   final bool isPeerOnline;
   final bool hasNextPage;
+
+  /// A one-shot error (e.g. an attachment upload that failed) to surface as a
+  /// snackbar while keeping the conversation on screen. [errorNonce] makes two
+  /// identical error messages distinct states so the listener fires each time.
+  final String? transientError;
+  final int errorNonce;
+
   @override
   List<Object?> get props => <Object?>[
     messages,
     isLocked,
     isPeerOnline,
     hasNextPage,
+    transientError,
+    errorNonce,
   ];
 }

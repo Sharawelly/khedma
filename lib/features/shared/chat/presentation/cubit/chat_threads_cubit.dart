@@ -83,7 +83,15 @@ class ChatThreadsCubit extends Cubit<ChatThreadsState> {
   }
 
   void _emitThreads() {
-    emit(ChatThreadsSuccess(List<ChatThreadEntity>.unmodifiable(_threads)));
+    // The backend returns a thread for every accepted booking, including ones
+    // with no messages yet. Those are kept in [_threads] (so a first incoming
+    // message can light them up) but hidden from the list until they actually
+    // hold a conversation - otherwise every booking looks like a new empty chat.
+    final visible =
+        _threads.where((thread) => thread.lastMessageAt != null).toList()..sort(
+          (left, right) => right.lastMessageAt!.compareTo(left.lastMessageAt!),
+        );
+    emit(ChatThreadsSuccess(List<ChatThreadEntity>.unmodifiable(visible)));
   }
 
   @override

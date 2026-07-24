@@ -1,12 +1,16 @@
 import '/core/base_classes/pagination_model.dart';
+import '/core/utils/server_datetime.dart';
 import '../../domain/entities/customer_entities.dart';
 
 double _double(Object? value) => value is num ? value.toDouble() : 0;
 double? _nullableDouble(Object? value) =>
     value is num ? value.toDouble() : null;
 int _int(Object? value) => value is num ? value.toInt() : 0;
-DateTime? _date(Object? value) =>
-    value is String ? DateTime.tryParse(value) : null;
+int? _nullableInt(Object? value) => value is num ? value.toInt() : null;
+
+/// Server timestamps are UTC but arrive without a zone marker;
+/// [parseServerDateTime] reads them as UTC rather than device-local time.
+DateTime? _date(Object? value) => parseServerDateTime(value);
 
 class CategoryModel extends CategoryEntity {
   const CategoryModel({
@@ -338,6 +342,33 @@ class CreatedBookingModel extends CreatedBookingEntity {
   };
 }
 
+class BookingRouteModel extends BookingRouteEntity {
+  const BookingRouteModel({
+    required super.bookingId,
+    required super.originLatitude,
+    required super.originLongitude,
+    required super.destinationLatitude,
+    required super.destinationLongitude,
+    required super.etaMinutes,
+    required super.distanceKm,
+    required super.source,
+    super.encodedPolyline,
+  });
+
+  factory BookingRouteModel.fromJson(Map<String, dynamic> json) =>
+      BookingRouteModel(
+        bookingId: json['bookingId'] as String,
+        originLatitude: _double(json['originLatitude']),
+        originLongitude: _double(json['originLongitude']),
+        destinationLatitude: _double(json['destinationLatitude']),
+        destinationLongitude: _double(json['destinationLongitude']),
+        encodedPolyline: json['polyline'] as String?,
+        etaMinutes: _int(json['etaMinutes']),
+        distanceKm: _double(json['distanceKm']),
+        source: json['source'] as String? ?? 'Haversine',
+      );
+}
+
 class BookingModel extends BookingEntity {
   const BookingModel({
     required super.id,
@@ -351,6 +382,8 @@ class BookingModel extends BookingEntity {
     required super.statusLabelAr,
     required super.totalPrice,
     required super.createAt,
+    super.serviceNameEn,
+    super.serviceNameAr,
     super.providerId,
     super.providerName,
     super.providerPhone,
@@ -368,6 +401,11 @@ class BookingModel extends BookingEntity {
     super.startedAt,
     super.completedAt,
     super.cancelledAt,
+    super.cancellationFee,
+    super.customerPhone,
+    super.providerEarning,
+    super.currency,
+    super.review,
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) => BookingModel(
@@ -381,6 +419,8 @@ class BookingModel extends BookingEntity {
     providerPhoto: json['providerPhoto'] as String?,
     serviceId: json['serviceId'] as String,
     serviceName: json['serviceName'] as String,
+    serviceNameEn: json['serviceNameEn'] as String?,
+    serviceNameAr: json['serviceNameAr'] as String?,
     bookingType: _int(json['bookingType']),
     scheduledTime: _date(json['scheduledTime']),
     address: json['address'] as String?,
@@ -399,6 +439,13 @@ class BookingModel extends BookingEntity {
     startedAt: _date(json['startedAt']),
     completedAt: _date(json['completedAt']),
     cancelledAt: _date(json['cancelledAt']),
+    cancellationFee: _nullableDouble(json['cancellationFee']),
+    customerPhone: json['customerPhone'] as String?,
+    providerEarning: _nullableDouble(json['providerEarning']),
+    currency: json['currency'] as String?,
+    review: json['review'] is Map<String, dynamic>
+        ? BookingReviewModel.fromJson(json['review'] as Map<String, dynamic>)
+        : null,
   );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -412,6 +459,8 @@ class BookingModel extends BookingEntity {
     'providerPhoto': providerPhoto,
     'serviceId': serviceId,
     'serviceName': serviceName,
+    'serviceNameEn': serviceNameEn,
+    'serviceNameAr': serviceNameAr,
     'bookingType': bookingType,
     'scheduledTime': scheduledTime?.toIso8601String(),
     'address': address,
@@ -430,7 +479,36 @@ class BookingModel extends BookingEntity {
     'startedAt': startedAt?.toIso8601String(),
     'completedAt': completedAt?.toIso8601String(),
     'cancelledAt': cancelledAt?.toIso8601String(),
+    'cancellationFee': cancellationFee,
   };
+}
+
+class BookingReviewModel extends BookingReviewEntity {
+  const BookingReviewModel({
+    required super.id,
+    required super.rating,
+    required super.createAt,
+    super.comment,
+    super.providerReply,
+    super.providerReplyAt,
+    super.punctualityRating,
+    super.workQualityRating,
+    super.cleanlinessRating,
+  });
+
+  factory BookingReviewModel.fromJson(Map<String, dynamic> json) =>
+      BookingReviewModel(
+        id: json['id'] as String,
+        rating: _int(json['rating']),
+        comment: json['comment'] as String?,
+        providerReply: json['providerReply'] as String?,
+        providerReplyAt: _date(json['providerReplyAt']),
+        punctualityRating: _nullableInt(json['punctualityRating']),
+        workQualityRating: _nullableInt(json['workQualityRating']),
+        cleanlinessRating: _nullableInt(json['cleanlinessRating']),
+        createAt:
+            _date(json['createAt']) ?? DateTime.fromMillisecondsSinceEpoch(0),
+      );
 }
 
 class BookingHistoryModel extends BookingHistoryEntity {
@@ -441,6 +519,8 @@ class BookingHistoryModel extends BookingHistoryEntity {
     required super.status,
     required super.totalPrice,
     required super.createAt,
+    super.serviceNameEn,
+    super.serviceNameAr,
     super.providerName,
     super.scheduledTime,
   });
@@ -448,9 +528,14 @@ class BookingHistoryModel extends BookingHistoryEntity {
   factory BookingHistoryModel.fromJson(Map<String, dynamic> json) =>
       BookingHistoryModel(
         id: json['id'] as String,
-        customerName: json['customerName'] as String,
+        // BookingListDto (history) omits customerName — only the detail DTO
+        // carries it. Casting the missing field with `as String` threw a
+        // TypeError that killed the whole list parse.
+        customerName: json['customerName'] as String? ?? '',
         providerName: json['providerName'] as String?,
         serviceName: json['serviceName'] as String,
+        serviceNameEn: json['serviceNameEn'] as String?,
+        serviceNameAr: json['serviceNameAr'] as String?,
         status: _int(json['status']),
         totalPrice: _double(json['totalPrice']),
         scheduledTime: _date(json['scheduledTime']),
@@ -463,6 +548,8 @@ class BookingHistoryModel extends BookingHistoryEntity {
     'customerName': customerName,
     'providerName': providerName,
     'serviceName': serviceName,
+    'serviceNameEn': serviceNameEn,
+    'serviceNameAr': serviceNameAr,
     'status': status,
     'totalPrice': totalPrice,
     'scheduledTime': scheduledTime?.toIso8601String(),

@@ -16,6 +16,7 @@ abstract class CustomerRemoteDataSource {
     String providerId,
     int page,
   );
+  Future<PriceBreakdownModel> getQuote(String serviceId);
   Future<CreatedBookingModel> createBooking(BookingDraft draft);
   Future<BookingModel> getBooking(String id);
   Future<ModelPage<BookingHistoryModel>> getBookingHistory(
@@ -23,10 +24,11 @@ abstract class CustomerRemoteDataSource {
   );
   Future<void> cancelBooking(String id, String reason);
   Future<EtaModel> getEta(String id);
+  Future<BookingRouteModel> getRoute(String id);
   Future<bool> toggleFavorite(String providerId);
   Future<List<ProviderSummaryModel>> getFavorites();
   Future<String> createReview(ReviewParams params);
-  Future<String> updateReview(String id, ReviewParams params);
+  Future<void> updateReview(String id, ReviewParams params);
 }
 
 class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
@@ -113,6 +115,17 @@ class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
   }
 
   @override
+  Future<PriceBreakdownModel> getQuote(String serviceId) async {
+    final data = _responseMap(
+      await dioConsumer.get(
+        ApiConstants.bookingQuote,
+        queryParameters: <String, dynamic>{'serviceId': serviceId},
+      ),
+    )['data'];
+    return PriceBreakdownModel.fromJson(data as Map<String, dynamic>);
+  }
+
+  @override
   Future<BookingModel> getBooking(String id) async {
     final data = _responseMap(
       await dioConsumer.get(ApiConstants.bookingDetails(id)),
@@ -154,6 +167,14 @@ class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
   }
 
   @override
+  Future<BookingRouteModel> getRoute(String id) async {
+    final data = _responseMap(
+      await dioConsumer.get(ApiConstants.bookingRoute(id)),
+    )['data'];
+    return BookingRouteModel.fromJson(data as Map<String, dynamic>);
+  }
+
+  @override
   Future<bool> toggleFavorite(String providerId) async {
     final data = _responseMap(
       await dioConsumer.post(ApiConstants.favoriteProvider(providerId)),
@@ -181,14 +202,14 @@ class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
   }
 
   @override
-  Future<String> updateReview(String id, ReviewParams params) async {
-    final data = _responseMap(
+  Future<void> updateReview(String id, ReviewParams params) async {
+    // The update endpoint answers with a plain `data: true`, not the review id.
+    _responseMap(
       await dioConsumer.put(
         ApiConstants.review(id),
         body: params.toUpdateJson(),
       ),
-    )['data'];
-    return data as String;
+    );
   }
 
   Map<String, dynamic> _responseMap(Object? response) {

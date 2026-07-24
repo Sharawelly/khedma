@@ -1,15 +1,20 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '/config/locale/app_localizations.dart';
 import '/config/routes/app_routes.dart';
 import '/core/utils/values/text_styles.dart';
 import '/core/widgets/gaps.dart';
+import '/features/shared/location/presentation/screen/location_picker_screen.dart';
 import '/injection_container.dart';
 import '../../../presentation/cubit/provider_jobs_cubit.dart';
 import '../../../presentation/widgets/provider_state_widgets.dart';
+import '../../../presentation/widgets/provider_working_location_card.dart';
 import '../widgets/provider_availability_earnings_card.dart';
 import '../widgets/provider_home_header.dart';
 import '../widgets/provider_incoming_request_card.dart';
@@ -27,6 +32,59 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
     super.initState();
     context.read<ProviderJobsCubit>().execute(
       const ProviderJobsCommand.recover(),
+    );
+  }
+
+  /// Going online puts this provider into the dispatch pool, which needs a
+  /// position. With one already assigned they simply go online for it; only a
+  /// provider who has never set one is sent to the map first.
+  Future<void> _changeAvailability(BuildContext context, bool online) async {
+    final cubit = context.read<ProviderJobsCubit>();
+    if (!online || cubit.state.snapshot.hasWorkingLocation) {
+      await cubit.execute(ProviderJobsCommand.availability(online));
+      return;
+    }
+    final picked = await _pickLocation(context);
+    if (picked == null) {
+      return;
+    }
+    await cubit.execute(
+      ProviderJobsCommand.availability(
+        true,
+        latitude: picked.latitude,
+        longitude: picked.longitude,
+      ),
+    );
+  }
+
+  /// Reassigns the working point on its own, leaving online/offline untouched.
+  Future<void> _changeWorkingLocation(BuildContext context) async {
+    final cubit = context.read<ProviderJobsCubit>();
+    final picked = await _pickLocation(context);
+    if (picked == null) {
+      return;
+    }
+    await cubit.execute(
+      ProviderJobsCommand.setWorkingLocation(
+        latitude: picked.latitude,
+        longitude: picked.longitude,
+      ),
+    );
+  }
+
+  Future<PickedLocation?> _pickLocation(BuildContext context) {
+    final snapshot = context.read<ProviderJobsCubit>().state.snapshot;
+    return Navigator.of(context).push<PickedLocation>(
+      MaterialPageRoute<PickedLocation>(
+        builder: (_) => LocationPickerScreen(
+          title: 'location_picker_provider_title'.tr,
+          // Reopen on the assigned point so a small correction does not mean
+          // hunting for it across the map again.
+          initial: snapshot.hasWorkingLocation
+              ? LatLng(snapshot.workingLatitude!, snapshot.workingLongitude!)
+              : null,
+        ),
+      ),
     );
   }
 
@@ -62,11 +120,14 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                 Gaps.vGap20,
                 ProviderAvailabilityEarningsCard(
                   isOnline: snapshot.isOnline,
-                  onChanged: (online) {
-                    context.read<ProviderJobsCubit>().execute(
-                      ProviderJobsCommand.availability(online),
-                    );
-                  },
+                  onChanged: (online) =>
+                      unawaited(_changeAvailability(context, online)),
+                ),
+                Gaps.vGap12,
+                ProviderWorkingLocationCard(
+                  latitude: snapshot.workingLatitude,
+                  longitude: snapshot.workingLongitude,
+                  onChange: () => unawaited(_changeWorkingLocation(context)),
                 ),
                 Gaps.vGap24,
                 Text(
@@ -131,7 +192,11 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                         (booking) => Card(
                           color: colors.whiteColor,
                           child: ListTile(
-                            title: Text(booking.serviceName),
+                            title: Text(
+                              booking.localizedService(
+                                appLocalizations.isArLocale,
+                              ),
+                            ),
                             subtitle: Text(booking.customerName),
                             trailing: Text(
                               booking.scheduledTime?.toLocal().toString() ??
@@ -161,7 +226,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
     }
     final current = context.read<ProviderJobsCubit>().state.snapshot.currentJob;
     if (current?.bookingId == bookingId) {
-      context.pushNamed(Routes.providerJobDetailsRoute);
+      context.pushNamed(Routes.providerJobDetailsRoute, extra: bookingId);
     }
   }
 }

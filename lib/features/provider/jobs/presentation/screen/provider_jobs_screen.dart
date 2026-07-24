@@ -108,6 +108,7 @@ class _ProviderJobsScreenState extends State<ProviderJobsScreen> {
                                 ),
                                 onTap: () => context.pushNamed(
                                   Routes.providerJobDetailsRoute,
+                                  extra: state.snapshot.currentJob!.bookingId,
                                 ),
                               ),
                             ),
@@ -179,31 +180,38 @@ class _HistoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final time = job.scheduledTime ?? job.createAt;
-    return Container(
-      padding: EdgeInsetsDirectional.all(16.r),
-      decoration: BoxDecoration(
-        color: colors.whiteColor,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: colors.onboardingBorderNeutral),
+    return InkWell(
+      borderRadius: BorderRadius.circular(16.r),
+      onTap: () => context.pushNamed(
+        Routes.providerJobDetailsRoute,
+        extra: job.id,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            job.serviceName,
-            style: TextStyles.bold18(color: colors.onboardingHeadline),
-          ),
-          Gaps.vGap4,
-          Text(
-            job.customerName,
-            style: TextStyles.medium14(color: colors.homeCaption),
-          ),
-          Gaps.vGap8,
-          Text(
-            time.toLocal().toString(),
-            style: TextStyles.regular13(color: colors.homeCaption),
-          ),
-        ],
+      child: Container(
+        padding: EdgeInsetsDirectional.all(16.r),
+        decoration: BoxDecoration(
+          color: colors.whiteColor,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: colors.onboardingBorderNeutral),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              job.localizedService(appLocalizations.isArLocale),
+              style: TextStyles.bold18(color: colors.onboardingHeadline),
+            ),
+            Gaps.vGap4,
+            Text(
+              job.customerName,
+              style: TextStyles.medium14(color: colors.homeCaption),
+            ),
+            Gaps.vGap8,
+            Text(
+              time.toLocal().toString(),
+              style: TextStyles.regular13(color: colors.homeCaption),
+            ),
+          ],
+        ),
       ),
     );
   }

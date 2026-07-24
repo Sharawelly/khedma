@@ -19,6 +19,14 @@ class ProviderRepositoryImpl implements ProviderRepository {
       return Right<Failure, T>(await request());
     } on AppException catch (error) {
       return Left<Failure, T>(error.toFailure());
+    } catch (_) {
+      // A payload that does not match what the model expects throws TypeError,
+      // which is not an AppException. Without this it escapes as an unhandled
+      // async error: the caller never completes, so the UI hangs on a spinner
+      // or a background tick dies silently instead of reporting anything.
+      // No message: the cubit's fallback renders 'provider_request_failed'
+      // rather than leaking a Dart type error to the provider.
+      return Left<Failure, T>(const ServerFailure());
     }
   }
 
@@ -79,9 +87,20 @@ class ProviderRepositoryImpl implements ProviderRepository {
   }
 
   @override
-  Future<Either<Failure, ProviderCoordinatesEntity>> updateLocation(
+  Future<Either<Failure, Unit>> updateLocation(
     ProviderLocationParams params,
-  ) => _request<ProviderCoordinatesEntity>(() => remote.updateLocation(params));
+  ) => _command(() => remote.updateLocation(params));
+
+  @override
+  Future<Either<Failure, List<ProviderServiceEntity>>> getServices() =>
+      _request<List<ProviderServiceEntity>>(remote.getServices);
+
+  @override
+  Future<Either<Failure, List<ProviderServiceEntity>>> updateServices(
+    List<String> serviceIds,
+  ) => _request<List<ProviderServiceEntity>>(
+    () => remote.updateServices(serviceIds),
+  );
 
   @override
   Future<Either<Failure, ProviderEarningsEntity>> getEarnings(

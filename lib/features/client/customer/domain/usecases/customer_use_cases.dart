@@ -51,6 +51,15 @@ class GetProviderReviews {
   ) => repository.getProviderReviews(providerId, page);
 }
 
+/// Checkout reads the price from here before the customer commits, so nothing is
+/// created just to find out what it costs.
+class GetBookingQuote {
+  const GetBookingQuote(this.repository);
+  final CustomerRepository repository;
+  Future<Either<Failure, PriceBreakdownEntity>> call(String serviceId) =>
+      repository.getQuote(serviceId);
+}
+
 class CreateBooking {
   const CreateBooking(this.repository, this.paymentGateway);
   final CustomerRepository repository;
@@ -90,6 +99,15 @@ class GetBookingEta {
   Future<Either<Failure, EtaEntity>> call(String id) => repository.getEta(id);
 }
 
+/// The drive from the provider to the booking, for the tracking map. Available
+/// to both participants, so the provider feature uses this too.
+class GetBookingRoute {
+  const GetBookingRoute(this.repository);
+  final CustomerRepository repository;
+  Future<Either<Failure, BookingRouteEntity>> call(String id) =>
+      repository.getRoute(id);
+}
+
 class ToggleFavorite {
   const ToggleFavorite(this.repository);
   final CustomerRepository repository;
@@ -114,6 +132,6 @@ class CreateReview {
 class UpdateReview {
   const UpdateReview(this.repository);
   final CustomerRepository repository;
-  Future<Either<Failure, String>> call(String id, ReviewParams params) =>
+  Future<Either<Failure, Unit>> call(String id, ReviewParams params) =>
       repository.updateReview(id, params);
 }

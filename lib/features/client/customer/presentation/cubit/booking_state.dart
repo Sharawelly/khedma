@@ -23,6 +23,14 @@ class BookingFailure extends BookingState {
   List<Object?> get props => <Object?>[message];
 }
 
+/// The price of a service before anything has been created.
+class BookingQuoteSuccess extends BookingState {
+  const BookingQuoteSuccess(this.price);
+  final PriceBreakdownEntity price;
+  @override
+  List<Object?> get props => <Object?>[price];
+}
+
 class BookingCreated extends BookingState {
   const BookingCreated(this.booking);
   final CreatedBookingEntity booking;
@@ -34,20 +42,20 @@ class BookingDetailSuccess extends BookingState {
   const BookingDetailSuccess(
     this.booking, {
     this.realtime = const BookingRealtimeSnapshot(),
-    this.reviewId,
-    this.review,
   });
   final BookingEntity booking;
   @override
   final BookingRealtimeSnapshot realtime;
-  final String? reviewId;
-  final ReviewParams? review;
 
   String? get providerId =>
       realtime.providerAssigned?.providerId ?? booking.providerId;
 
+  /// The review lives on the booking itself, so it survives reopening the
+  /// screen instead of only existing in the session that wrote it.
+  BookingReviewEntity? get review => booking.review;
+
   @override
-  List<Object?> get props => <Object?>[booking, realtime, reviewId, review];
+  List<Object?> get props => <Object?>[booking, realtime];
 }
 
 class BookingHistorySuccess extends BookingState {
@@ -56,6 +64,13 @@ class BookingHistorySuccess extends BookingState {
   final bool hasNextPage;
   @override
   List<Object?> get props => <Object?>[bookings, hasNextPage];
+}
+
+class BookingRouteSuccess extends BookingState {
+  const BookingRouteSuccess(this.route);
+  final BookingRouteEntity route;
+  @override
+  List<Object?> get props => <Object?>[route];
 }
 
 class BookingEtaSuccess extends BookingState {

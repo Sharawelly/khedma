@@ -1,4 +1,5 @@
 import '/core/base_classes/pagination_model.dart';
+import '/core/utils/server_datetime.dart';
 import '../../domain/entities/chat_entities.dart';
 
 class ChatThreadModel extends ChatThreadEntity {
@@ -61,7 +62,9 @@ class ChatMessageModel extends ChatMessageEntity {
       messageType: json['messageType'] as String,
       messageText: json['messageText'] as String?,
       attachmentUrl: json['attachmentUrl'] as String?,
-      sentAt: DateTime.parse(json['sentAt'] as String),
+      sentAt:
+          parseServerDateTime(json['sentAt']) ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       isRead: json['isRead'] as bool? ?? false,
     );
   }
@@ -81,6 +84,4 @@ class ChatHistoryModel extends ChatHistoryEntity {
   }
 }
 
-DateTime? _date(Object? rawDate) {
-  return rawDate is String ? DateTime.tryParse(rawDate) : null;
-}
+DateTime? _date(Object? rawDate) => parseServerDateTime(rawDate);

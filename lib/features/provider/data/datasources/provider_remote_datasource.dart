@@ -17,7 +17,9 @@ abstract class ProviderRemoteDataSource {
   Future<ProviderAvailabilityModel> updateAvailability(
     ProviderAvailabilityParams params,
   );
-  Future<ProviderLocationModel> updateLocation(ProviderLocationParams params);
+  Future<void> updateLocation(ProviderLocationParams params);
+  Future<List<ProviderServiceModel>> getServices();
+  Future<List<ProviderServiceModel>> updateServices(List<String> serviceIds);
   Future<ProviderEarningsModel> getEarnings(ProviderEarningsParams params);
   Future<ProviderWalletModel> getWallet();
   Future<PayoutModel> requestPayout(ProviderPayoutParams params);
@@ -100,16 +102,37 @@ class ProviderRemoteDataSourceImpl implements ProviderRemoteDataSource {
   }
 
   @override
-  Future<ProviderLocationModel> updateLocation(
-    ProviderLocationParams params,
-  ) async {
-    final data = _responseMap(
+  Future<void> updateLocation(ProviderLocationParams params) async {
+    // Returns ApiResponse<bool>, not the point that was stored - the caller
+    // already knows the coordinates it just sent.
+    _responseMap(
       await dioConsumer.post(
         ApiConstants.updateLocation,
         body: params.toJson(),
       ),
-    )['data'];
-    return ProviderLocationModel.fromJson(data as Map<String, dynamic>);
+    );
+  }
+
+  @override
+  Future<List<ProviderServiceModel>> getServices() async =>
+      _services(await dioConsumer.get(ApiConstants.providerServices));
+
+  @override
+  Future<List<ProviderServiceModel>> updateServices(
+    List<String> serviceIds,
+  ) async => _services(
+    await dioConsumer.put(
+      ApiConstants.providerServices,
+      body: <String, dynamic>{'serviceIds': serviceIds},
+    ),
+  );
+
+  List<ProviderServiceModel> _services(Object? response) {
+    final data = _responseMap(response)['data'];
+    return (data as List<Object?>? ?? <Object?>[])
+        .whereType<Map<String, dynamic>>()
+        .map(ProviderServiceModel.fromJson)
+        .toList();
   }
 
   @override

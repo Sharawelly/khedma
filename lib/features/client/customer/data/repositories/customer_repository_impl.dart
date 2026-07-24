@@ -52,6 +52,10 @@ class CustomerRepositoryImpl implements CustomerRepository {
   );
 
   @override
+  Future<Either<Failure, PriceBreakdownEntity>> getQuote(String serviceId) =>
+      _request<PriceBreakdownEntity>(() => remote.getQuote(serviceId));
+
+  @override
   Future<Either<Failure, CreatedBookingEntity>> createBooking(
     BookingDraft draft,
   ) => _request<CreatedBookingEntity>(() => remote.createBooking(draft));
@@ -79,6 +83,10 @@ class CustomerRepositoryImpl implements CustomerRepository {
       _request<EtaEntity>(() => remote.getEta(id));
 
   @override
+  Future<Either<Failure, BookingRouteEntity>> getRoute(String id) =>
+      _request<BookingRouteEntity>(() => remote.getRoute(id));
+
+  @override
   Future<Either<Failure, bool>> toggleFavorite(String providerId) =>
       _request<bool>(() => remote.toggleFavorite(providerId));
 
@@ -91,8 +99,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
       _request<String>(() => remote.createReview(params));
 
   @override
-  Future<Either<Failure, String>> updateReview(
-    String id,
-    ReviewParams params,
-  ) => _request<String>(() => remote.updateReview(id, params));
+  Future<Either<Failure, Unit>> updateReview(String id, ReviewParams params) =>
+      _request<Unit>(() async {
+        await remote.updateReview(id, params);
+        return unit;
+      });
 }

@@ -6,6 +6,7 @@ import 'package:signalr_netcore/signalr_client.dart';
 
 import '/core/config/app_config.dart';
 import '/core/services/local_storage/app_secure_storage.dart';
+import '/core/utils/server_datetime.dart';
 import '/features/provider/domain/entities/provider_entities.dart';
 import '/features/shared/chat/domain/entities/chat_entities.dart';
 import 'realtime_events.dart';
@@ -606,7 +607,10 @@ class RealtimeService with WidgetsBindingObserver {
     if (raw is! String) {
       throw FormatException('$key must be an ISO-8601 date');
     }
-    final parsed = DateTime.tryParse(raw);
+    // UTC-aware: a zone-less server timestamp is UTC, not device-local. Parsing
+    // it as local pushed dispatch deadlines hours into the past, so a live offer
+    // expired the instant it was received.
+    final parsed = parseServerDateTime(raw);
     if (parsed == null) {
       throw FormatException('$key must be an ISO-8601 date');
     }

@@ -156,7 +156,7 @@ class _BookingTile extends StatelessWidget {
         onTap: () =>
             context.pushNamed(Routes.bookingDetailsRoute, extra: booking.id),
         title: Text(
-          booking.serviceName,
+          booking.localizedService(appLocalizations.isArLocale),
           style: TextStyles.bold18(color: colors.onboardingHeadline),
         ),
         subtitle: Text(

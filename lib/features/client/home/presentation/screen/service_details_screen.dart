@@ -63,17 +63,21 @@ class _ServiceBody extends StatelessWidget {
     return ListView(
       padding: EdgeInsetsDirectional.all(20.r),
       children: <Widget>[
-        if (service.imageUrl != null)
+        // The header falls back to the gallery's first image, because services
+        // are seeded with their picture in `imageUrls` and a null `imageUrl`.
+        if (service.coverImage != null)
           ClipRRect(
             borderRadius: BorderRadius.circular(18.r),
             child: Image.network(
-              service.imageUrl!,
+              service.coverImage!,
               height: 230.h,
               fit: BoxFit.cover,
               errorBuilder: (_, _, _) => SizedBox(height: 230.h),
             ),
           ),
-        if (service.imageUrls.isNotEmpty) ...<Widget>[
+        // Only a strip when there is more than the one already shown as the
+        // header, so a single image is not rendered twice.
+        if (service.imageUrls.length > 1) ...<Widget>[
           SizedBox(height: 10.h),
           SizedBox(
             height: 76.h,

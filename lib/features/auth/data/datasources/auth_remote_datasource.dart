@@ -18,7 +18,7 @@ abstract class AuthRemoteDataSource {
   Future<AuthRespModel> registerCustomer(RegisterCustomerParams params);
   Future<AuthRespModel> registerProvider(RegisterProviderParams params);
   Future<AuthRespModel> refreshToken(RefreshTokenParams params);
-  Future<AuthRespModel> logout(RefreshTokenParams params);
+  Future<void> logout(RefreshTokenParams params);
   Future<ProfileModel> getProfile();
   Future<BaseOneResponse> deleteAccount();
   Future<ForgotPasswordRespModel> forgotPassword(ForgotPasswordParams params);
@@ -65,12 +65,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<AuthRespModel> logout(RefreshTokenParams params) async {
-    final response = await dioConsumer.post(
-      ApiConstants.logout,
-      body: params.toJson(),
-    );
-    return _parseAuthResponse(response);
+  Future<void> logout(RefreshTokenParams params) async {
+    // The backend responds with a plain `{ "message": "..." }` body on success,
+    // so there is nothing to parse. A non-2xx status throws via the interceptors.
+    await dioConsumer.post(ApiConstants.logout, body: params.toJson());
   }
 
   @override

@@ -12,9 +12,11 @@ import '/core/widgets/app_shimmer.dart';
 import '/core/widgets/gaps.dart';
 import '/features/auth/domain/entities/profile_entity.dart';
 import '/features/auth/presentation/cubit/profile_cubit/profile_cubit.dart';
+import '/features/shared/location/presentation/screen/location_picker_screen.dart';
 import '/features/shared/profile/domain/entities/saved_address_entity.dart';
 import '/features/shared/profile/domain/usecases/params/profile_params.dart';
 import '/features/shared/profile/presentation/cubit/profile_management_cubit.dart';
+import '/features/shared/profile/presentation/widgets/profile_sign_out_button.dart';
 import '/injection_container.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -78,6 +80,8 @@ class ProfileScreen extends StatelessWidget {
                   _ProfileDetails(profile: profile),
                   Gaps.vGap16,
                   const _AddressesSection(),
+                  Gaps.vGap24,
+                  const ProfileSignOutButton(),
                 ],
               ),
             );
@@ -293,6 +297,28 @@ class _ProfileDetails extends StatelessWidget {
 class _AddressesSection extends StatelessWidget {
   const _AddressesSection();
 
+  /// The cubit is read before the await so the picker route, not a disposed
+  /// element, is what the result is delivered against.
+  Future<void> _pickAddress(BuildContext context) async {
+    final cubit = context.read<ProfileManagementCubit>();
+    final picked = await Navigator.of(context).push<PickedLocation>(
+      MaterialPageRoute<PickedLocation>(
+        builder: (_) => const LocationPickerScreen(),
+      ),
+    );
+    if (picked == null) {
+      return;
+    }
+    await cubit.execute(
+      SavePickedAddress(
+        label: 'location_picked_label'.tr,
+        addressLine: picked.address,
+        latitude: picked.latitude,
+        longitude: picked.longitude,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -310,9 +336,7 @@ class _AddressesSection extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  onPressed: () => context
-                      .read<ProfileManagementCubit>()
-                      .execute(CaptureCurrentAddress('current_location'.tr)),
+                  onPressed: () => _pickAddress(context),
                   icon: const Icon(Icons.add_location_alt_rounded),
                 ),
               ],

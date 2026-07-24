@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '/config/locale/app_localizations.dart';
@@ -10,12 +12,17 @@ import '/core/utils/values/text_styles.dart';
 import '/core/widgets/cached_network_image_with_fallback.dart';
 import '/core/widgets/app_shimmer.dart';
 import '/core/widgets/gaps.dart';
+import '/core/widgets/image_viewer.dart';
 import '/features/auth/domain/entities/profile_entity.dart';
 import '/features/auth/presentation/cubit/profile_cubit/profile_cubit.dart';
 import '/features/shared/profile/domain/entities/profile_image_entity.dart';
 import '/features/shared/profile/domain/usecases/params/profile_params.dart';
 import '/features/shared/profile/presentation/cubit/profile_management_cubit.dart';
+import '/features/shared/location/presentation/screen/location_picker_screen.dart';
+import '/features/shared/profile/presentation/widgets/profile_sign_out_button.dart';
 import '/injection_container.dart';
+import '../../../presentation/widgets/provider_working_location_card.dart';
+import '../widgets/provider_services_section.dart';
 
 class ProviderProfileScreen extends StatelessWidget {
   const ProviderProfileScreen({super.key});
@@ -84,7 +91,13 @@ class ProviderProfileScreen extends StatelessWidget {
                   Gaps.vGap16,
                   _ProviderDetails(profile: profile),
                   Gaps.vGap16,
+                  _ProviderWorkingLocation(profile: profile),
+                  Gaps.vGap16,
+                  const ProviderServicesSection(),
+                  Gaps.vGap16,
                   const _ProviderMedia(),
+                  Gaps.vGap24,
+                  const ProfileSignOutButton(),
                 ],
               ),
             );
@@ -272,11 +285,101 @@ class _ProviderDetails extends StatelessWidget {
             Text(
               '${'provider_jobs_done'.tr}: ${profile.numberOfJobsDone ?? 0}',
             ),
+            _AccountStatus(state: profile.state),
             if (profile.description?.isNotEmpty == true)
               Text(profile.description!),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Approval state, shown because dispatch skips anyone who is not Active - a
+/// provider could otherwise sit online with services and a location set and
+/// never learn why no work arrives.
+class _AccountStatus extends StatelessWidget {
+  const _AccountStatus({required this.state});
+  final String? state;
+
+  bool get _isActive => state?.toLowerCase() == 'active';
+
+  String get _label => switch (state?.toLowerCase()) {
+    'active' => 'provider_state_active'.tr,
+    'pending' => 'provider_state_pending'.tr,
+    'suspended' => 'provider_state_suspended'.tr,
+    'banned' => 'provider_state_banned'.tr,
+    _ => state ?? '-',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          '${'provider_account_status'.tr}: $_label',
+          style: TextStyles.bold16(
+            color: _isActive ? colors.onboardingHeadline : colors.errorColor,
+          ),
+        ),
+        if (!_isActive)
+          Padding(
+            padding: EdgeInsetsDirectional.only(top: 4.h),
+            child: Text(
+              'provider_not_approved_warning'.tr,
+              style: TextStyles.regular14(color: colors.errorColor),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// The point this provider is dispatched from, mirrored here so it is visible
+/// alongside the rest of their details rather than only on the jobs screen.
+class _ProviderWorkingLocation extends StatelessWidget {
+  const _ProviderWorkingLocation({required this.profile});
+  final ProfileEntity profile;
+
+  Future<void> _change(BuildContext context) async {
+    final management = context.read<ProfileManagementCubit>();
+    final profileCubit = context.read<ProfileCubit>();
+    final latitude = profile.workingLatitude;
+    final longitude = profile.workingLongitude;
+    final picked = await Navigator.of(context).push<PickedLocation>(
+      MaterialPageRoute<PickedLocation>(
+        builder: (_) => LocationPickerScreen(
+          title: 'location_picker_provider_title'.tr,
+          initial: latitude != null && longitude != null
+              ? LatLng(latitude, longitude)
+              : null,
+        ),
+      ),
+    );
+    if (picked == null) {
+      return;
+    }
+    // Only the coordinates are sent - every other field is omitted from the
+    // payload, so a partial update cannot blank out the rest of the profile.
+    await management.execute(
+      SaveProfile(
+        UpdateProfileParams(
+          currentLatitude: picked.latitude,
+          currentLongitude: picked.longitude,
+        ),
+      ),
+    );
+    // Re-read so the card reflects the saved point rather than the local guess.
+    await profileCubit.getProfile();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ProviderWorkingLocationCard(
+      latitude: profile.workingLatitude,
+      longitude: profile.workingLongitude,
+      onChange: () => unawaited(_change(context)),
     );
   }
 }
@@ -377,7 +480,22 @@ class _MediaSection extends StatelessWidget {
                 return Stack(
                   fit: StackFit.expand,
                   children: <Widget>[
-                    CachedNetworkImageWithFallback(imageUrl: image.imageUrl),
+                    // The delete button sits above this in the stack, so tapping
+                    // it does not also open the viewer.
+                    GestureDetector(
+                      onTap: () => unawaited(
+                        showImageViewer(
+                          context,
+                          images: images
+                              .map((entry) => entry.imageUrl)
+                              .toList(),
+                          initialIndex: index,
+                        ),
+                      ),
+                      child: CachedNetworkImageWithFallback(
+                        imageUrl: image.imageUrl,
+                      ),
+                    ),
                     Align(
                       alignment: AlignmentDirectional.topEnd,
                       child: IconButton(

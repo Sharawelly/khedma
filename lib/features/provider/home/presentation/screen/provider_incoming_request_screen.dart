@@ -168,7 +168,10 @@ class _OfferBody extends StatelessWidget {
     }
     final current = context.read<ProviderJobsCubit>().state.snapshot.currentJob;
     if (current?.bookingId == job.bookingId) {
-      context.pushReplacementNamed(Routes.providerJobDetailsRoute);
+      context.pushReplacementNamed(
+        Routes.providerJobDetailsRoute,
+        extra: job.bookingId,
+      );
     }
   }
 }

@@ -73,6 +73,11 @@ class ChatThreadEntity extends Equatable {
   ];
 }
 
+/// Local send lifecycle of a bubble. Server-sourced messages are always [sent];
+/// [sending] and [failed] only ever apply to the caller's own optimistic bubbles
+/// while a send is in flight or after it has exhausted every transport.
+enum ChatDeliveryStatus { sent, sending, failed }
+
 class ChatMessageEntity extends Equatable {
   const ChatMessageEntity({
     required this.id,
@@ -85,6 +90,7 @@ class ChatMessageEntity extends Equatable {
     this.senderName,
     this.messageText,
     this.attachmentUrl,
+    this.deliveryStatus = ChatDeliveryStatus.sent,
   });
 
   final String id;
@@ -97,9 +103,17 @@ class ChatMessageEntity extends Equatable {
   final String? attachmentUrl;
   final DateTime sentAt;
   final bool isRead;
+  final ChatDeliveryStatus deliveryStatus;
 
-  ChatMessageEntity copyWith({bool? isRead}) => ChatMessageEntity(
-    id: id,
+  bool get isPending => deliveryStatus == ChatDeliveryStatus.sending;
+  bool get isFailed => deliveryStatus == ChatDeliveryStatus.failed;
+
+  ChatMessageEntity copyWith({
+    String? id,
+    bool? isRead,
+    ChatDeliveryStatus? deliveryStatus,
+  }) => ChatMessageEntity(
+    id: id ?? this.id,
     bookingId: bookingId,
     senderId: senderId,
     senderName: senderName,
@@ -109,6 +123,7 @@ class ChatMessageEntity extends Equatable {
     attachmentUrl: attachmentUrl,
     sentAt: sentAt,
     isRead: isRead ?? this.isRead,
+    deliveryStatus: deliveryStatus ?? this.deliveryStatus,
   );
 
   @override
@@ -123,6 +138,7 @@ class ChatMessageEntity extends Equatable {
     attachmentUrl,
     sentAt,
     isRead,
+    deliveryStatus,
   ];
 }
 

@@ -17,8 +17,12 @@ abstract class ProviderRepository {
   );
   Future<Either<Failure, ProviderCoordinatesEntity>> getCurrentPosition();
   Stream<Either<Failure, ProviderCoordinatesEntity>> watchPosition();
-  Future<Either<Failure, ProviderCoordinatesEntity>> updateLocation(
+  Future<Either<Failure, Unit>> updateLocation(
     ProviderLocationParams params,
+  );
+  Future<Either<Failure, List<ProviderServiceEntity>>> getServices();
+  Future<Either<Failure, List<ProviderServiceEntity>>> updateServices(
+    List<String> serviceIds,
   );
   Future<Either<Failure, ProviderEarningsEntity>> getEarnings(
     ProviderEarningsParams params,

@@ -18,6 +18,10 @@ abstract class CustomerRepository {
     String providerId,
     int page,
   );
+  /// The price of a service without creating a booking, so checkout can show
+  /// the figures before the customer commits to anything.
+  Future<Either<Failure, PriceBreakdownEntity>> getQuote(String serviceId);
+
   Future<Either<Failure, CreatedBookingEntity>> createBooking(
     BookingDraft draft,
   );
@@ -27,8 +31,9 @@ abstract class CustomerRepository {
   );
   Future<Either<Failure, Unit>> cancelBooking(String id, String reason);
   Future<Either<Failure, EtaEntity>> getEta(String id);
+  Future<Either<Failure, BookingRouteEntity>> getRoute(String id);
   Future<Either<Failure, bool>> toggleFavorite(String providerId);
   Future<Either<Failure, List<ProviderSummaryEntity>>> getFavorites();
   Future<Either<Failure, String>> createReview(ReviewParams params);
-  Future<Either<Failure, String>> updateReview(String id, ReviewParams params);
+  Future<Either<Failure, Unit>> updateReview(String id, ReviewParams params);
 }

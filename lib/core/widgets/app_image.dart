@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:khedma/core/utils/values/img_manager.dart';
 import 'app_shimmer.dart';
 
 class AppImage extends StatelessWidget {
@@ -246,7 +245,12 @@ class AppImage extends StatelessWidget {
       width: width,
       height: height,
       color: Colors.white,
-      child: Image.asset(ImageAssets.logo),
+      alignment: Alignment.center,
+      child: Icon(
+        Icons.broken_image_outlined,
+        size: (width ?? height ?? 40) * 0.5,
+        color: Colors.grey.shade400,
+      ),
     ),
   );
 }

@@ -19,60 +19,62 @@ class ChatsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => ServiceLocator.instance<ChatThreadsCubit>()..load(),
-      child: BlocBuilder<ChatThreadsCubit, ChatThreadsState>(
-        builder: (context, state) {
-          if (state is ChatThreadsLoading || state is ChatThreadsInitial) {
-            return AppShimmer(
-              child: Container(color: colors.lightBackGroundColor),
-            );
-          }
-          if (state is ChatThreadsFailure) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  SelectableText.rich(
-                    TextSpan(
-                      text: state.message,
-                      style: TextStyle(color: colors.errorColor),
+      child: SafeArea(
+        child: BlocBuilder<ChatThreadsCubit, ChatThreadsState>(
+          builder: (context, state) {
+            if (state is ChatThreadsLoading || state is ChatThreadsInitial) {
+              return AppShimmer(
+                child: Container(color: colors.lightBackGroundColor),
+              );
+            }
+            if (state is ChatThreadsFailure) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    SelectableText.rich(
+                      TextSpan(
+                        text: state.message,
+                        style: TextStyle(color: colors.errorColor),
+                      ),
                     ),
-                  ),
-                  TextButton(
-                    onPressed: context.read<ChatThreadsCubit>().load,
-                    child: Text('retry'.tr),
-                  ),
-                ],
-              ),
-            );
-          }
-          final threads = (state as ChatThreadsSuccess).threads;
-          if (threads.isEmpty) {
+                    TextButton(
+                      onPressed: context.read<ChatThreadsCubit>().load,
+                      child: Text('retry'.tr),
+                    ),
+                  ],
+                ),
+              );
+            }
+            final threads = (state as ChatThreadsSuccess).threads;
+            if (threads.isEmpty) {
+              return RefreshIndicator(
+                onRefresh: context.read<ChatThreadsCubit>().load,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: SizedBox(height: 400.h, child: const NoDataFound()),
+                ),
+              );
+            }
             return RefreshIndicator(
               onRefresh: context.read<ChatThreadsCubit>().load,
-              child: SingleChildScrollView(
+              child: ListView.separated(
                 physics: const AlwaysScrollableScrollPhysics(),
-                child: SizedBox(height: 400.h, child: const NoDataFound()),
+                padding: EdgeInsetsDirectional.all(16.r),
+                itemCount: threads.length,
+                separatorBuilder: (_, _) => SizedBox(height: 12.h),
+                itemBuilder: (context, index) {
+                  final ChatThreadEntity thread = threads[index];
+                  return ChatThreadCard(
+                    thread: thread,
+                    onTap: () =>
+                        context.push(Routes.chatDetailsRoute, extra: thread),
+                  );
+                },
               ),
             );
-          }
-          return RefreshIndicator(
-            onRefresh: context.read<ChatThreadsCubit>().load,
-            child: ListView.separated(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsetsDirectional.all(16.r),
-              itemCount: threads.length,
-              separatorBuilder: (_, _) => SizedBox(height: 12.h),
-              itemBuilder: (context, index) {
-                final ChatThreadEntity thread = threads[index];
-                return ChatThreadCard(
-                  thread: thread,
-                  onTap: () =>
-                      context.push(Routes.chatDetailsRoute, extra: thread),
-                );
-              },
-            ),
-          );
-        },
+          },
+        ),
       ),
     );
   }
