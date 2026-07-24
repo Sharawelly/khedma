@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 
 import '/core/base_classes/api_error.dart';
 import '../../injection_container.dart';
+import '../config/app_config.dart';
 import '../error/exceptions.dart';
 import '../utils/extension.dart';
 import '../utils/log_utils.dart';
@@ -15,23 +16,78 @@ import '../utils/values/strings.dart';
 import 'status_code.dart';
 
 abstract class ApiConstants {
-  static const String dev = 'https://api.world-apm.com/api';
-  static const String live = 'https://api.world-apm.com/api';
-  static const String baseUrl = dev;
+  static const String baseUrl = AppConfig.baseUrl;
 
+  // Auth
+  static const String login = '/auth/login';
+  static const String registerCustomer = '/auth/register/customer';
+  static const String registerProvider = '/auth/register/provider';
+  static const String refreshToken = '/auth/refresh-token';
+  static const String logout = '/auth/logout';
   static const String forgotPassword = '/forgot-password';
   static const String resetPassword = '/reset-password';
-  static const String login = '/login';
-  static const String getArticles = '/articles';
-  static String getArticleDetails(int id) => '/articles/$id';
-  static const String messagesUnreadCount = '/messages/unread-count';
-  static const String getBreedTypes = '/breed-types';
-  static String getCategoryFilters(int categoryId) =>
-      '/categories/$categoryId/filters';
-  static const String changeLanguage = '/change_language';
 
-  /// Learning blocks dashboard (Performa Me).
-  static const String blocksDashboard = '/blocks/dashboard';
+  // Profile
+  static const String profile = '/profile';
+  static const String changePassword = '/profile/change-password';
+  static const String profileAddresses = '/profile/addresses';
+  static const String profileCertificates = '/profile/certificates';
+  static const String profilePortfolio = '/profile/portfolio';
+
+  // Catalog
+  static const String publicCategories = '/categories/public';
+  static const String publicServices = '/services/public';
+  static const String publicProviders = '/providers/public';
+  static String publicService(String id) => '/services/public/$id';
+  static String publicProvider(String id) => '/providers/$id/public';
+
+  // Booking
+  static const String booking = '/Booking';
+  static const String directBooking = '/Booking/direct';
+  static const String bookingHistory = '/Booking/history';
+  static String bookingDetails(String id) => '/Booking/$id';
+  static String acceptBooking(String id) => '/Booking/$id/accept';
+  static String rejectBooking(String id) => '/Booking/$id/reject';
+  static String completeBooking(String id) => '/Booking/$id/complete';
+  static String markBookingEnRoute(String id) => '/Booking/$id/mark-en-route';
+  static String markBookingArrived(String id) => '/Booking/$id/mark-arrived';
+  static String markBookingInProgress(String id) =>
+      '/Booking/$id/mark-in-progress';
+  static String retryBookingPayment(String id) => '/Booking/$id/retry-payment';
+  static String bookingEta(String id) => '/bookings/$id/eta';
+
+  // Provider
+  static const String pendingJobs = '/provider/pending-jobs';
+  static const String providerAvailability = '/provider/availability';
+  static const String providerEarnings = '/providers/earnings';
+  static const String providerWallet = '/providers/wallet';
+  static const String providerPayouts = '/providers/payouts';
+  static const String updateLocation = '/location/update';
+
+  // Chat
+  static const String chatThreads = '/chat/threads';
+  static String chatHistory(String bookingId) => '/chat/$bookingId/history';
+  static String chatMessages(String bookingId) => '/chat/$bookingId/messages';
+  static String chatAttachments(String bookingId) =>
+      '/chat/$bookingId/attachments';
+  static String markChatRead(String bookingId) => '/chat/$bookingId/read';
+
+  // Notifications
+  static const String notifications = '/Notifications';
+  static const String readAllNotifications = '/Notifications/read-all';
+  static String notification(String id) => '/Notifications/$id';
+  static String readNotification(String id) => '/Notifications/$id/read';
+
+  // Reviews
+  static const String reviews = '/Reviews';
+  static String review(String id) => '/Reviews/$id';
+  static String replyToReview(String id) => '/Reviews/$id/reply';
+  static String providerReviews(String providerId) =>
+      '/Reviews/provider/$providerId';
+
+  // Favorites
+  static const String favorites = '/Favorites';
+  static String favoriteProvider(String providerId) => '/Favorites/$providerId';
 }
 
 abstract class DioConsumer {

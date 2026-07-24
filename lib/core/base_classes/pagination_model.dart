@@ -2,24 +2,30 @@ import '/core/base_classes/pagination.dart';
 
 class PaginationModel extends Pagination {
   const PaginationModel({
-    super.currentPage,
-    super.lastPage,
-    super.perPage,
-    super.total,
+    super.page,
+    super.pageSize,
+    super.totalCount,
+    super.totalPages,
+    super.hasNextPage,
+    super.hasPreviousPage,
   });
 
   factory PaginationModel.fromJson(Map<String, dynamic> json) =>
       PaginationModel(
-        currentPage: json['current_page'],
-        lastPage: json['last_page'],
-        perPage: json['per_page'],
-        total: json['total'],
+        page: json['page'],
+        pageSize: json['pageSize'],
+        totalCount: json['totalCount'],
+        totalPages: json['totalPages'],
+        hasNextPage: json['hasNextPage'],
+        hasPreviousPage: json['hasPreviousPage'],
       );
 
   Map<String, dynamic> toJson() => {
-        'current_page': currentPage,
-        'last_page': lastPage,
-        'per_page': perPage,
-        'total': total,
-      };
+    'page': page,
+    'pageSize': pageSize,
+    'totalCount': totalCount,
+    'totalPages': totalPages,
+    'hasNextPage': hasNextPage,
+    'hasPreviousPage': hasPreviousPage,
+  };
 }

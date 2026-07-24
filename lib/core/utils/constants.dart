@@ -13,7 +13,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:phone_numbers_parser/phone_numbers_parser.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '/core/api/dio_consumer.dart';
 import '/core/utils/app_strings.dart';
 import '/core/utils/extension.dart';
 import '/core/utils/log_utils.dart';
@@ -42,20 +41,6 @@ class Constants {
     } catch (e) {
       Log.d(e.toString());
       throw 'Could not launch $url';
-    }
-  }
-
-  static String buildImage(String img) {
-    String imagePath = '';
-    if (img.isNotEmpty) {
-      if (img.contains(ApiConstants.baseUrl)) {
-        return img;
-      } else {
-        imagePath = "${ApiConstants.baseUrl}$img";
-        return imagePath;
-      }
-    } else {
-      return imagePath;
     }
   }
 

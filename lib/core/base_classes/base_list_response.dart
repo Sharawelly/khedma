@@ -13,6 +13,22 @@ class BaseListResponse extends Equatable {
     this.status,
     this.statusCode,
   });
+
+  factory BaseListResponse.fromJson(Map<String, dynamic> json) {
+    final responseData = json['data'];
+
+    return BaseListResponse(
+      data: responseData is List ? responseData : null,
+      message: json['message'],
+      success: json['success'],
+      pagination: Pagination.fromJson(json),
+      value: json['value'],
+      key: json['key'],
+      status: json['status'],
+      statusCode: json['statusCode'],
+    );
+  }
+
   final String? value;
   final String? key;
   final List<dynamic>? data;
@@ -24,13 +40,13 @@ class BaseListResponse extends Equatable {
 
   @override
   List<Object?> get props => [
-        data,
-        message,
-        success,
-        pagination,
-        value,
-        key,
-        status,
-        statusCode,
-      ];
+    data,
+    message,
+    success,
+    pagination,
+    value,
+    key,
+    status,
+    statusCode,
+  ];
 }
